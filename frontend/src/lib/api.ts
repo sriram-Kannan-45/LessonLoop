@@ -1,4 +1,4 @@
-export type Provider = 'gemini' | 'openai'
+export type Provider = 'gemini'
 export type Health = { status: 'ok'; app: string; environment: string }
 export type ProviderStatus = { configured: boolean; model: string | null }
 export type ProvidersStatus = Record<Provider, ProviderStatus>
@@ -52,5 +52,5 @@ async function request<T>(path: string, method = 'GET'): Promise<T> {
 export const api = {
   health: () => request<Health>('/api/health'),
   status: () => request<ProvidersStatus>('/api/providers/status'),
-  check: (provider: Provider) => request<CheckSuccess>(`/api/providers/${provider}/check`, 'POST'),
+  check: () => request<CheckSuccess>('/api/providers/gemini/check', 'POST'),
 }

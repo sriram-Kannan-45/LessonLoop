@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from time import perf_counter
 
 import httpx
-import openai
 from google import genai
 from google.genai import errors, types
 
@@ -22,10 +21,7 @@ class ProviderFailure(Exception):
 
 
 def provider_settings(settings: Settings, provider: Provider):
-    return (
-        getattr(settings, f"{provider.value}_api_key"),
-        getattr(settings, f"{provider.value}_model"),
-    )
+    return settings.gemini_api_key, settings.gemini_model
 
 
 def configuration_status(settings: Settings, provider: Provider) -> ProviderStatus:
@@ -49,16 +45,8 @@ async def request_gemini(key: str, model: str, timeout: float) -> str | None:
         return response.text
 
 
-async def request_openai(key: str, model: str, timeout: float) -> str | None:
-    async with openai.AsyncOpenAI(api_key=key, timeout=timeout, max_retries=0) as client:
-        response = await client.responses.create(
-            model=model, input=PROMPT, max_output_tokens=64, store=False,
-        )
-        return response.output_text
-
-
 def map_failure(exc: Exception) -> ProviderFailure:
-    if isinstance(exc, (TimeoutError, httpx.TimeoutException, openai.APITimeoutError)):
+    if isinstance(exc, (TimeoutError, httpx.TimeoutException)):
         return ProviderFailure("TIMEOUT", "The provider took too long. Try again in a moment.", 504)
     status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
     if status == 401:
@@ -82,21 +70,17 @@ def map_failure(exc: Exception) -> ProviderFailure:
 async def check_provider(settings: Settings, provider: Provider) -> CheckSuccess:
     key, model = provider_settings(settings, provider)
     if not key or not model:
-        name = "Gemini" if provider == Provider.gemini else "OpenAI"
-        raise ProviderFailure("NOT_CONFIGURED", f"Add the {name} API key and model to backend/.env, then restart the backend.", 503)
+        raise ProviderFailure("NOT_CONFIGURED", "Add the Gemini API key and model to backend/.env, then restart the backend.", 503)
     started = perf_counter()
     try:
-        request = request_gemini if provider == Provider.gemini else request_openai
         async with asyncio.timeout(settings.provider_timeout_seconds):
-            message = await request(key.get_secret_value(), model, settings.provider_timeout_seconds)
+            message = await request_gemini(key.get_secret_value(), model, settings.provider_timeout_seconds)
     except Exception as exc:
         raise map_failure(exc) from None
     if not isinstance(message, str) or not message.strip():
         raise ProviderFailure("EMPTY_RESPONSE", "The provider returned no usable text. Check the model and try again.", 502)
     # Provider text is untrusted: prevent accidental key echoes even from a mock or proxy.
-    for secret in (settings.gemini_api_key, settings.openai_api_key):
-        if secret:
-            message = message.replace(secret.get_secret_value(), "[redacted]")
+    message = message.replace(key.get_secret_value(), "[redacted]")
     return CheckSuccess(
         provider=provider, model=model, message=message.strip()[:500],
         latency_ms=round((perf_counter() - started) * 1000),

@@ -20,11 +20,9 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:5173"
     gemini_api_key: SecretStr | None = None
     gemini_model: str | None = None
-    openai_api_key: SecretStr | None = None
-    openai_model: str | None = None
     provider_timeout_seconds: float = Field(default=30, gt=0, le=120)
 
-    @field_validator("gemini_api_key", "openai_api_key", "gemini_model", "openai_model", mode="before")
+    @field_validator("gemini_api_key", "gemini_model", mode="before")
     @classmethod
     def empty_is_missing(cls, value):
         if isinstance(value, str):

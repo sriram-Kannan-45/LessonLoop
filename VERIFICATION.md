@@ -1,24 +1,23 @@
 # Sprint 1 verification
 
-Verified on 13 November 2026 on Windows. This is an implementation/verification record, not a claim that provider account access has been validated.
+Verified on 13 November 2026 on Windows. The application now uses Gemini only for the connection foundation and planned lesson generation/evaluation. Automated checks and real provider results are recorded separately below.
 
 ## Results
 
 | Check | Outcome |
 | --- | --- |
-| Backend tests | **29 passed**. No external provider requests. |
+| Backend tests | **26 passed**. No external provider requests. |
 | Frontend type check | **Passed** (`tsc --noEmit`). |
 | Frontend production build | **Passed** (`vite build`). |
 | Browser tests | **12 passed** across installed Edge desktop (1440 px) and mobile (390 px) viewports. |
 | Visual review | Desktop and mobile screenshots inspected. Real local configuration, mocked success results, and backend downtime/retry states verified. |
 | Real local backend health | **HTTP 200**, correct LessonLoop/development response. |
-| Real local configuration endpoint | **HTTP 200**, both providers unconfigured, selected model IDs visible, no keys. |
+| Real local configuration endpoint | **HTTP 200**, contains only the configured Gemini provider and its selected model ID; no keys are returned. |
 | Real local frontend | **HTTP 200**, opens and reaches the backend. No browser page errors in the live-backend test. |
-| Real Gemini request | **Pending credentials; not attempted.** Requested model will be `gemini-3.5-flash-lite`; latency is not available. |
-| Real OpenAI request | **Pending credentials; not attempted.** Requested model will be `gpt-4.1-mini`; latency is not available. |
+| Real Gemini request | **Success**, `gemini-3.5-flash-lite`, **1,576 ms**. Actual text: `LessonLoop connection OK.` Checked at `2026-11-13T16:48:29.573393Z` (10:18:29 PM IST). |
 | Secret hygiene | Local backend/frontend `.env` files and generated folders confirmed ignored. No real environment files tracked. Candidate source scan found no provider key prefixes. |
 
-Browser success screenshots deliberately contain **mocked** text and test model IDs. They demonstrate UI behavior, not real Gemini/OpenAI connectivity. The `live-*` screenshots show the actual local backend configuration without inference.
+Browser success screenshots deliberately contain **mocked** text and test model IDs. They demonstrate UI behavior, not real Gemini connectivity. The `live-*` screenshots show the actual local backend configuration without inference.
 
 Screenshots are generated in the ignored `artifacts/` directory: `live-desktop.png`, `live-mobile.png`, `results-desktop.png`, `results-mobile.png`, `unavailable-desktop.png`, and `unavailable-mobile.png`.
 
@@ -38,7 +37,6 @@ Screenshots are generated in the ignored `artifacts/` directory: `live-desktop.p
 | FastAPI / Uvicorn | 0.162.6 / 0.54.0 |
 | pydantic-settings | 2.16.3 |
 | google-genai | 2.34.0 |
-| openai | 2.54.0 |
 | LangGraph | 1.2.21 |
 | pytest / HTTPX | 9.2.0 / 0.28.1 |
 | React / React DOM | 19.3.1 / 19.3.1 |
@@ -48,11 +46,10 @@ Screenshots are generated in the ignored `artifacts/` directory: `live-desktop.p
 
 Exact transitive dependencies are in the two backend requirements files and `frontend/package-lock.json`.
 
-## Remaining acceptance criteria
+## Current acceptance status
 
-The local foundation is implemented and verified. **Sprint 1 is not fully accepted until both real provider checks succeed.**
+The Gemini-only Sprint 1 foundation is complete: the frontend runs, backend health/configuration work, the real Gemini request succeeds, and credentials stay on the backend. Lesson generation and evaluation remain later-sprint work and will both use Gemini.
 
-1. Enter the Gemini and OpenAI keys locally in the ignored `backend/.env`. Do not put them in frontend files or chat.
-2. Start/restart the backend and start the frontend using the README commands.
-3. Open `http://localhost:5173` and click **Test connection** once for each provider. These requests can incur charges.
-4. Confirm actual response text, requested model, latency, and timestamp. Resolve any credential, model-access, or quota error the dashboard reports.
+The secondary SDK, client code, settings, environment template entries, dashboard card, and dependency pins have been removed. Its entries were also removed from the ignored local backend environment file, with Gemini settings preserved. Automated tests assert that the removed provider name is rejected and its card is absent.
+
+After removal, one real Gemini request was made through the running backend endpoint, returning HTTP 200 and the actual text recorded above. Sanitized machine-readable results are saved locally in the ignored `artifacts/provider-checks.json` file. No automatic provider requests were added.

@@ -7,7 +7,6 @@ from pydantic import BaseModel, Field
 
 class Provider(str, Enum):
     gemini = "gemini"
-    openai = "openai"
 
 
 class HealthResponse(BaseModel):
@@ -23,7 +22,6 @@ class ProviderStatus(BaseModel):
 
 class ProvidersStatus(BaseModel):
     gemini: ProviderStatus
-    openai: ProviderStatus
 
 
 class CheckSuccess(BaseModel):

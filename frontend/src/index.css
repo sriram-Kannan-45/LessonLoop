@@ -59,16 +59,15 @@ h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -.2px; }
 .section-heading h2 { font-size: 16px; }
 .section-heading p { margin: 5px 0 0; font-size: 11px; color: #828797; }
 .section-count { font-family: Consolas, monospace; font-size: 10px; color: #8b8fa0; }
-.providers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.providers-grid { display: grid; grid-template-columns: 1fr; gap: 18px; }
 .provider-card { padding: 23px 23px 16px; min-width: 0; }
 .provider-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 17px; }
 .provider-icon { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; }
-.gemini { color: #6a7cd8; background: #eff2ff; }.openai { color: #448c77; background: #edf6f1; }
-.openai-mark { font-size: 36px; line-height: 1; }
+.gemini { color: #6a7cd8; background: #eff2ff; }
 .eyebrow { font-size: 8px; font-weight: 600; letter-spacing: 1px; color: #9296a5; }
 .provider-card h3 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -.65px; }
 .provider-role { font-size: 11px; color: #7363bd; margin: 3px 0 0; font-weight: 500; }
-.provider-description { font-size: 11px; line-height: 1.8; color: #848997; margin: 15px 0 19px; min-height: 40px; max-width: 230px; }
+.provider-description { font-size: 11px; line-height: 1.8; color: #848997; margin: 15px 0 19px; min-height: 0; max-width: 560px; }
 .model-row { min-height: 56px; padding: 11px 12px; border: 1px solid #ebedf3; border-radius: 6px; background: #fbfcfe; display: flex; flex-direction: column; gap: 4px; }
 .model-row > span { font-size: 8px; letter-spacing: 1px; color: #9095a1; font-weight: 600; }
 .model-row code { font-size: 10px; color: #626a7d; overflow-wrap: anywhere; }

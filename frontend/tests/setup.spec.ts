@@ -3,7 +3,6 @@ import { test, expect, type Page } from '@playwright/test'
 const health = { status: 'ok', app: 'LessonLoop', environment: 'development' }
 const configured = {
   gemini: { configured: true, model: 'gemini-test-model' },
-  openai: { configured: true, model: 'openai-test-model' },
 }
 
 async function mockSetup(page: Page, options: { configured?: boolean; slow?: boolean } = {}) {
@@ -13,7 +12,6 @@ async function mockSetup(page: Page, options: { configured?: boolean; slow?: boo
   })
   await page.route('**/api/providers/status', route => route.fulfill({ json: options.configured ? configured : {
     gemini: { configured: false, model: 'gemini-test-model' },
-    openai: { configured: false, model: 'openai-test-model' },
   } }))
 }
 
@@ -24,9 +22,9 @@ test('loads safely, never calls paid checks automatically, and fits the viewport
   await page.goto('/')
   await expect(page.getByRole('status').filter({ hasText: 'Checking' })).toBeVisible()
   await expect(page.getByRole('status').filter({ hasText: 'Connected' })).toBeVisible()
-  await expect(page.getByText('Not configured', { exact: true })).toHaveCount(2)
+  await expect(page.getByText('Not configured', { exact: true })).toHaveCount(1)
   await expect(page.getByRole('button', { name: 'Test Gemini connection' })).toBeDisabled()
-  await expect(page.getByRole('button', { name: 'Test OpenAI connection' })).toBeDisabled()
+  await expect(page.getByRole('heading', { name: 'OpenAI', exact: true })).toHaveCount(0)
   expect(paidCalls).toBe(0)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   await page.screenshot({ path: `../artifacts/setup-${testInfo.project.name}.png`, fullPage: true })
@@ -50,32 +48,30 @@ test('configured and verified are separate; manual checks show real response fie
   let calls = 0
   await page.route('**/api/providers/*/check', async route => {
     calls++
-    const provider = route.request().url().includes('/gemini/') ? 'gemini' : 'openai'
+    const provider = 'gemini'
     await new Promise(resolve => setTimeout(resolve, 350))
     await route.fulfill({ json: { provider, status: 'success', model: `${provider}-test-model`, message: `${provider} mocked connection OK.`, latency_ms: 250, checked_at: '2026-11-13T10:00:00Z' } })
   })
   await page.goto('/')
-  await expect(page.getByText('Ready to test', { exact: true })).toHaveCount(2)
+  await expect(page.getByText('Ready to test', { exact: true })).toHaveCount(1)
   expect(calls).toBe(0)
   const geminiButton = page.getByRole('button', { name: 'Test Gemini connection' })
   await geminiButton.click()
   await expect(geminiButton).toBeDisabled()
   await expect(page.getByText('gemini mocked connection OK.')).toBeVisible()
   await expect(page.getByText(/250 ms/)).toBeVisible()
-  await page.getByRole('button', { name: 'Test OpenAI connection' }).click()
-  await expect(page.getByText('openai mocked connection OK.')).toBeVisible()
-  await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '3')
-  expect(calls).toBe(2)
+  await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '2')
+  expect(calls).toBe(1)
   await page.screenshot({ path: `../artifacts/results-${testInfo.project.name}.png`, fullPage: true })
 })
 
 test('a failed provider check shows the backend message and allows retry', async ({ page }) => {
   await mockSetup(page, { configured: true })
-  await page.route('**/api/providers/openai/check', route => route.fulfill({ status: 429, json: {
-    provider: 'openai', status: 'error', error_code: 'RATE_LIMIT_OR_QUOTA', message: 'Check your API quota and billing before retrying.',
+  await page.route('**/api/providers/gemini/check', route => route.fulfill({ status: 429, json: {
+    provider: 'gemini', status: 'error', error_code: 'RATE_LIMIT_OR_QUOTA', message: 'Check your API quota and billing before retrying.',
   } }))
   await page.goto('/')
-  const button = page.getByRole('button', { name: 'Test OpenAI connection' })
+  const button = page.getByRole('button', { name: 'Test Gemini connection' })
   await button.click()
   await expect(page.getByText('Check failed', { exact: true })).toBeVisible()
   await expect(page.getByText('Check your API quota and billing before retrying.')).toBeVisible()
@@ -87,6 +83,8 @@ test('the real local backend serves health and configuration without inference',
   const response = await request.get('http://127.0.0.1:8000/api/health')
   expect(response.ok()).toBe(true)
   expect(await response.json()).toMatchObject(health)
+  const status = await request.get('http://127.0.0.1:8000/api/providers/status')
+  expect(Object.keys(await status.json())).toEqual(['gemini'])
   const failures: string[] = []
   page.on('pageerror', error => failures.push(error.message))
   await page.goto('/')

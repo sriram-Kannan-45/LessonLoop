@@ -1,6 +1,6 @@
 # LessonLoop
 
-**Generate. Evaluate. Improve.** LessonLoop will generate beginner lessons with Gemini, evaluate them with OpenAI, and improve failed lessons through LangGraph.
+**Generate. Evaluate. Improve.** LessonLoop will use Gemini to generate and evaluate beginner lessons, then improve failed lessons through LangGraph.
 
 Sprint 1 builds the connection foundation: a React setup dashboard, a FastAPI backend, safe configuration, and small manual provider checks. Lesson generation is intentionally a later sprint.
 
@@ -8,18 +8,18 @@ Sprint 1 builds the connection foundation: a React setup dashboard, a FastAPI ba
 
 - Responsive React + TypeScript + Vite + Tailwind dashboard.
 - Backend health and provider configuration checks that do not call a model.
-- Separate, manual Gemini and OpenAI connection tests using the official async SDKs.
+- A manual Gemini connection test using the official async Google Gen AI SDK.
 - Explicit timeouts, no automatic provider retries, sanitized errors, and a local backend environment file.
 - Backend tests and desktop/mobile browser tests that do not spend API credits.
 - LangGraph installed for the future lesson workflow; no database or workflow is implemented yet.
 
-**Live provider verification is pending credentials.** Neither real API has been called successfully in this workspace. Passing mock tests does not prove that an API key or model is accessible.
+**Gemini is the only AI provider.** Its real connection was verified with `gemini-3.5-flash-lite`. See `VERIFICATION.md` for actual results. Lesson generation and evaluation will both use Gemini in later sprints.
 
 ## Prerequisites
 
 - Windows PowerShell, Git, and a working Python 3.11+ installation.
 - Node.js 20.19+ or 22.12+ and npm. This workspace was tested with Node 24.14.0 and npm 11.18.0.
-- Gemini and OpenAI API credentials with access to the selected text models. Enter credentials locally, never in chat.
+- A Gemini API key with access to the selected text model. Enter credentials locally, never in chat.
 - Microsoft Edge for the optional browser tests, or another Playwright-supported browser.
 
 ## 1. Install the backend
@@ -61,14 +61,13 @@ if (-not (Test-Path backend\.env)) { Copy-Item backend\.env.example backend\.env
 if (-not (Test-Path frontend\.env)) { Copy-Item frontend\.env.example frontend\.env }
 ```
 
-Open **`backend/.env` in your editor**. Enter the two keys beside `GEMINI_API_KEY=` and `OPENAI_API_KEY=`. Keep those keys in the backend only. Do not commit them or paste them into chat.
+Open **`backend/.env` in your editor**. Enter your key beside `GEMINI_API_KEY=`. Keep the key in the backend only. Do not commit them or paste them into chat.
 
-The examples select `gemini-3.5-flash-lite` and `gpt-4.1-mini`. Both model IDs are configurable; access depends on your account. The app sends exactly the model you select and does not fall back to another model. These small smoke checks request at most 64 output tokens. If you select a model with substantial internal reasoning, this limit may leave no usable text; choose a suitable short-text model for this sprint.
+The example selects `gemini-3.5-flash-lite`. The model ID is configurable; access depends on your account. The app sends exactly the model you select and does not fall back to another model. These small smoke checks request at most 64 output tokens. If you select a model with substantial internal reasoning, this limit may leave no usable text; choose a suitable short-text model for this sprint.
 
 Model and SDK syntax were checked against the official documentation:
 
 - [Gemini 3.5 Flash-Lite](https://aistudio.google.com/docs/models/gemini-3.5-flash-lite) and [Google Gen AI Python SDK](https://github.com/googleapis/python-genai).
-- [OpenAI GPT-4.1 mini](https://developers.openai.com/api/docs/models/gpt-4.1-mini) and [Responses API](https://developers.openai.com/api/reference/python/resources/responses/methods/create).
 - [Pydantic settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/), [Vite](https://vite.dev/guide/), and [Tailwind Vite integration](https://tailwindcss.com/docs/installation/using-vite).
 
 `backend/.env` is resolved relative to the backend source, regardless of the current working directory. Process environment variables override file values. Blank or whitespace-only keys and model IDs mean missing configuration. Restart the backend after editing its environment file.
@@ -97,7 +96,7 @@ Open **[http://localhost:5173](http://localhost:5173)**. The frontend checks bac
 - Configuration: [http://127.0.0.1:8000/api/providers/status](http://127.0.0.1:8000/api/providers/status)
 - Interactive API docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-Use the **Test connection** button on each card after adding credentials and restarting the backend. A successful card displays the actual returned text, the requested model, elapsed milliseconds, and your local check time. The API timestamp is UTC. Each click makes one small external request and **can incur API charges**.
+Use the **Test connection** button on the Gemini card after adding credentials and restarting the backend. A successful card displays the actual returned text, the requested model, elapsed milliseconds, and your local check time. The API timestamp is UTC. Each click makes one small external request and **can incur API charges**.
 
 “Configured” only means a key and model are present. “Connection verified” requires an actual successful provider request. Results and the checklist live in the current page session and reset on reload. There is no persistent storage in Sprint 1.
 
@@ -160,7 +159,6 @@ New-Item -ItemType Directory -Force -Path $env:TEMP | Out-Null
 | `GET /api/health` | Liveness only; works without credentials. |
 | `GET /api/providers/status` | Key/model presence only; never exposes keys or calls a provider. |
 | `POST /api/providers/gemini/check` | One small Gemini request. |
-| `POST /api/providers/openai/check` | One small OpenAI Responses request. |
 
 Provider errors use `{ provider, status: "error", error_code, message }` without raw exceptions. Unsupported provider names return FastAPI's 422 validation response. Missing configuration returns 503, rejected credentials 401, access/model failures 403/404, quota 429, timeout 504, and other unusable/provider failures 502.
 
@@ -170,4 +168,4 @@ Real environment files, caches, virtual environments, node modules, build output
 
 ## Later sprints
 
-Beginner RAG lesson generation, a pass/fail evaluation rubric, LangGraph rewrite routing, SQLite history, persistent memory, prompt improvement, and exports. No lesson-generation button, authentication, vector database, Docker, or deployment service is included in this sprint.
+Gemini-powered beginner RAG lesson generation and pass/fail evaluation, LangGraph rewrite routing, SQLite history, persistent memory, prompt improvement, and exports. No lesson-generation button, authentication, vector database, Docker, or deployment service is included in this sprint.

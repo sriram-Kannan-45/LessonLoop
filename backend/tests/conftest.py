@@ -14,8 +14,7 @@ def isolated_environment(monkeypatch):
         monkeypatch.delenv(name.upper(), raising=False)
     get_settings.cache_clear()
     # Fail immediately if a route unexpectedly attempts an external request.
-    for provider in ("gemini", "openai"):
-        monkeypatch.setattr(providers, f"request_{provider}", AsyncMock(side_effect=AssertionError("Network calls are forbidden in tests")))
+    monkeypatch.setattr(providers, "request_gemini", AsyncMock(side_effect=AssertionError("Network calls are forbidden in tests")))
     yield
     get_settings.cache_clear()
 
