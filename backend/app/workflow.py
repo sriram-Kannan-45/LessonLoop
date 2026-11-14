@@ -7,6 +7,7 @@ from app.content import SOURCE_PACK
 from app.lesson_schemas import MAX_RETRIES
 from app.quality import diagnostics, releasable, structure_checks, validate_evaluation
 from app.services.lesson_ai import WorkflowError
+from app.topics import collect_topic_references
 
 
 class RunState(TypedDict, total=False):
@@ -47,6 +48,12 @@ def build_graph(repository, ai):
 
     async def load_context(state):
         run = repository.get_run(state["run_id"])
+        if run["source_snapshot"].get("status") == "pending":
+            repository.event(run["id"], "RESEARCHING", "Finding public references for the requested topic.", {"topic": run["topic"]})
+            pack = await collect_topic_references(run["topic"])
+            repository.freeze_topic_references(run["id"], pack)
+            repository.event(run["id"], "REFERENCES_READY", "Topic references retrieved and frozen for this run. They are automatically collected, not human-reviewed.", {"source_count": len(pack["sources"]), "source_pack_version": pack["version"]})
+            run = repository.get_run(run["id"])
         prompt = repository.prompt(run["generator_prompt_version"])
         repository.event(run["id"], "LOADING_CONTEXT", "Loaded frozen references, rubric, learner profile, and validated memory.", {"selected_memory_ids": [memory["id"] for memory in run["selected_memory"]]})
         return {"topic": run["topic"], "learner_profile": run["learner_profile"],
@@ -67,7 +74,7 @@ def build_graph(repository, ai):
             draft = copy.deepcopy(draft)
             if isinstance(draft, dict):
                 # Deliberately change a factual claim. No verdict is hardcoded.
-                draft["limitations"] = "RAG guarantees that the AI answer is always correct."
+                draft["limitations"] = "Two is greater than ten. This lesson is guaranteed correct in every situation and has no assumptions or limitations." if state["context"]["rubric"].get("kind") == "general" else "RAG guarantees that the AI answer is always correct."
             repository.event(state["run_id"], "DEMO_MUTATION", "Development demonstration: inserted a factual error into draft 1. The evaluator receives only the altered lesson, with no demo label.", {"attempt": 1})
         attempt_id = repository.add_attempt(state["run_id"], number, draft, original, usage, diagnostics(draft))
         return {"current_lesson": draft, "attempt_id": attempt_id, "attempts": [*state["attempts"], attempt_id], "retry_count": number - 1}
@@ -83,13 +90,13 @@ def build_graph(repository, ai):
             repository.event(state["run_id"], "EVALUATING", "Checking the frozen rubric in three focused passes, separate from generation.", {"attempt": len(state["attempts"]), "evaluation_groups": 3})
             raw, usage = await ai.evaluate(state["current_lesson"], state["context"]["source_pack"], state["context"]["rubric"], retry_event(state["run_id"], "evaluation"), on_provider_event=provider_events(state["run_id"]))
             try:
-                checks.extend(validate_evaluation(raw, state["current_lesson"]))
+                checks.extend(validate_evaluation(raw, state["current_lesson"], expected_ids=[item["id"] for item in state["context"]["rubric"]["checks"] if item["evaluator"] == "model"], source_pack=state["context"]["source_pack"]))
             except WorkflowError:
                 repository.event(state["run_id"], "INVALID_EVALUATION", "The evaluator response failed local validation. It cannot approve a lesson.", {"attempt": len(state["attempts"]), "response": raw})
                 raise
         else:
             usage = {}
-        approved = releasable(checks)
+        approved = releasable(checks, state["context"]["rubric"])
         repository.evaluate_attempt(state["attempt_id"], checks, usage, approved)
         failed = [check for check in checks if not check["passed"]]
         repository.event(state["run_id"], "VERDICT", "All mandatory checks passed." if approved else f"Draft {len(state['attempts'])} needs corrections.", {"failed_check_ids": [check["check_id"] for check in failed], "passed_checks": sum(check["passed"] for check in checks), "evaluated_checks": len(checks)})

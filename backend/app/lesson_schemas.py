@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
 
-LEARNER = "India grade 12 graduate, non-English-medium education, limited English vocabulary; no prior AI, coding, database, embeddings, or machine-learning knowledge; beginning an AI career."
+LEARNER = "India grade 12 graduate, non-English-medium education, limited English vocabulary; beginning this subject with no assumed specialist, technical or coding knowledge. Use respectful everyday explanations."
 PRESET = "india_beginner"
 MAX_RETRIES = 2
 
@@ -73,7 +73,7 @@ class RunStatus(str, Enum):
 class RunRequest(StrictModel):
     topic: str = Field(default="Introduction to RAG", min_length=3, max_length=160)
     learner_profile: Literal["india_beginner"] = PRESET
-    reference_pack_id: Literal["rag-primary-v1"] = "rag-primary-v1"
+    reference_pack_id: Literal["auto", "rag-primary-v1"] = "auto"
     demo_error: bool = False
 
     @field_validator("topic")

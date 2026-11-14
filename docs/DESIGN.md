@@ -2,7 +2,7 @@
 
 ## Scope and learner
 
-LessonLoop accepts a supported topic, creates a standalone beginner lesson, checks it against a fixed rubric, and uses actual failures to request corrections. The target learner is an Indian grade-12 graduate from a non-English-medium school, with limited English vocabulary and no assumed AI or coding background. Engineering details stay in reports rather than learner explanations.
+LessonLoop accepts an entered topic with usable public references, creates a standalone beginner lesson, checks it against its frozen rubric, and uses actual failures to request corrections. The target learner is an Indian grade-12 graduate from a non-English-medium school, with limited English vocabulary and no assumed specialist background. Engineering details stay in reports rather than learner explanations.
 
 The user originally chose Gemini only and later explicitly requested Groq fallback when Gemini quota is exhausted. Role calls remain separate and stateless; Gemini is primary and the quota-limited role can switch to Groq. The current example configuration generates with Gemini 3.5 Flash-Lite and evaluates with Gemini 3.5 Flash. A recorded same-draft trial showed Flash catching undefined terms that Flash-Lite missed; this is evidence for the explicit configuration change, not a guarantee of independent judgments. The evaluator receives no generator self-assessment, desired verdict, or demo flag. This is call separation, not independent-provider evaluation. Shared model mistakes remain possible. The OpenAI requirement in the original assessment is intentionally superseded by that user decision.
 
@@ -19,6 +19,7 @@ The user originally chose Gemini only and later explicitly requested Groq fallba
 
 ## Components and data flow
 
+- `app/topics.py`: fixed-endpoint topic search, revision-pinned excerpts and the generic beginner rubric.
 - `app/content.py`: loads version-controlled source notes, claims, rubric, and prompt versions; computes local content hashes.
 - `app/lesson_schemas.py`: strict Pydantic lesson, example, evaluator, input, and feedback schemas.
 - `app/services/lesson_ai.py`: official Google Gen AI async client, role-specific structured schemas, timeout, bounded technical retry, usage metadata, and secret redaction.
@@ -32,8 +33,8 @@ The user originally chose Gemini only and later explicitly requested Groq fallba
 
 ```mermaid
 flowchart TD
-  A[POST /api/runs] --> B[Validate supported topic and reserve local task]
-  B --> C[load_context: freeze references rubric prompt and memory]
+  A[POST /api/runs] --> B[Validate input and reserve local task]
+  B --> C[load_context: retrieve topic references and freeze context]
   C --> D[generate_lesson: Gemini generation or rewrite]
   D --> E[validate_structure: Python schema and reference checks]
   E --> F[evaluate_lesson: three focused Gemini passes when structure is usable]
@@ -50,13 +51,13 @@ flowchart TD
 
 ## Grounding and reference provenance
 
-Only the prepared RAG topic and its aliases are accepted. A topic such as chemistry is rejected instead of being judged with unrelated RAG sources. No web search occurs on the run's critical path. The source pack records primary-source URLs, access dates, publisher versions when available, short paraphrased notes, note-to-claim links, and hashes of the reviewed local content. A local note hash is not falsely presented as a hash of an entire remote webpage.
+New runs accept arbitrary subject names and collect topic references on demand. The fixed English Wikipedia API supplies search results and bounded text excerpts, with revision IDs/URLs, access times and CC BY-SA attribution. Source/claim mappings are derived from the retrieved excerpts and frozen before generation. These are automatically retrieved secondary sources, not human-reviewed reference packs. Missing or unavailable references stop the run without inventing citations. The original primary-source RAG pack remains for historical and explicitly selected legacy RAG workflows. Local hashes describe the frozen excerpts, not entire remote webpages.
 
-Both roles receive the same approved material. The generator cites known source IDs and claims. Python checks that those identifiers and links exist. The evaluator separately judges whether actual factual claims are supported; identifier validity alone cannot establish that. The scholarship notice is clearly invented teaching data, never real eligibility or deadline advice.
+Both roles receive the same frozen reference excerpts. The generator cites known source IDs and claims. Python checks that those identifiers and links exist. The evaluator separately judges whether actual factual claims are supported; identifier validity alone cannot establish that. Subject examples are clearly labelled illustrative teaching data. Legacy scholarship examples remain invented, never real eligibility or deadline advice.
 
 ## Rubric and evidence rules
 
-There are two code checks and twelve model checks. General checks cover learner assumptions, explained terminology, example quality, coherent progression, recap, and correct practice answers. RAG checks cover the definition, outside knowledge, retrieval/input augmentation/generation, document preparation, distinction from retraining, supported facts, limitations, and absent-information behavior.
+There are two code checks and twelve model checks. General checks cover learner assumptions, explained terminology, example quality, coherent progression, recap, and correct practice answers. New topic checks cover accurate definition, relevance, explanation, key concepts, distinctions, supported facts, scope/assumptions and absent-information behavior. The old RAG-specific checks remain frozen only for legacy RAG runs.
 
 Every check has a stable ID, pass/fail conditions, required evidence, evaluator type, and mandatory flag. All IDs must appear exactly once in their expected set. String values such as `"true"` are not accepted as booleans. Unknown claims, duplicated IDs, missing IDs, and fabricated evidence cannot authorize approval.
 
@@ -80,7 +81,7 @@ The app supports one server process and one active task. Async tasks are held by
 
 ## History versus reusable memory
 
-History is the full record of what happened. Reusable memory is a small selected set of validated teaching instructions. Failure observations are unique per run and category, so three retries in one run are one independent observation. Selection uses the prepared topic, supported learner preset, and category; at most four active instructions are loaded, and each run saves their IDs and text snapshots.
+History is the full record of what happened. Reusable memory is a small selected set of validated teaching instructions. Failure observations are unique per run and category, so three retries in one run are one independent observation. Selection uses the matching topic, supported learner preset, and category; at most four active instructions are loaded, and each run saves their IDs and text snapshots.
 
 At least two independent completed runs must support a category before a comparison can start. Demonstration-origin observations are explicitly identified in memory provenance. A reviewed human observation can contribute evidence, but its arbitrary text is never inserted into a prompt. Proposals use inspectable, vetted category-specific instruction templates.
 
@@ -96,7 +97,7 @@ This small, stochastic, non-blinded generation comparison is limited evidence. I
 
 Feedback categories are factual issues, confusing language, missing examples, and corrections. New observations are unverified. A local human review can verify or dismiss a record, with a review note. Promotion still requires the controlled comparison gate.
 
-React renders generated content as text; it never executes raw lesson HTML. Reference links come from the approved source pack rather than arbitrary model URLs. Only approved runs receive an approved-lesson export label. Other drafts carry a review/not-approved label. JSON audit exports include run state, version snapshots, every attempt, verdicts, and events. Technical runs without a draft still have audit exports.
+React renders generated content as text; it never executes raw lesson HTML. Reference links come from the frozen retrieved pack or the legacy reviewed pack, never arbitrary model URLs. Only approved runs receive an approved-lesson export label. Other drafts carry a review/not-approved label. JSON audit exports include run state, version snapshots, every attempt, verdicts, and events. Technical runs without a draft still have audit exports.
 
 ## One-day trade-offs and production work
 
@@ -137,3 +138,15 @@ LessonAI wraps the primary Gemini request. Only RATE_LIMIT_OR_QUOTA triggers the
 Groq uses the existing HTTPX dependency and a fixed HTTPS endpoint, not an OpenAI service or SDK. Its native strict schema requires all object fields and disallows extra properties. Duplicate prompt schemas are omitted in native mode to reduce token use; JSON-mode repair includes one full schema. Full local validation remains unchanged. Conservative per-model spacing defaults to 65 seconds and emits PROVIDER_WAIT, alongside PROVIDER_FALLBACK and PROVIDER_USED events. Both provider keys are redacted from generated output and safe errors.
 
 Actual provider/model, fallback reason and token usage are saved with generation and each evaluation group in the existing immutable usage JSON, avoiding a destructive database migration. Configured Gemini model fields remain frozen primary snapshots. The reader/attempt history and audit v2 expose actual usage; old runs without that metadata are not relabelled. Comparisons require identical actual provider signatures across all arms; provider drift produces INCOMPARABLE and cannot activate memory. Quota fallback is reliability routing, not proof that the backup judge is accurate.
+
+## Arbitrary subject workflow
+
+A new run starts with an explicit pending reference snapshot and a subject-neutral rubric. load_context performs bounded search/extraction against a fixed public HTTPS endpoint, excludes disambiguation pages and resolves the pending snapshot exactly once before any attempt exists. Provider failure or process restart preserves an honest ERROR/INTERRUPTED record. No arbitrary URL, internal address or redirect target supplied as a topic is fetched.
+
+The generic generator and evaluator have separate immutable prompt versions. Evaluation groups and allowed claim IDs come from the run's rubric and references, and release compares the full result against that same frozen rubric. The previous global RAG check/claim sets are used only by legacy runs and calibration. Old histories keep their own snapshots and verdicts.
+
+RAG prompt improvements are not transferable evidence for biology, history or programming. Active instructions are selected only for the matching topic; generic generation uses its own base prompt plus relevant bounded instructions, never the entire old RAG system prompt. RAG calibration support counts exclude other subjects. The memory screen states its calibration scope. Broad-topic calibration and higher-assurance primary-source research remain further work.
+
+New-topic evaluation constrains output check IDs, claim IDs and evidence paths to their actual input values. Evidence text is empty in the model response; local validation inserts the selected lesson field verbatim. Missing content still requires an explicit missing-content judgment, and pass/fail booleans remain unconstrained. This reduces copying failures without bypassing semantic evaluation. Both native schema and JSON-mode repair receive the same selector contract.
+
+Live account limits can apply separately to output tokens per minute. Evaluation responses are capped at 900 tokens after an actual 1,000-output-token allowance rejected larger requests. Oversized-request errors are distinguished from ordinary reset waits without exposing provider organization identifiers. This does not establish that full-lesson Groq generation fits every free-plan allowance.

@@ -1,0 +1,520 @@
+{
+  "note": "Real inference and topic-reference retrieval. Automatically collected references are not human-reviewed. These are small integration examples, not general accuracy evidence.",
+  "runs": [
+    {
+      "topic": "Photosynthesis",
+      "run_id": "0e6add5c1d3940bb9b06949511a24360",
+      "started_via": "Real React Generate lesson button",
+      "status": "ERROR",
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Groq rejected the request format. No lesson was approved.",
+        "diagnostics": {
+          "provider": "groq",
+          "provider_model": "qwen/qwen3.8-27b",
+          "provider_http_status": 400,
+          "incomplete_group": [
+            "CONCEPT_DISTINCTIONS",
+            "GROUNDED_CLAIMS",
+            "TERMS_EXPLAINED",
+            "NO_PREREQUISITES"
+          ],
+          "completed_checks": [
+            {
+              "check_id": "TOPIC_DEFINITION",
+              "passed": true,
+              "evidence": "Photosynthesis is the natural way that living things capture light energy, usually from sunlight, and turn it into usable chemical energy to feed their bodies.",
+              "reason": "The lesson accurately defines photosynthesis as the conversion of light energy into chemical energy by autotrophic organisms, distinguishing between oxygenic and anoxygenic types where appropriate, without substituting another subject.",
+              "required_change": "",
+              "claim_ids": [
+                "C01"
+              ],
+              "missing_content": false,
+              "evidence_path": "what_it_is"
+            },
+            {
+              "check_id": "TOPIC_RELEVANCE",
+              "passed": true,
+              "evidence": "Define photosynthesis in plain, everyday words.",
+              "reason": "The learning objectives directly address the topic of photosynthesis using language accessible to the specified beginner learner profile, and all sections remain focused on explaining the topic.",
+              "required_change": "",
+              "claim_ids": [
+                "C01"
+              ],
+              "missing_content": false,
+              "evidence_path": "learning_objectives.0"
+            },
+            {
+              "check_id": "CORE_EXPLANATION",
+              "passed": true,
+              "evidence": "In oxygenic photosynthesis, these organisms split water molecules, which releases oxygen gas as a byproduct.",
+              "reason": "The 'how_it_works' section explains the step-by-step process of capturing light, splitting water, storing energy in organic compounds, and using cellular respiration, providing a clear sequence of ideas suitable for the learner.",
+              "required_change": "",
+              "claim_ids": [
+                "C01"
+              ],
+              "missing_content": false,
+              "evidence_path": "how_it_works.1"
+            },
+            {
+              "check_id": "KEY_CONCEPTS",
+              "passed": true,
+              "evidence": "The most common type of photosynthesis is called oxygenic photosynthesis.",
+              "reason": "The lesson covers essential concepts including the definition, the role of photopigments, the distinction between oxygenic and anoxygenic photosynthesis, the production of oxygen vs sulfur, and the storage of energy in organic compounds, consistent with the references.",
+              "required_change": "",
+              "claim_ids": [
+                "C01",
+                "C02"
+              ],
+              "missing_content": false,
+              "evidence_path": "what_it_is"
+            }
+          ],
+          "completed_group_usage": [
+            {
+              "check_ids": [
+                "TOPIC_DEFINITION",
+                "TOPIC_RELEVANCE",
+                "CORE_EXPLANATION",
+                "KEY_CONCEPTS"
+              ],
+              "prompt_tokens": 3771,
+              "completion_tokens": 1222,
+              "total_tokens": 4993,
+              "provider": "groq",
+              "model": "qwen/qwen3.8-27b",
+              "requested_model": "qwen/qwen3.8-27b",
+              "role": "evaluation",
+              "fallback": true,
+              "primary_provider": "gemini",
+              "primary_model": "gemini-3.5-flash",
+              "fallback_reason": "RATE_LIMIT_OR_QUOTA",
+              "gemini_retry_at": 1794729602.9611957,
+              "attempt_usage": [
+                {
+                  "prompt_tokens": 3771,
+                  "completion_tokens": 1222,
+                  "total_tokens": 4993,
+                  "provider": "groq",
+                  "model": "qwen/qwen3.8-27b",
+                  "requested_model": "qwen/qwen3.8-27b",
+                  "role": "evaluation",
+                  "fallback": true,
+                  "primary_provider": "gemini",
+                  "primary_model": "gemini-3.5-flash",
+                  "fallback_reason": "RATE_LIMIT_OR_QUOTA",
+                  "gemini_retry_at": 1794729602.9611957
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attempts": 2,
+      "source_pack_version": "topic-references-v1-bcf0a7dcec2dd257",
+      "source_titles": [
+        "Photosynthesis",
+        "Artificial photosynthesis"
+      ],
+      "source_urls": [
+        "https://en.wikipedia.org/w/index.php?oldid=1383248806",
+        "https://en.wikipedia.org/w/index.php?oldid=1379823717"
+      ],
+      "rubric_version": "beginner-topic-v1-ab59523578f7",
+      "generator_prompt_version": "generator-topic-v2",
+      "evaluator_prompt_version": "evaluator-topic-v1",
+      "providers_used": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash"
+        },
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite"
+        },
+        {
+          "provider": "groq",
+          "model": "qwen/qwen3.8-27b"
+        }
+      ],
+      "failed_checks_by_draft": [
+        [
+          "TERMS_EXPLAINED",
+          "NO_PREREQUISITES"
+        ],
+        []
+      ],
+      "final_passed_checks": 0
+    },
+    {
+      "topic": "Python programming",
+      "run_id": "5a56ba7ca70c40b9b8d63df38e1f2caf",
+      "started_via": "Real API after first React run ended",
+      "status": "ERROR",
+      "error": {
+        "code": "RATE_LIMIT_OR_QUOTA",
+        "message": "Groq also reached its request or token limit. Wait for its quota to recover; no lesson was approved.",
+        "diagnostics": {
+          "provider": "groq",
+          "provider_model": "qwen/qwen3.8-27b",
+          "provider_http_status": 429,
+          "incomplete_group": [
+            "CONCEPT_DISTINCTIONS",
+            "GROUNDED_CLAIMS",
+            "TERMS_EXPLAINED",
+            "NO_PREREQUISITES"
+          ],
+          "completed_checks": [
+            {
+              "check_id": "TOPIC_DEFINITION",
+              "passed": true,
+              "evidence": "Python programming is a high-level, general-purpose computer language. In this context, a high-level language is a set of human-friendly instructions that are closer to natural human speech rather than raw electronic signals",
+              "reason": "The lesson accurately defines Python as a high-level, general-purpose language and explains these terms in beginner-friendly language, consistent with claim C01.",
+              "required_change": "",
+              "claim_ids": [
+                "C01"
+              ],
+              "missing_content": false,
+              "evidence_path": "what_it_is"
+            },
+            {
+              "check_id": "TOPIC_RELEVANCE",
+              "passed": true,
+              "evidence": "Understand what Python programming is in simple, everyday language.",
+              "reason": "The learning objectives and content focus specifically on Python's definition, history, and syntax characteristics, using simple language appropriate for a beginner with limited technical background.",
+              "required_change": "",
+              "claim_ids": [],
+              "missing_content": false,
+              "evidence_path": "learning_objectives.0"
+            },
+            {
+              "check_id": "CORE_EXPLANATION",
+              "passed": true,
+              "evidence": "A programmer writes instructions using simple English keywords and clear spacing rules known as significant indentation.",
+              "reason": "The 'how_it_works' section breaks down the process of creating and executing a Python program into four clear steps, explaining the flow from human instruction to computer execution and memory management.",
+              "required_change": "",
+              "claim_ids": [
+                "C01",
+                "C05"
+              ],
+              "missing_content": false,
+              "evidence_path": "how_it_works.0"
+            },
+            {
+              "check_id": "KEY_CONCEPTS",
+              "passed": true,
+              "evidence": "Python was conceived in the late 1980s and its implementation started in December 1989 by Guido van Rossum at CWI in the Netherlands as a successor to an older language named ABC.",
+              "reason": "The lesson correctly attributes the creation of Python to Guido van Rossum in December 1989, identifies it as a successor to ABC, and highlights key concepts like readability, indentation, and garbage collection, all of which are supported by the reference claims.",
+              "required_change": "",
+              "claim_ids": [
+                "C01",
+                "C03",
+                "C06"
+              ],
+              "missing_content": false,
+              "evidence_path": "what_it_is"
+            }
+          ],
+          "completed_group_usage": [
+            {
+              "check_ids": [
+                "TOPIC_DEFINITION",
+                "TOPIC_RELEVANCE",
+                "CORE_EXPLANATION",
+                "KEY_CONCEPTS"
+              ],
+              "prompt_tokens": 4428,
+              "completion_tokens": 1377,
+              "total_tokens": 5805,
+              "provider": "groq",
+              "model": "qwen/qwen3.8-27b",
+              "requested_model": "qwen/qwen3.8-27b",
+              "role": "evaluation",
+              "fallback": true,
+              "primary_provider": "gemini",
+              "primary_model": "gemini-3.5-flash",
+              "fallback_reason": "RATE_LIMIT_OR_QUOTA",
+              "gemini_retry_at": 1794729602.9611957,
+              "attempt_usage": [
+                {
+                  "prompt_tokens": 4053,
+                  "completion_tokens": 804,
+                  "total_tokens": 4857,
+                  "provider": "groq",
+                  "model": "qwen/qwen3.8-27b",
+                  "requested_model": "qwen/qwen3.8-27b",
+                  "role": "evaluation",
+                  "fallback": true,
+                  "primary_provider": "gemini",
+                  "primary_model": "gemini-3.5-flash",
+                  "fallback_reason": "RATE_LIMIT_OR_QUOTA",
+                  "gemini_retry_at": 1794729602.9611957
+                },
+                {
+                  "prompt_tokens": 4428,
+                  "completion_tokens": 1377,
+                  "total_tokens": 5805,
+                  "provider": "groq",
+                  "model": "qwen/qwen3.8-27b",
+                  "requested_model": "qwen/qwen3.8-27b",
+                  "role": "evaluation",
+                  "fallback": true,
+                  "primary_provider": "gemini",
+                  "primary_model": "gemini-3.5-flash",
+                  "fallback_reason": "RATE_LIMIT_OR_QUOTA",
+                  "gemini_retry_at": 1794729602.9611957
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attempts": 2,
+      "source_pack_version": "topic-references-v1-3f4d6048d70619e1",
+      "source_titles": [
+        "Python (programming language)",
+        "History of Python",
+        "Python syntax and semantics"
+      ],
+      "source_urls": [
+        "https://en.wikipedia.org/w/index.php?oldid=1384864342",
+        "https://en.wikipedia.org/w/index.php?oldid=1384973480",
+        "https://en.wikipedia.org/w/index.php?oldid=1381092446"
+      ],
+      "rubric_version": "beginner-topic-v1-04ed4064839c",
+      "generator_prompt_version": "generator-topic-v2",
+      "evaluator_prompt_version": "evaluator-topic-v1",
+      "providers_used": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite"
+        },
+        {
+          "provider": "groq",
+          "model": "qwen/qwen3.8-27b"
+        }
+      ],
+      "failed_checks_by_draft": [
+        [
+          "GROUNDED_CLAIMS",
+          "TERMS_EXPLAINED"
+        ],
+        []
+      ],
+      "final_passed_checks": 0
+    },
+    {
+      "id": "a0cd8c08edaa41a48296becf689c42c8",
+      "topic": "Photosynthesis",
+      "started_via": "Real React Generate lesson button after evidence selector fix",
+      "pageErrors": [],
+      "run_id": "a0cd8c08edaa41a48296becf689c42c8",
+      "status": "ERROR",
+      "error": {
+        "code": "RATE_LIMIT_OR_QUOTA",
+        "message": "Groq also reached its request or token limit. Wait for its quota to recover; no lesson was approved.",
+        "diagnostics": {
+          "provider": "groq",
+          "provider_model": "qwen/qwen3.8-27b",
+          "provider_http_status": 429,
+          "provider_error_code": "rate_limit_exceeded",
+          "incomplete_group": [
+            "CONCEPT_DISTINCTIONS",
+            "GROUNDED_CLAIMS",
+            "TERMS_EXPLAINED",
+            "NO_PREREQUISITES"
+          ],
+          "completed_checks": [
+            {
+              "check_id": "TOPIC_DEFINITION",
+              "claim_ids": [
+                "C01",
+                "C02",
+                "C03"
+              ],
+              "evidence": "",
+              "evidence_path": "what_it_is",
+              "missing_content": false,
+              "passed": true,
+              "reason": "The lesson accurately defines photosynthesis as converting light energy to chemical energy, distinguishes oxygenic and anoxygenic types, and aligns with the source claim extracts.",
+              "required_change": ""
+            },
+            {
+              "check_id": "TOPIC_RELEVANCE",
+              "claim_ids": [
+                "C01",
+                "C02",
+                "C03"
+              ],
+              "evidence": "",
+              "evidence_path": "learning_objectives.0",
+              "missing_content": false,
+              "passed": true,
+              "reason": "The learning objectives and content focus directly on photosynthesis definitions, variations, and energy storage, addressing beginner needs with accessible language.",
+              "required_change": ""
+            },
+            {
+              "check_id": "CORE_EXPLANATION",
+              "claim_ids": [
+                "C01",
+                "C02"
+              ],
+              "evidence": "",
+              "evidence_path": "how_it_works.0",
+              "missing_content": false,
+              "passed": true,
+              "reason": "The 'how_it_works' section provides a clear, sequential five-step explanation of light capture, water splitting, energy storage, respiration, and anoxygenic variations.",
+              "required_change": ""
+            },
+            {
+              "check_id": "KEY_CONCEPTS",
+              "claim_ids": [
+                "C01",
+                "C02",
+                "C03"
+              ],
+              "evidence": "",
+              "evidence_path": "recap.3",
+              "missing_content": false,
+              "passed": true,
+              "reason": "Central concepts including oxygenic vs. anoxygenic photosynthesis, energy storage in organic compounds, and artificial photosynthesis are consistently covered and grounded in sources.",
+              "required_change": ""
+            }
+          ],
+          "completed_group_usage": [
+            {
+              "check_ids": [
+                "TOPIC_DEFINITION",
+                "TOPIC_RELEVANCE",
+                "CORE_EXPLANATION",
+                "KEY_CONCEPTS"
+              ],
+              "prompt_tokens": 3828,
+              "completion_tokens": 392,
+              "total_tokens": 4220,
+              "provider": "groq",
+              "model": "qwen/qwen3.8-27b",
+              "requested_model": "qwen/qwen3.8-27b",
+              "role": "evaluation",
+              "fallback": true,
+              "primary_provider": "gemini",
+              "primary_model": "gemini-3.5-flash",
+              "fallback_reason": "RATE_LIMIT_OR_QUOTA",
+              "gemini_retry_at": 1794729603.3239233,
+              "attempt_usage": [
+                {
+                  "prompt_tokens": 3828,
+                  "completion_tokens": 392,
+                  "total_tokens": 4220,
+                  "provider": "groq",
+                  "model": "qwen/qwen3.8-27b",
+                  "requested_model": "qwen/qwen3.8-27b",
+                  "role": "evaluation",
+                  "fallback": true,
+                  "primary_provider": "gemini",
+                  "primary_model": "gemini-3.5-flash",
+                  "fallback_reason": "RATE_LIMIT_OR_QUOTA",
+                  "gemini_retry_at": 1794729603.3239233
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "attempts": 1,
+      "source_pack_version": "topic-references-v1-9f624ecd269d8b94",
+      "source_titles": [
+        "Photosynthesis",
+        "Artificial photosynthesis"
+      ],
+      "source_urls": [
+        "https://en.wikipedia.org/w/index.php?oldid=1383248806",
+        "https://en.wikipedia.org/w/index.php?oldid=1379823717"
+      ],
+      "rubric_version": "beginner-topic-v1-ab59523578f7",
+      "generator_prompt_version": "generator-topic-v2",
+      "evaluator_prompt_version": "evaluator-topic-v2-field-selection",
+      "failed_checks_by_draft": [
+        []
+      ],
+      "final_passed_checks": 0,
+      "providers_used": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite"
+        },
+        {
+          "provider": "groq",
+          "model": "qwen/qwen3.8-27b"
+        }
+      ]
+    },
+    {
+      "id": "1788f8f75349482599aac245224ac0ba",
+      "topic": "Photosynthesis",
+      "started_via": "Real React Generate lesson button after compact evidence fix",
+      "pageErrors": [],
+      "run_id": "1788f8f75349482599aac245224ac0ba",
+      "status": "NEEDS_REVIEW",
+      "error": null,
+      "attempts": 3,
+      "source_pack_version": "topic-references-v1-bf7c16f8fbb8a1af",
+      "source_titles": [
+        "Photosynthesis",
+        "Artificial photosynthesis"
+      ],
+      "source_urls": [
+        "https://en.wikipedia.org/w/index.php?oldid=1383248806",
+        "https://en.wikipedia.org/w/index.php?oldid=1379823717"
+      ],
+      "rubric_version": "beginner-topic-v1-ab59523578f7",
+      "generator_prompt_version": "generator-topic-v2",
+      "evaluator_prompt_version": "evaluator-topic-v3-compact-evidence",
+      "failed_checks_by_draft": [
+        [
+          "CORE_EXPLANATION",
+          "TERMS_EXPLAINED"
+        ],
+        [
+          "GROUNDED_CLAIMS",
+          "TERMS_EXPLAINED"
+        ],
+        [
+          "GROUNDED_CLAIMS",
+          "TERMS_EXPLAINED"
+        ]
+      ],
+      "final_passed_checks": 12,
+      "providers_used": [
+        {
+          "provider": "gemini",
+          "model": "gemini-3.5-flash-lite"
+        },
+        {
+          "provider": "groq",
+          "model": "qwen/qwen3.8-27b"
+        }
+      ],
+      "final_failed_checks": [
+        {
+          "id": "GROUNDED_CLAIMS",
+          "reason": "Claims artificial photosynthesis ‘producing clean solar fuels’ lacks reference support; source states never demonstrated.",
+          "required_change": "State that artificial photosynthesis is a research goal, not a demonstrated system."
+        },
+        {
+          "id": "TERMS_EXPLAINED",
+          "reason": "Specialist term 'biomimics' is used in 'why_it_matters' without ordinary-language explanation.",
+          "required_change": "Define 'biomimics' briefly, e.g., 'imitates nature'."
+        }
+      ],
+      "completed_evaluation_groups": 9,
+      "technical_retries": 0
+    }
+  ],
+  "output_allowance_diagnostic": {
+    "observed_output_tokens_per_minute_limit": 1000,
+    "rejected_expected_output_tokens": 1377,
+    "evaluation_response_cap_after_fix": 900,
+    "note": "A real diagnostic reproduced an oversized-request limit, not an exhausted 8,000-token allowance. The organization identifier and raw provider message are omitted."
+  }
+}

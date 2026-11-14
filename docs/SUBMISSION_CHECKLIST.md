@@ -52,3 +52,7 @@ Use docs/VIDEO_WALKTHROUGH.md to record a face-visible 15–20-minute walkthroug
 - Review the lesson yourself for overlooked clarity/factual issues before using it as teaching material.
 - Verify GitHub, document, and video links. The app's localhost URL is not a public deployment URL.
 - The assessment form has not been submitted; the user must submit it or explicitly authorize that action.
+
+## Dynamic-topic support
+
+The current studio accepts arbitrary subject names, collects topic-specific public Wikipedia references, and uses a generic fourteen-check beginner rubric. Inspect reference relevance and attribution in each run. No human review of automatically collected references is claimed. Historical RAG lesson artifacts above remain unchanged. See submission/topics-live-verification.json for actual new-topic integration outcomes; broad subject accuracy and topic-specific learning activation are not claimed.

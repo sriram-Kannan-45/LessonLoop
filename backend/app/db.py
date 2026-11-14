@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from app.content import PROMPTS, RUBRIC, SOURCE_PACK
+from app.content import PROMPTS, RUBRIC, SOURCE_PACK, canonical_hash, supports_topic
 
 
 def now() -> str:
@@ -92,6 +92,8 @@ class Repository:
             conn.execute("INSERT OR IGNORE INTO reference_packs VALUES(?,?)", (SOURCE_PACK["version"], encode(SOURCE_PACK)))
             conn.execute("INSERT OR IGNORE INTO prompt_versions(version,instructions,active,created_at) VALUES(?,?,?,?)",
                          (PROMPTS["generator_version"], PROMPTS["generator"], 1 if not conn.execute("SELECT 1 FROM prompt_versions WHERE active=1").fetchone() else 0, now()))
+            conn.execute("INSERT OR IGNORE INTO prompt_versions(version,instructions,active,created_at) VALUES(?,?,0,?)",
+                         (PROMPTS["topic_generator_version"], PROMPTS["topic_generator"], now()))
 
     @contextmanager
     def connection(self):
@@ -128,17 +130,42 @@ class Repository:
         return [decode_row(row) for row in rows if row["id"] in prompt["memory_ids"]]
 
     def create_run(self, request, generator_model, evaluator_model):
-        prompt = self.active_prompt()
-        memory = self.selected_memory(prompt, "Introduction to RAG", request.learner_profile)
+        from app.topics import pending_pack, topic_rubric
+
+        legacy = request.reference_pack_id == SOURCE_PACK["id"] and supports_topic(request.topic, SOURCE_PACK["id"])
+        active = self.active_prompt()
+        memory_topic = "Introduction to RAG" if supports_topic(request.topic, SOURCE_PACK["id"]) else request.topic
+        memory = self.selected_memory(active, memory_topic, request.learner_profile)
+        source_pack, rubric = (SOURCE_PACK, RUBRIC) if legacy else (pending_pack(request.topic), topic_rubric(request.topic))
+        prompt = active if legacy else self.prompt(PROMPTS["topic_generator_version"])
+        if not legacy and memory:
+            instructions = prompt["instructions"] + "".join("\nAdditional teaching instruction: " + item["instruction"] for item in memory)
+            prompt = {"version": PROMPTS["topic_generator_version"] + "-" + canonical_hash([item["id"] for item in memory])[:12],
+                      "instructions": instructions, "memory_ids": [item["id"] for item in memory]}
         run_id = identifier()
         with self.connection() as conn:
+            conn.execute("INSERT OR IGNORE INTO reference_packs VALUES(?,?)", (source_pack["version"], encode(source_pack)))
+            if not legacy:
+                conn.execute("INSERT OR IGNORE INTO prompt_versions VALUES(?,?,?,0,?,?)", (prompt["version"], prompt["instructions"], PROMPTS["topic_generator_version"] if memory else None, encode(prompt["memory_ids"]), now()))
             conn.execute("""INSERT INTO runs(id,topic,learner_profile,status,stage,started_at,
              source_pack_version,source_snapshot_json,rubric_version,rubric_snapshot_json,
              generator_prompt_version,evaluator_prompt_version,generator_model,evaluator_model,
              selected_memory_json,demo_error) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                         (run_id, request.topic, request.learner_profile, "RUNNING", "QUEUED", now(), SOURCE_PACK["version"], encode(SOURCE_PACK), RUBRIC["version"], encode(RUBRIC), prompt["version"], PROMPTS["evaluator_version"], generator_model, evaluator_model, encode(memory), int(request.demo_error)))
+                         (run_id, request.topic, request.learner_profile, "RUNNING", "QUEUED", now(), source_pack["version"], encode(source_pack), rubric["version"], encode(rubric), prompt["version"], PROMPTS["evaluator_version"] if legacy else PROMPTS["topic_evaluator_version"], generator_model, evaluator_model, encode(memory), int(request.demo_error)))
         self.event(run_id, "QUEUED", "Run accepted. Up to three drafts; every mandatory check must pass.")
         return run_id
+
+    def freeze_topic_references(self, run_id, source_pack):
+        """Resolve pending references once, before a draft exists. Historical snapshots never change."""
+        with self.connection() as conn:
+            row = conn.execute("SELECT topic,status,source_snapshot_json FROM runs WHERE id=?", (run_id,)).fetchone()
+            attempts = conn.execute("SELECT COUNT(*) FROM attempts WHERE run_id=?", (run_id,)).fetchone()[0]
+            if not row or row["status"] != "RUNNING" or attempts or json.loads(row["source_snapshot_json"]).get("status") != "pending":
+                raise ValueError("References can only be frozen for a pending run before generation.")
+            if source_pack.get("topic") != row["topic"] or not source_pack.get("sources"):
+                raise ValueError("References must match the requested topic and contain sources.")
+            conn.execute("INSERT OR IGNORE INTO reference_packs VALUES(?,?)", (source_pack["version"], encode(source_pack)))
+            conn.execute("UPDATE runs SET source_pack_version=?,source_snapshot_json=? WHERE id=?", (source_pack["version"], encode(source_pack), run_id))
 
     def event(self, run_id, stage, message, details=None):
         with self.connection() as conn:
@@ -215,16 +242,20 @@ class Repository:
         return {"id": feedback_id, "status": action, "review_note": note}
 
     def memory(self):
+        topics = SOURCE_PACK["approved_topics"]
+        placeholders = ",".join("?" for _ in topics)
         with self.connection() as conn:
             instructions = [decode_row(row) for row in conn.execute("SELECT * FROM memory_instructions ORDER BY created_at DESC")]
-            failures = [dict(row) for row in conn.execute("SELECT f.category,COUNT(DISTINCT f.run_id) AS independent_runs FROM failure_observations f JOIN runs r ON r.id=f.run_id WHERE r.status!='RUNNING' GROUP BY f.category ORDER BY independent_runs DESC")]
+            failures = [dict(row) for row in conn.execute(f"SELECT f.category,COUNT(DISTINCT f.run_id) AS independent_runs FROM failure_observations f JOIN runs r ON r.id=f.run_id WHERE r.status!='RUNNING' AND lower(trim(r.topic)) IN ({placeholders}) GROUP BY f.category ORDER BY independent_runs DESC", topics)]
             versions = [decode_row(row) for row in conn.execute("SELECT * FROM prompt_versions ORDER BY created_at DESC")]
             experiments = [decode_row(row) for row in conn.execute("SELECT * FROM improvement_experiments ORDER BY created_at DESC LIMIT 20")]
         return {"instructions": instructions, "failure_categories": failures, "prompt_versions": versions, "experiments": experiments, "active_prompt_version": self.active_prompt()["version"]}
 
     def supporting_runs(self, category):
+        topics = SOURCE_PACK["approved_topics"]
+        placeholders = ",".join("?" for _ in topics)
         with self.connection() as conn:
-            return [row[0] for row in conn.execute("SELECT DISTINCT f.run_id FROM failure_observations f JOIN runs r ON r.id=f.run_id WHERE f.category=? AND r.status!='RUNNING' ORDER BY f.run_id", (category,))]
+            return [row[0] for row in conn.execute(f"SELECT DISTINCT f.run_id FROM failure_observations f JOIN runs r ON r.id=f.run_id WHERE f.category=? AND r.status!='RUNNING' AND lower(trim(r.topic)) IN ({placeholders}) ORDER BY f.run_id", (category, *topics))]
 
     def create_experiment(self, category, instruction, supports, dataset_version):
         baseline = self.active_prompt()

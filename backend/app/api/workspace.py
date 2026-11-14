@@ -9,6 +9,7 @@ from app.exports import audit_report, markdown_lesson
 from app.improvements import INSTRUCTIONS
 from app.dataset import DATASET_VERSION
 from app.lesson_schemas import FeedbackRequest, FeedbackReview, ImprovementRequest, LEARNER, RollbackRequest, RunRequest
+from app.topics import topic_rubric
 
 router = APIRouter(prefix="/api")
 
@@ -44,7 +45,9 @@ def find_run(current, run_id):
 @router.get("/workspace")
 async def workspace(request: Request):
     current = runtime(request)
-    return {"source_pack": SOURCE_PACK, "rubric": RUBRIC, "learner_profile": LEARNER,
+    return {"source_pack": {"id": "auto", "version": "resolved-per-run", "sources": [],
+                            "review_note": "References are collected for the entered topic when a run starts. They are not human-reviewed."},
+            "rubric": topic_rubric("the selected topic"), "learner_profile": LEARNER,
             "learner_preset": "india_beginner", "generator_model": current.ai.generator_model,
             "evaluator_model": current.ai.evaluator_model, "provider": "gemini", "max_retries": 2,
             "provider_note": "Gemini is primary. Groq is used only when Gemini reports a quota/rate limit. Actual providers are recorded per response; judges can still share mistakes.",
@@ -56,7 +59,8 @@ async def workspace(request: Request):
                          "evaluator_model": current.settings.groq_evaluator_model or current.settings.groq_model,
                          "min_interval_seconds": current.settings.groq_min_interval_seconds},
             "configured": bool(current.settings.gemini_api_key and current.ai.generator_model and current.ai.evaluator_model),
-            "busy": current.busy, "active_prompt_version": current.repository.active_prompt()["version"],
+            "busy": current.busy, "active_prompt_version": PROMPTS["topic_generator_version"],
+            "topic_mode": "dynamic", "reference_mode": "Public Wikipedia excerpts collected and frozen per topic; not human-reviewed.",
             "improvement_categories": list(INSTRUCTIONS), "demo_enabled": current.settings.app_env == "development"}
 
 
@@ -65,8 +69,11 @@ async def create_run(body: RunRequest, request: Request):
     local_only(request)
     current = runtime(request)
     not_busy(current)
-    if not supports_topic(body.topic, body.reference_pack_id):
-        raise ApiProblem(422, "UNSUPPORTED_TOPIC", "Only Introduction to RAG has a reviewed reference pack. Choose RAG, or add and review a topic-specific pack before generating another topic.")
+    for secret in (current.settings.gemini_api_key, current.settings.groq_api_key):
+        if secret:
+            body.topic = body.topic.replace(secret.get_secret_value(), "[redacted]")
+    if body.reference_pack_id != "auto" and not supports_topic(body.topic, body.reference_pack_id):
+        body.reference_pack_id = "auto"  # Older clients can still request a new subject.
     if not current.settings.gemini_api_key or not current.ai.generator_model or not current.ai.evaluator_model:
         raise ApiProblem(503, "NOT_CONFIGURED", "Add the Gemini API key and model to backend/.env and restart the backend.")
     try:

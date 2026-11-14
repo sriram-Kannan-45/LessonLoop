@@ -74,7 +74,7 @@ export default function Setup() {
           </aside>
         </div>
 
-        <section className="milestone" aria-labelledby="milestone-heading"><div className="milestone-icon"><Workflow size={22} /></div><div className="milestone-copy"><span className="eyebrow">THE NEXT CHAPTER</span><h2 id="milestone-heading">From connection to creation</h2><p>Next: use Gemini to generate a beginner RAG lesson and evaluate it against a pass/fail rubric.</p></div><span className="up-next">Sprint 2<ArrowRight size={15} /></span></section>
+        <section className="milestone" aria-labelledby="milestone-heading"><div className="milestone-icon"><Workflow size={22} /></div><div className="milestone-copy"><span className="eyebrow">THE NEXT CHAPTER</span><h2 id="milestone-heading">From connection to creation</h2><p>Create a beginner lesson on your chosen topic, collect its references, and evaluate every mandatory checkpoint.</p></div><a className="up-next" href="/">Lesson studio<ArrowRight size={15} /></a></section>
         <footer><p>LessonLoop <span>·</span> Built for learning, designed to improve.</p><span className="footer-meta"><Code2 size={14} />Development workspace</span></footer>
       </main>
     </div>

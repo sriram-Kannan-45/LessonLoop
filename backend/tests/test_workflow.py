@@ -48,7 +48,7 @@ class FakeAI:
 
 
 def start(repo, ai, demo=False):
-    run_id = repo.create_run(RunRequest(demo_error=demo), ai.generator_model, ai.evaluator_model)
+    run_id = repo.create_run(RunRequest(demo_error=demo, reference_pack_id="rag-primary-v1"), ai.generator_model, ai.evaluator_model)
     asyncio.run(execute_run(repo, ai, run_id))
     return repo.get_run(run_id)
 
@@ -149,7 +149,7 @@ def test_demo_keeps_original_and_does_not_tell_evaluator(repo):
 
 def test_restart_preserves_records_and_interrupts_active(repo):
     completed = start(repo, FakeAI())
-    active_id = repo.create_run(RunRequest(), "mocked-gemini", "mocked-gemini")
+    active_id = repo.create_run(RunRequest(reference_pack_id="rag-primary-v1"), "mocked-gemini", "mocked-gemini")
     restarted = Repository(repo.path)
     restarted.interrupt_active()
     assert restarted.get_run(completed["id"])["status"] == "APPROVED"
@@ -303,8 +303,8 @@ def test_api_topic_guard_events_exports_and_feedback(settings):
     settings.gemini_model = "mocked-gemini"
     app = create_app(settings=settings, ai=FakeAI(failures=100))
     with TestClient(app) as client:
-        assert client.post("/api/runs", json={"topic": "Quantum physics"}).status_code == 422
-        response = client.post("/api/runs", json={})
+        assert client.post("/api/runs", json={"topic": "Quantum physics", "reference_pack_id": "unknown-pack"}).status_code == 422
+        response = client.post("/api/runs", json={"reference_pack_id": "rag-primary-v1"})
         assert response.status_code == 202
         run_id = response.json()["id"]
         for _ in range(100):
@@ -333,7 +333,7 @@ def test_workspace_and_feedback_keep_both_provider_keys_private(settings):
         workspace = client.get("/api/workspace")
         assert workspace.json()["fallback"]["configured"] is True
         assert "fake-groq-secret" not in workspace.text
-        run_id = client.post("/api/runs", json={}).json()["id"]
+        run_id = client.post("/api/runs", json={"reference_pack_id": "rag-primary-v1"}).json()["id"]
         feedback = client.post(f"/api/runs/{run_id}/feedback", json={"category": "factual_issue", "message": "Check fake-gemini-secret and fake-groq-secret."}).json()
         reviewed = client.post(f"/api/feedback/{feedback['id']}/review", json={"action": "verified", "review_note": "Reviewed fake-gemini-secret and fake-groq-secret."})
         assert "fake-groq-secret" not in reviewed.text
@@ -352,7 +352,7 @@ def test_workspace_is_bounded_and_safe(settings):
     settings.gemini_model = "mocked-gemini"
     app = create_app(settings=settings, ai=SlowAI())
     with TestClient(app) as client:
-        first = client.post("/api/runs", json={})
+        first = client.post("/api/runs", json={"reference_pack_id": "rag-primary-v1"})
         assert first.status_code == 202
-        assert client.post("/api/runs", json={}).status_code == 409
-        assert client.post("/api/runs", json={}, headers={"Origin": "https://evil.example"}).status_code == 403
+        assert client.post("/api/runs", json={"reference_pack_id": "rag-primary-v1"}).status_code == 409
+        assert client.post("/api/runs", json={"reference_pack_id": "rag-primary-v1"}, headers={"Origin": "https://evil.example"}).status_code == 403

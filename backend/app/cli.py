@@ -100,6 +100,7 @@ def main():
     export.add_argument("run_id")
     export.add_argument("--out", default="../submission/final-lesson")
     run = sub.add_parser("run")
+    run.add_argument("--topic", default="Photosynthesis")
     run.add_argument("--demo-error", action="store_true")
     run.add_argument("--wait", action="store_true")
     args = parser.parse_args()
@@ -112,7 +113,7 @@ def main():
         elif args.command == "run":
             base = f"http://127.0.0.1:{settings.backend_port}/api"
             with httpx.Client(timeout=15) as client:
-                response = client.post(base + "/runs", json={"demo_error": args.demo_error})
+                response = client.post(base + "/runs", json={"topic": args.topic, "reference_pack_id": "auto", "demo_error": args.demo_error})
                 if response.status_code != 202:
                     print(response.text)
                     raise SystemExit(1)

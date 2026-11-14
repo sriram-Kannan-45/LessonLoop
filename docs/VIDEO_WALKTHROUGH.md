@@ -18,17 +18,17 @@ Target length: 18 to 20 minutes. A human must record with their own face visible
 
 App action: show Lesson studio and the learner summary.
 
-Speaker notes: “Our learner has finished grade 12 in India, studied outside English-medium education, and is starting an AI career. A fluent AI answer may still use unexplained jargon or invent a fact. LessonLoop creates a lesson and checks specific requirements before releasing it. Gemini is primary and Groq is a quota backup. Generation and evaluation are separate calls, which can still share mistakes. Actual providers are shown per draft.”
+Speaker notes: “Our learner has finished grade 12 in India, studied outside English-medium education, and needs a beginner lesson on the entered subject. A fluent AI answer may still use unexplained jargon or invent a fact. LessonLoop creates a lesson and checks specific requirements before releasing it. Gemini is primary and Groq is a quota backup. Generation and evaluation are separate calls, which can still share mistakes. Actual providers are shown per draft.”
 
 ## 2 to 6 minutes — Normal end-to-end run
 
 App actions:
 
-1. Keep Introduction to RAG and the reviewed RAG reference pack selected.
+1. Enter a subject such as Photosynthesis or Python programming. References are automatic; explain that retrieved Wikipedia excerpts are not human-reviewed.
 2. Leave the deliberate-error option unchecked.
 3. Click Generate lesson once. Open Live workflow events.
-4. Explain each actual backend stage as it appears. Do not narrate a stage that has not occurred.
-5. Once complete, show the lesson, illustrative notice, missing-information answer, recap, and expandable practice answers.
+4. Show the reference-retrieval stage and frozen revision links, then explain each actual backend stage as it appears. Do not narrate a stage that has not occurred.
+5. Once complete, show the lesson, subject-specific illustrative example, missing-information answer, recap, and expandable practice answers.
 6. Open Quality report. Explain that 14/14 is a count of hard checkpoints, not an averaged score.
 7. Download the approved Markdown and JSON audit if the run is approved. If it is not approved, show the honest status and open the saved approved normal run instead.
 
@@ -40,7 +40,7 @@ App actions:
 
 1. Start a new run with “Inject a factual error into the first draft” enabled, or open the clearly labelled saved backup run from VERIFICATION.md.
 2. Open Attempts. Expand Development error injection audit on draft 1.
-3. Show the generated original and the altered claim: “RAG guarantees that the AI answer is always correct.”
+3. Show the generated original and the actual altered claim. New topic runs insert “Two is greater than ten” plus a universal correctness guarantee. The saved historical RAG backup instead claims that RAG always guarantees correctness.
 4. Show the real evaluator's failed checks, evidence, and requested correction. It received no demo label or desired verdict.
 5. Compare actual adjacent draft changes. Show whether the targeted checks passed in the next real evaluation.
 6. Explain that an evaluator could miss an error; such a result is a defect to investigate, not a reason to hardcode a rejection.
@@ -54,9 +54,9 @@ Files/screens:
 - `backend/app/workflow.py`: StateGraph nodes, conditional edge, MAX_RETRIES usage.
 - `backend/app/lesson_schemas.py`: structured lesson and evaluator fields.
 - `backend/app/quality.py`: expected IDs, evidence checks, and `releasable`.
-- `backend/content/rubric.json`: all checks mandatory with passing/failing evidence conditions.
-- `backend/content/rag_sources.json`: reviewed primary sources, claims, notes, access dates.
-- Quality report → Inspect approved references.
+- `backend/app/topics.py`: the generic topic rubric and retrieved-reference collection; `backend/content/rubric.json` retains the legacy RAG rubric.
+- Run source snapshot: automatically retrieved topic excerpts, revision links, access times and CC BY-SA attribution. `backend/content/rag_sources.json` retains the reviewed legacy RAG pack.
+- Quality report → Inspect lesson references.
 
 Speaker notes: “The current generator is Gemini Flash-Lite and the evaluator is Gemini Flash. Evaluation runs three focused groups of mandatory checks; partial results cannot approve. Python enforces release and stopping rules. Initial generation plus two retries is three drafts. Reaching the limit never means approval. Source IDs are checked in code, but whether a claim follows a source still needs evaluation. We test the evaluator too.”
 

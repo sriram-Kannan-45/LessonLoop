@@ -21,6 +21,13 @@ EVALUATION_GROUPS = (
 TRANSIENT_FAILURES = {"TIMEOUT", "SERVICE_UNAVAILABLE", "PROVIDER_SERVER_ERROR", "CONNECTION_ERROR"}
 
 
+def evaluation_groups(rubric):
+    if rubric.get("kind") != "general":
+        return EVALUATION_GROUPS
+    ids = [check["id"] for check in rubric["checks"] if check["evaluator"] == "model"]
+    return tuple(tuple(ids[index:index + 4]) for index in range(0, len(ids), 4))
+
+
 class WorkflowError(Exception):
     def __init__(self, code: str, message: str, diagnostics=None):
         self.code, self.message, self.diagnostics = code, message, diagnostics
@@ -131,7 +138,8 @@ class LessonAI:
         if not key or not model:
             raise WorkflowError("NOT_CONFIGURED", "Add the Gemini key and model to backend/.env, then restart the backend.")
         retry_limit = self.settings.technical_retries if retry_limit is None else retry_limit
-        data = {**data, "required_output_schema": schema.model_json_schema()}
+        output_schema = response_schema(schema, data)
+        data = {**data, "required_output_schema": output_schema}
         for attempt in range(retry_limit + 1):
             try:
                 async with asyncio.timeout(self.settings.workflow_timeout_seconds):
@@ -141,7 +149,7 @@ class LessonAI:
                     ).aio as client:
                         config = {"system_instruction": instructions, "response_mime_type": "application/json", "max_output_tokens": 8192}
                         if not json_mode:
-                            config["response_json_schema"] = schema.model_json_schema() if schema is Lesson else provider_schema(schema.model_json_schema())
+                            config["response_json_schema"] = output_schema if schema is Lesson else provider_schema(output_schema)
                         if schema is Evaluation:
                             config["thinking_config"] = types.ThinkingConfig(thinking_level="MEDIUM")
                         response = await client.models.generate_content(
@@ -198,7 +206,8 @@ class LessonAI:
         from app.quality import validate_evaluation
 
         checks, usage_groups = [], []
-        for group in EVALUATION_GROUPS:
+        groups = evaluation_groups(rubric)
+        for group in groups:
             try:
                 raw, usage = await self.evaluate_group(lesson, source_pack, rubric, group, on_retry, on_provider_event)
             except WorkflowError as exc:
@@ -208,17 +217,20 @@ class LessonAI:
             checks.extend(raw["checks"])
             usage_groups.append({"check_ids": list(group), **usage})
         result = {"checks": checks}
-        validate_evaluation(result, lesson)
-        return result, {"group_usage": usage_groups, "evaluation_groups": len(EVALUATION_GROUPS)}
+        validate_evaluation(result, lesson, expected_ids=[key for group in groups for key in group], source_pack=source_pack)
+        return result, {"group_usage": usage_groups, "evaluation_groups": len(groups)}
 
     async def evaluate_group(self, lesson, source_pack, rubric, group, on_retry=None, on_provider_event=None):
         from app.quality import evidence_fields, validate_evaluation
 
-        data = {"lesson": lesson, "learner_profile": LEARNER, "approved_reference_pack": source_pack,
+        data = {"lesson": lesson, "topic": source_pack["topic"], "learner_profile": LEARNER, "approved_reference_pack": source_pack,
                 "rubric": [check for check in rubric["checks"] if check["id"] in group],
                 "expected_check_ids": list(group), "allowed_evidence_paths": list(evidence_fields(lesson))}
-        instructions = PROMPTS["evaluator"] + " This request evaluates ONLY the expected_check_ids supplied in its input. Read the whole lesson for each of these checks, including every practice answer. Return exactly these IDs; later independent requests cover the remaining checks."
-        if "TERMS_EXPLAINED" in group:
+        if rubric.get("kind") == "general":
+            data["evidence_mode"] = "field_selection"
+        instructions = PROMPTS["topic_evaluator"] if rubric.get("kind") == "general" else PROMPTS["evaluator"]
+        instructions += " This request evaluates ONLY the expected_check_ids supplied in its input. Read the whole lesson for each of these checks, including every practice answer. Return exactly these IDs; later independent requests cover the remaining checks."
+        if "TERMS_EXPLAINED" in group and rubric.get("kind") != "general":
             # Attention aids only: the model still decides whether each term needs/is given an explanation.
             data["terminology_attention_aids"] = terminology_occurrences(lesson)
             instructions += " For TERMS_EXPLAINED, explicitly review every terminology_attention_aids item against its first-use context. These are candidates to inspect, not automatic failures. In your concise reason identify any unexplained candidate, or explain how the candidates are introduced in everyday words. Expanding an acronym or placing another technical term beside it is not a plain-language explanation. Correct definitions of AI and RAG cannot compensate for an unexplained weight, parameter, pipeline or other term elsewhere."
@@ -228,7 +240,7 @@ class LessonAI:
             try:
                 raw, usage = await self.call(self.evaluator_model, instructions, data, Evaluation, retry_limit=0, json_mode=json_mode, on_provider_event=on_provider_event)
                 usage_history.append(usage)
-                validate_evaluation(raw, lesson, expected_ids=group)
+                validate_evaluation(raw, lesson, expected_ids=group, source_pack=source_pack)
                 usage["attempt_usage"] = [dict(item) for item in usage_history]
                 return raw, usage
             except WorkflowError as exc:
@@ -302,3 +314,15 @@ def provider_schema(value):
         return item
 
     return simplify(value)
+
+
+def response_schema(schema, data):
+    """Constrain identifiers and select existing evidence, never a desired verdict."""
+    value = schema.model_json_schema()
+    if schema is Evaluation and data.get("evidence_mode") == "field_selection":
+        check = value["$defs"]["CheckResult"]["properties"]
+        check["check_id"]["enum"] = data["expected_check_ids"]
+        check["evidence"]["enum"] = [""]
+        check["evidence_path"]["enum"] = ["", *data["allowed_evidence_paths"]]
+        check["claim_ids"]["items"]["enum"] = [item["id"] for item in data["approved_reference_pack"]["claims"]]
+    return value

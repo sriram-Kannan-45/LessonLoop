@@ -6,9 +6,9 @@ Audited 14 November 2026 on Windows. The user originally chose Gemini only and l
 
 | Check | Observed result |
 | --- | --- |
-| Backend pytest | 79 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
+| Backend pytest | 91 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
 | TypeScript and production build | Passed. |
-| Desktop/mobile Playwright | 30 passed, installed Edge; inference mocked, real local health/configuration checked. |
+| Desktop/mobile Playwright | 34 passed, installed Edge; inference mocked, real local health/configuration checked. |
 | Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
 | Persistence | Actual server restart preserved approved runs, failure observations, inactive proposals and generator-v1. No active job was abandoned during the final restart. |
 
@@ -76,3 +76,15 @@ Deterministic in-memory HTTP transports verify the fallback boundaries; a later 
 The user subsequently added GROQ_API_KEY to the ignored backend/.env. The backend was restarted to load it. A real React run, 2b13bb0094e348b8935480142a81deb8, finished APPROVED on draft one with all fourteen checks passed. Generation used Gemini Flash-Lite. The first two evaluation groups used Gemini Flash; its real quota response then caused automatic fallback to Groq Qwen 3.8 27B for TERMS_EXPLAINED, NO_PREREQUISITES, WORKED_EXAMPLE and FLOW_AND_PRACTICE. That Groq request returned valid native strict JSON and locally validated evidence, using 5,502 prompt tokens and 584 completion tokens. The browser displayed both actual evaluator providers, fourteen saved PASS results and zero JavaScript errors. No primary failure was injected for this run.
 
 The live result and token/provider records are in submission/groq-live-verification.json. Full audit, actual approved lesson and run metadata are in submission/groq-live-lesson/. This proves account access and one real evaluation fallback; it does not establish general judge accuracy. Groq generation fallback, complete Groq-only evaluation and cooldown expiry remain transport-tested rather than exercised in this live run. The separately pending learned-memory and evaluator-dataset acceptance work was not resumed. No key is stored in the evidence or Git.
+
+## Dynamic topic generation
+
+The studio now accepts a free-text subject with `reference_pack_id=auto`. Real Wikipedia search and revision-pinned excerpts are retrieved before generation, frozen in the run, and shown with their access time and CC BY-SA license. These secondary references are explicitly not human-reviewed. Missing/unavailable references stop the run before any model generation. No arbitrary user URL is fetched.
+
+New subjects use generator-topic-v2 and evaluator-topic-v3-compact-evidence, plus twelve universal subject-aware model checks and the two local structure/source checks. The evaluator selects an existing lesson field; Python supplies its exact evidence text. Schema constraints restrict check IDs, claim IDs and evidence paths without constraining verdicts. All fourteen checks must still pass. Legacy reviewed RAG snapshots, prompts and exports remain readable. RAG calibration and learning acceptance do not generalize to the new subjects.
+
+Offline tests cover Photosynthesis, Python programming and the French Revolution, frozen references, empty/error retrieval, older-client compatibility, exact release IDs, dynamic claim mappings, topic isolation of learned instructions, and native/JSON-mode evidence selection. Four new desktop/mobile cases verify free-text requests and reading each run's saved rubric. `submission/topics-live-verification.json` records actual live attempts, including failed integrations, without relabelling them as approvals.
+
+A live Groq diagnostic identified an account-specific output allowance of 1,000 tokens per minute. A rejected evaluation was estimated at 1,377 output tokens even though the ordinary 8,000-token allowance was available. Evaluation responses now have a 900-token cap and concise reasons/corrections; oversized-request errors explain that waiting alone cannot fix them. This is separate from an exhausted daily quota. The generation response budget remains 4,096, and live Groq generation remains unverified under this account's output allowance.
+
+The final compact-output React run `1788f8f75349482599aac245224ac0ba` completed all nine real Groq evaluation groups over three naturally generated Photosynthesis drafts, with zero technical retries. Generation used Gemini. It ended **NEEDS_REVIEW, 12/14**, with GROUNDED_CLAIMS and TERMS_EXPLAINED still failing. The final feedback identified an unsupported statement about artificial photosynthesis and an unexplained use of "biomimics". The release gate correctly retained review status. This verifies the dynamic-topic retrieval/generation/evaluation/rewrite path and real quota fallback, not a successful general-topic approval or broad model accuracy. Earlier format/quota failures remain in the same verification report. Desktop/mobile review showed the topic-specific fourteen-check rubric, real references, no browser errors and no horizontal overflow. Existing approved RAG histories remained approved after restart.

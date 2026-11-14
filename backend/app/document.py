@@ -18,10 +18,10 @@ def clean_document(run, sources):
         else:
             blocks.append("<p>" + escape(value).replace("\n", "<br>") + "</p>")
         blocks.append("</section>")
-    for title, key in [("What you will learn", "learning_objectives"), ("Before you start", "prerequisites"), ("What it is", "what_it_is"), ("Why it matters", "why_it_matters"), ("How it works", "how_it_works")]:
+    for title, key in [("What you will learn", "learning_objectives"), ("Before you start", "prerequisites"), ("What it is", "what_it_is"), ("Why it matters", "why_it_matters"), ("Step-by-step explanation", "how_it_works")]:
         section(title, lesson[key])
     blocks.append("<section class='example'><h2>Worked example</h2>")
-    for key, title in [("context", "Illustrative example"), ("learner_question", "Your question"), ("source_passage", "The source passage"), ("retrieved_information", "What is retrieved and added"), ("supported_answer", "A supported answer"), ("missing_information_question", "A question without enough information"), ("missing_information_answer", "The honest response")]:
+    for key, title in [("context", "Illustrative example"), ("learner_question", "Your question"), ("source_passage", "The source passage"), ("retrieved_information", "Reference information used"), ("supported_answer", "A supported answer"), ("missing_information_question", "A question without enough information"), ("missing_information_answer", "The honest response")]:
         blocks.append("<h3>" + title + "</h3><p>" + escape(lesson["worked_example"][key]) + "</p>")
     blocks.append("</section>")
     section("What to be careful about", lesson["limitations"])
@@ -32,8 +32,11 @@ def clean_document(run, sources):
     blocks.append("</section><section><h2>References</h2><ul>")
     for ref in lesson["source_references"]:
         source = next(source for source in sources if source["id"] == ref["source_id"])
-        blocks.append(f"<li><a href='{escape(source['url'], quote=True)}'>{escape(source['title'])}</a></li>")
+        attribution = ""
+        if source.get("license"):
+            attribution = f" — Wikipedia contributors, <a href='{escape(source['license_url'], quote=True)}'>{escape(source['license'])}</a>"
+        blocks.append(f"<li><a href='{escape(source['url'], quote=True)}'>{escape(source['title'])}</a>{attribution}</li>")
     blocks.append("</ul></section>")
-    return """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Introduction to RAG lesson</title><style>
+    return """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>LessonLoop lesson</title><style>
 body{font-family:Arial,sans-serif;color:#282c3a;background:#fff;margin:0;line-height:1.8;font-size:16px}main{max-width:750px;margin:55px auto;padding:0 28px 60px}h1{font-size:32px;line-height:1.25;color:#171a24;margin:0 0 12px}h2{font-size:23px;line-height:1.4;color:#252536;margin:35px 0 14px}h3{font-size:17px;margin:23px 0 8px}p{margin:8px 0 15px}.subtitle{color:#6b6b7a;margin-bottom:35px}li{padding-left:5px;margin-bottom:12px}a{color:#5145a8;overflow-wrap:anywhere}.example{padding:0 22px 18px;background:#f5f6fa;border:1px solid #e5e7ef;border-radius:6px}section{break-inside:auto}h1,h2,h3{break-after:avoid}p,li{orphans:3;widows:3}@media print{body{font-size:11pt}main{max-width:none;margin:0;padding:0}.example{background:white}a{color:inherit}@page{size:A4;margin:22mm}}@media(max-width:500px){main{margin-top:30px;padding:0 20px 35px}h1{font-size:28px}h2{font-size:21px}}
 </style></head><body><main>""" + "\n".join(blocks) + "</main></body></html>"

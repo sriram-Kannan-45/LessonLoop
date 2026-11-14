@@ -8,7 +8,7 @@ def markdown_lesson(lesson, status, run_id, sources=None):
     lines = [f"# {lesson.get('title', 'Lesson review draft')}", "", f"> {label}. Run `{run_id}`.", ""]
     if status != "APPROVED":
         lines += ["This draft has not met every mandatory check. Do not treat it as a released lesson.", ""]
-    sections = [("What you will learn", "learning_objectives"), ("Before you start", "prerequisites"), ("What it is", "what_it_is"), ("Why it matters", "why_it_matters"), ("How it works", "how_it_works")]
+    sections = [("What you will learn", "learning_objectives"), ("Before you start", "prerequisites"), ("What it is", "what_it_is"), ("Why it matters", "why_it_matters"), ("Step-by-step explanation", "how_it_works")]
     for title, key in sections:
         value = lesson.get(key, "Section missing from this review draft.")
         lines += ["## " + title, ""]
@@ -16,7 +16,7 @@ def markdown_lesson(lesson, status, run_id, sources=None):
         lines.append("")
     lines += ["## Worked example", ""]
     example = lesson.get("worked_example", {})
-    for key, title in [("context", "Illustrative context"), ("learner_question", "Question"), ("source_passage", "Source passage"), ("retrieved_information", "What the system retrieves and adds"), ("supported_answer", "Supported answer"), ("missing_information_question", "When information is missing"), ("missing_information_answer", "Honest response")]:
+    for key, title in [("context", "Illustrative context"), ("learner_question", "Question"), ("source_passage", "Source passage"), ("retrieved_information", "Reference information used"), ("supported_answer", "Supported answer"), ("missing_information_question", "When information is missing"), ("missing_information_answer", "Honest response")]:
         lines += [f"**{title}:** {example.get(key, 'Missing from this draft.')}", ""]
     for title, key in [("Limitations", "limitations"), ("Recap", "recap")]:
         lines += ["## " + title, ""]
@@ -32,6 +32,8 @@ def markdown_lesson(lesson, status, run_id, sources=None):
         source = sources.get(reference.get("source_id"))
         if source:
             lines.append(f"- [{source['title']}]({source['url']}) — accessed {source['accessed_at']}.")
+            if source.get("license"):
+                lines.append(f"  Source excerpts: Wikipedia contributors, [{source['license']}]({source['license_url']}).")
     return "\n".join(lines) + "\n"
 
 

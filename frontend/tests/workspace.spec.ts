@@ -155,11 +155,42 @@ test('feedback stays unverified and memory has honest empty states', async ({ pa
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
 
-test('backend outage and unsupported-topic errors are actionable', async ({ page }) => {
-  await mocks(page)
-  await page.route('**/api/runs', route => route.fulfill({ status: 422, json: { status: 'error', error_code: 'UNSUPPORTED_TOPIC', message: 'Choose RAG or add a reviewed reference pack.' } }))
+test('reference failures are actionable without a subject whitelist', async ({ page }) => {
+  const failed = { ...makeRun('ERROR', 0), error: { code: 'REFERENCES_UNAVAILABLE', message: 'Topic references could not be retrieved. Check your connection and try again.' } }
+  await mocks(page, failed)
   await page.goto('/')
   await page.getByLabel('What would you like to learn?').fill('Organic chemistry')
+  await expect(page.getByLabel('Topic references')).toHaveValue('auto')
   await page.getByRole('button', { name: 'Generate lesson' }).click()
-  await expect(page.getByRole('alert')).toContainText('Choose RAG or add a reviewed reference pack.')
+  await expect(page.getByRole('alert')).toContainText('Topic references could not be retrieved.')
 })
+
+
+for (const topic of ['Photosynthesis', 'Python programming']) {
+  test(`creates ${topic} with automatic references and reads its own saved rubric`, async ({ page }) => {
+    const dynamicLesson = { ...lesson, title: `Introduction to ${topic}` }
+    const definitions = [{ id: 'STRUCTURE', name: 'Complete lesson structure', evaluator: 'code', pass: 'All sections present.' },
+      { id: 'SOURCES', name: 'Topic references', evaluator: 'code', pass: 'References match.' },
+      { id: 'TOPIC_DEFINITION', name: `Accurate introduction to ${topic}`, evaluator: 'model', pass: 'The subject is explained correctly.' }]
+    const dynamicSource = { id: 'S1', title: `${topic} reference`, url: 'https://en.wikipedia.org/wiki/Test', accessed_at: '2026-11-14', notes: [{ id: 'N1', text: `Authored ${topic} browser-test reference.`, claim_ids: ['T01'] }] }
+    const run = { ...makeRun(), topic, final_lesson: dynamicLesson,
+      source_snapshot: { id: 'auto', sources: [dynamicSource] }, rubric_snapshot: { version: 'mocked-topic-rubric', checks: definitions },
+      attempts: makeRun().attempts.map(attempt => ({ ...attempt, draft: dynamicLesson, evaluation: definitions.map(item => ({ ...checks[0], check_id: item.id, evidence: dynamicLesson.title })) })) }
+    await mocks(page, run)
+    await page.route('**/api/runs', async route => {
+      if (route.request().method() !== 'POST') return route.fallback()
+      expect(route.request().postDataJSON()).toMatchObject({ topic, reference_pack_id: 'auto' })
+      return route.fulfill({ status: 202, json: { id: run.id, status: 'RUNNING' } })
+    })
+    await page.goto('/')
+    await page.getByLabel('What would you like to learn?').fill(topic)
+    await page.getByRole('button', { name: 'Generate lesson' }).click()
+    await expect(page.getByRole('heading', { name: dynamicLesson.title, exact: true })).toBeVisible()
+    await page.getByRole('tab', { name: 'Quality report', exact: true }).click()
+    await expect(page.getByText(`Accurate introduction to ${topic}`, { exact: true })).toBeVisible()
+    await expect(page.getByText('Correct RAG definition', { exact: true })).toHaveCount(0)
+    await page.getByText('Inspect lesson references', { exact: true }).click()
+    await expect(page.getByRole('link', { name: `S1 · ${topic} reference` })).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  })
+}

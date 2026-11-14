@@ -1,6 +1,6 @@
 # LessonLoop
 
-LessonLoop creates and evaluates beginner lessons for an Indian grade-12 graduate with limited English vocabulary and no assumed AI or coding knowledge. The prepared submission topic is **Introduction to RAG**.
+LessonLoop creates and evaluates beginner lessons about the topic you enter: science, programming, history, mathematics and other subjects with usable public references. The learner is an Indian grade-12 graduate with limited English vocabulary and no assumed specialist background. New runs collect topic references automatically; there is no RAG-only subject whitelist.
 
 Gemini is the primary generator and evaluator. On a Gemini quota/rate-limit response, the affected call automatically switches to configured Groq backup. Separate evaluation calls judge twelve rubric checks, and Python enforces two structure/reference checks. **Every mandatory check must pass** before release. Actual failures drive at most two rewrites; unresolved drafts end **NEEDS_REVIEW**.
 
@@ -13,7 +13,7 @@ React, TypeScript, Vite, and Tailwind provide a lesson studio, real event progre
 ```mermaid
 flowchart LR
   UI[React] --> API[FastAPI single local task]
-  API --> L[Load frozen sources rubric prompt memory]
+  API --> L[Search topic references and freeze sources rubric prompt memory]
   L --> G[Gemini generation]
   G -->|Gemini quota| GB[Groq generation]
   GB --> S[Python structure and reference checks]
@@ -108,7 +108,7 @@ Use exactly localhost:5173 to match CORS. Vite uses a strict port. Update the ba
 
 ## Normal demonstration
 
-1. Keep Introduction to RAG, the India grade-12 learner, and the reviewed RAG reference pack selected.
+1. Enter a subject such as Photosynthesis, Python programming or the French Revolution. Keep the beginner learner and automatic topic references selected.
 2. Leave factual-error injection unchecked; click Generate lesson once.
 3. Expand live events. Stages come from the backend, not simulated animation.
 4. Read the illustrative example, missing-information answer, recap, and expandable practice answers.
@@ -116,11 +116,11 @@ Use exactly localhost:5173 to match CORS. Vite uses a strict port. Update the ba
 6. Download approved Markdown/audit JSON, or a clearly labelled review draft.
 7. Reload `/?run=<id>` or use Run history to retrieve the saved record.
 
-Other topics are rejected until a topic-specific source pack is added and reviewed. RAG references cannot approve an unrelated topic.
+References are collected from the public English Wikipedia search/text-extract APIs when a run starts. Excerpts, revision URLs, access times and CC BY-SA attribution are frozen with the run. These are automatically collected secondary references, not human-reviewed primary-source packs. If usable source text cannot be found or the service is unavailable, the run stops with a clear reference error and no invented citations. Try a more specific topic name when needed.
 
 ## Deliberate-error demonstration
 
-Enable **Inject a factual error into the first draft**. The app first generates normally and preserves the original, then changes a claim to “RAG guarantees that the AI answer is always correct.” Only the altered lesson reaches the real evaluator, without a demo flag or desired verdict. Actual failed checks drive a rewrite; the error is never reinjected.
+Enable **Inject a factual error into the first draft**. The app first generates normally and preserves the original, then inserts a false numerical claim and an unjustified universal guarantee. The legacy RAG demonstration retains its original always-correct claim. Only the altered lesson reaches the real evaluator, without a demo flag or desired verdict. Actual failed checks drive a rewrite; the error is never reinjected.
 
 Attempts shows the original/altered claim, reasons, required changes, paragraph differences, and the next verdict. A missed error must be reported honestly as an evaluator defect, not hidden by hardcoded rejection. A saved real backup is in submission/backup-demo/.
 
@@ -128,7 +128,7 @@ Attempts shows the original/altered claim, reasons, required changes, paragraph 
 
 Failures count once per category per independent run, not per retry. Two completed supporting runs are required. Demonstration-origin observations are visible. Human feedback starts unverified; review can verify/dismiss it, but arbitrary feedback text never enters prompts automatically.
 
-In Memory & learning, choose an eligible category and Compare prompts. A vetted instruction creates an inactive candidate version. Baseline and candidate each generate from the same normal assignment and targeted calibration scenario, then use the fixed rubric. Up to four generations and twelve focused evaluation calls run, each with at most two technical retries. Every lesson is checked in three groups of four mandatory checks; the merged result must contain all twelve model checks plus the two code checks.
+In Memory & learning, reviewed prompt-improvement comparisons remain scoped to the RAG calibration dataset. Other subjects still generate normally. Matching-topic memory is selected separately; RAG instructions are never injected into unrelated subjects. Choose an eligible RAG category and Compare prompts. A vetted instruction creates an inactive candidate version. Baseline and candidate each generate from the same normal assignment and targeted calibration scenario, then use the fixed rubric. Up to four generations and twelve focused evaluation calls run, each with at most two technical retries. Every lesson is checked in three groups of four mandatory checks; the merged result must contain all twelve model checks plus the two code checks.
 
 Activation requires a targeted baseline failure to become a candidate pass with no per-check regression on baseline-passing checks. Ties end NO_IMPROVEMENT and stay inactive. Active memory is selected by topic/learner, capped at four instructions, and saved with each future run. Rollback restores the original or a previously activated version. A tiny stochastic comparison is limited evidence, not proof of universal improvement.
 
@@ -189,7 +189,7 @@ Sprint 1 health, provider configuration, and manual Gemini check endpoints remai
 | Endpoint | Purpose |
 | --- | --- |
 | GET /api/workspace | Sources, rubric, models, preset, limits |
-| POST /api/runs | HTTP 202, supported input, bounded job |
+| POST /api/runs | HTTP 202, arbitrary topic input, automatic references and bounded job |
 | GET /api/runs?limit=10&offset=0 | Paginated history |
 | GET /api/runs/{id} | Status, drafts, checks, memory, released lesson or review draft |
 | GET /api/runs/{id}/events?after=0 | Ordered event cursor |
@@ -202,7 +202,7 @@ Sprint 1 health, provider configuration, and manual Gemini check endpoints remai
 | GET /api/runs/{id}/export?format=markdown | Correctly labelled lesson or review draft |
 | GET /api/runs/{id}/export?format=json | Full audit, including technical failures |
 
-Application errors use status, error_code, and an actionable sanitized message. Input validation uses FastAPI 422. Busy is 409, missing settings 503, provider quota 429, and timeout 504. Malformed verdicts never authorize release.
+Application errors use status, error_code, and an actionable sanitized message. Input validation uses FastAPI 422 for malformed input, not a subject whitelist. Busy is 409, missing settings 503, provider quota 429, and timeout 504. Malformed verdicts never authorize release.
 
 ## Troubleshooting and limits
 
@@ -217,7 +217,7 @@ Application errors use status, error_code, and an actionable sanitized message. 
 
 This is **local development software**. It binds to loopback by default. Writes require development mode and the configured browser origin; CORS is not authentication. Public deployment still needs access control, spending limits, and durable execution.
 
-Every generation, evaluation, connection, comparison, and calibration call consumes provider quota and can incur charges under the account plan. No inference runs on page load. Content retries are at most two; technical retries are separate and at most two per generation or focused evaluation request. Evaluation uses three focused requests per draft, each with at most two retries; a partial result cannot approve.
+Every generation, evaluation, connection, comparison, and calibration call consumes provider quota and can incur charges under the account plan. No inference or reference research runs on page load. Content retries are at most two; technical retries are separate and at most two per generation or focused evaluation request. Evaluation uses three focused requests per draft, each with at most two retries; a partial result cannot approve.
 
 A human must record/upload the face-visible video and import/publish the document if a sharing link is required. No recording URL, document sharing URL, or assessment submission is invented.
 
@@ -241,3 +241,17 @@ The default Groq request interval is 65 seconds to reduce token-per-minute failu
 A prompt comparison cannot activate if the actual generation/evaluation provider signatures differ across its arms: the result is INCOMPARABLE, not credited to the prompt. Historical Gemini-only runs remain unchanged.
 
 Official Groq references: [Chat API](https://console.groq.com/docs/api-reference), [structured outputs](https://console.groq.com/docs/structured-outputs), [free-plan limits](https://console.groq.com/docs/rate-limits). Real evaluation failover was verified in React run 2b13bb0094e348b8935480142a81deb8: Gemini quota triggered a Groq Qwen response and the lesson passed all fourteen checks. See submission/groq-live-verification.json and submission/groq-live-lesson/. General judge quality, Groq generation fallback and complete Groq-only evaluation still need broader live validation; transport tests do not establish model accuracy.
+
+## Dynamic topics and reference provenance
+
+The React request sends `reference_pack_id=auto`. The run is accepted immediately, then load_context searches for the subject, retrieves bounded public excerpts and freezes the resulting pack before any draft is generated. Only the fixed Wikipedia HTTPS API is contacted: a URL typed as the topic is search text, never an arbitrary fetch target. Each retrieved note has a run-local claim ID, and citations must match those actual pairs. Disambiguation pages are excluded. Original page revisions and content hashes make the reference snapshot inspectable.
+
+New runs use generator-topic-v2 and evaluator-topic-v3-compact-evidence, with twelve subject-neutral model checks plus two code checks. Definitions, coverage, explanation, distinctions, factual grounding, terminology, example, assumptions, missing information and practice are judged for the requested subject. Each run freezes its own rubric; a saved RAG rubric cannot approve a biology lesson. Public references are not automatically correct or complete, and an APPROVED status records the system's checks rather than a guarantee of truth.
+
+The original RAG prompt, sources, rubric and labelled calibration remain for historical runs and explicitly requested legacy RAG workflows. Older clients that send the legacy pack ID with a new subject are upgraded to automatic topic references. History is not rewritten. Prompt improvement still needs a reviewed calibration dataset for its scope; observations from unrelated subjects cannot count as RAG support.
+
+CLI example from backend/: `.\.venv\Scripts\python.exe -m app.cli run --topic "Photosynthesis" --wait`. The generator/evaluator continue to use the configured Gemini -> Groq quota fallback. On-demand public reference retrieval requires internet access but no additional API key. General-topic model accuracy has not been established by the old RAG calibration reports.
+
+Reference API documentation: [Wikipedia search](https://www.mediawiki.org/wiki/API:Search), [text extracts](https://www.mediawiki.org/wiki/Extension:TextExtracts). Source excerpts retain their per-source [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) attribution; app source-code licensing does not replace that content license.
+
+Groq accounts can enforce a separate output-token allowance. Evaluation responses are kept concise with a 900-token cap. A full lesson still needs a larger generation budget; a provider allowance that cannot accommodate it produces an explicit unapproved error.

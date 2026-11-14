@@ -158,7 +158,7 @@ def test_full_workflow_persists_actual_providers_and_rejects_invalid_groq_verdic
 
     wire(monkeypatch, handle)
     with TestClient(create_app(settings=settings, ai=LessonAI(settings))) as client:
-        run_id = client.post("/api/runs", json={}).json()["id"]
+        run_id = client.post("/api/runs", json={"reference_pack_id": "rag-primary-v1"}).json()["id"]
         for _ in range(100):
             run = client.get("/api/runs/" + run_id).json()
             if run["status"] != "RUNNING":

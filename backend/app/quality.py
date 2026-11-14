@@ -2,7 +2,7 @@ import re
 
 from pydantic import ValidationError
 
-from app.content import ALL_CHECK_IDS, CLAIM_IDS, MODEL_CHECK_IDS, SOURCE_PACK, lesson_text
+from app.content import MODEL_CHECK_IDS, RUBRIC, SOURCE_PACK, lesson_text
 from app.lesson_schemas import CheckResult, Evaluation, Lesson
 from app.services.lesson_ai import WorkflowError
 
@@ -14,7 +14,7 @@ def result(check_id, passed, evidence, reason, required_change="", claim_ids=Non
 
 def source_claim_mappings(source_pack):
     allowed = {source["id"]: {claim for note in source["notes"] for claim in note["claim_ids"]} for source in source_pack["sources"]}
-    if "S4" in allowed:
+    if source_pack.get("id") == SOURCE_PACK["id"] and "S4" in allowed:
         allowed["S4"].add("P01")  # Existing approved teaching-example mapping.
     return allowed
 
@@ -37,15 +37,15 @@ def structure_checks(draft, source_pack=SOURCE_PACK):
         mapping = "; ".join(source + "=[" + ", ".join(sorted(claims)) + "]" for source, claims in allowed.items())
         corrections.append("Replace or remove the invalid pairs " + ", ".join(invalid) + ". Approved mappings: " + mapping + ".")
     if not explicitly_illustrative:
-        problems.append("The invented notice lacks an explicit illustrative label.")
-        corrections.append("Label worked_example.context as illustrative, fictional or invented; prefer the reviewed Asha College teaching notice from the source pack.")
+        problems.append("The teaching example lacks an explicit illustrative label.")
+        corrections.append("Label worked_example.context as illustrative, fictional or invented and use a concrete example relevant to the requested topic.")
     checks.append(result("SOURCES", valid, ", ".join(ref.source_id for ref in lesson.source_references),
-                         "Source/claim identifiers match the pack and the teaching notice is explicitly labelled illustrative." if valid else " ".join(problems),
+                         "Source/claim identifiers match the frozen pack and the teaching example is explicitly labelled illustrative." if valid else " ".join(problems),
                          " ".join(corrections)))
     return lesson, checks
 
 
-def validate_evaluation(raw, lesson, expected_ids=None):
+def validate_evaluation(raw, lesson, expected_ids=None, source_pack=SOURCE_PACK):
     try:
         evaluation = Evaluation.model_validate(raw)
     except ValidationError:
@@ -62,7 +62,7 @@ def validate_evaluation(raw, lesson, expected_ids=None):
             # Python supplies the actual field text; the model never invents a quotation.
             check.evidence = selected[:2000]
         evidence = " ".join(check.evidence.split())
-        if not set(check.claim_ids).issubset(CLAIM_IDS):
+        if not set(check.claim_ids).issubset({claim["id"] for claim in source_pack["claims"]}):
             raise WorkflowError("INVALID_EVIDENCE", "Evaluator cited an unknown source claim. No lesson was approved.")
         if check.passed and (check.missing_content or not evidence):
             raise WorkflowError("INVALID_EVIDENCE", "A passing check lacked lesson evidence. No lesson was approved.")
@@ -100,9 +100,9 @@ def evidence_supported(evidence, text):
     return bool(fragments)
 
 
-def releasable(checks):
+def releasable(checks, rubric=RUBRIC):
     ids = [check["check_id"] for check in checks]
-    return len(ids) == len(set(ids)) and set(ids) == set(ALL_CHECK_IDS) and all(check["passed"] is True for check in checks)
+    return len(ids) == len(set(ids)) and set(ids) == {check["id"] for check in rubric["checks"] if check["mandatory"]} and all(check["passed"] is True for check in checks)
 
 
 def diagnostics(draft):

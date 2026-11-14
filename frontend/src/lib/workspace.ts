@@ -19,7 +19,7 @@ export type Feedback = { id: string; category: string; message: string; status: 
 export type Run = { id: string; topic: string; learner_profile: string; status: Status; stage: string; started_at: string; finished_at: string | null; attempts: Attempt[]; attempt_count: number; final_lesson: Lesson | null; review_draft: Lesson | null; selected_memory: MemoryInstruction[]; retry_count: number; demo_error: number; generator_model: string; evaluator_model: string; generator_prompt_version: string; source_pack_version: string; rubric_version: string; error: { code: string; message: string; diagnostics?: { provider?: string; provider_http_status?: number; retry_after_seconds?: number } } | null; feedback: Feedback[] }
 export type RunSummary = Pick<Run, 'id' | 'topic' | 'status' | 'stage' | 'started_at' | 'attempt_count'>
 export type Event = { sequence: number; stage: string; message: string; created_at: string; details: Record<string, unknown> }
-export type Source = { id: string; title: string; url: string; accessed_at: string; notes: { id: string; text: string; claim_ids: string[] }[] }
+export type Source = { id: string; title: string; url: string; accessed_at: string; version?: string; license?: string; license_url?: string; notes: { id: string; text: string; claim_ids: string[] }[] }
 export type RubricCheck = { id: string; name: string; group: string; pass: string; fail: string; evidence: string; evaluator: string; mandatory: boolean }
 export type Workspace = { source_pack: { id: string; version: string; sources: Source[]; review_note: string }; rubric: { version: string; checks: RubricCheck[] }; learner_profile: string; generator_model: string; evaluator_model: string; provider_note: string; evaluation_groups: number; technical_retries: number; fallback?: { enabled: boolean; configured: boolean; provider: string; generator_model: string; evaluator_model: string; min_interval_seconds: number }; configured: boolean; busy: boolean; active_prompt_version: string; improvement_categories: string[]; demo_enabled: boolean }
 export type ComparisonArm = { prompt_version: string; draft: Lesson; checks: Check[]; approved: boolean }
@@ -30,7 +30,7 @@ export type FrozenRun = Run & { source_snapshot?: { sources: Source[] }; rubric_
 
 export const workspaceApi = {
   workspace: () => request<Workspace>('/workspace'),
-  create: (topic: string, demo_error: boolean) => request<{ id: string; status: Status }>('/runs', 'POST', { topic, learner_profile: 'india_beginner', reference_pack_id: 'rag-primary-v1', demo_error }),
+  create: (topic: string, demo_error: boolean) => request<{ id: string; status: Status }>('/runs', 'POST', { topic, learner_profile: 'india_beginner', reference_pack_id: 'auto', demo_error }),
   run: (id: string) => request<FrozenRun>(`/runs/${id}`),
   history: (offset = 0) => request<{ items: RunSummary[]; total: number; limit: number; offset: number }>(`/runs?limit=10&offset=${offset}`),
   events: (id: string, after = 0) => request<{ events: Event[]; next_cursor: number }>(`/runs/${id}/events?after=${after}`),
