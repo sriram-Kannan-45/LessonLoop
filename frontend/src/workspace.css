@@ -74,3 +74,6 @@
 .run-activity strong { display: flex; align-items: center; gap: 7px; }
 .run-activity p { margin: 7px 0 0; line-height: 1.5; }
 .run-activity small { display: block; margin-top: 7px; font-variant-numeric: tabular-nums; }
+
+.status-pill.cancelled { background: #f0edf5; color: #62566f; }
+.run-activity button { margin-top: 10px; }

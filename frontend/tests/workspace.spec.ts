@@ -224,3 +224,25 @@ test('keeps API wait, draft status and demonstration warning visible until the r
   await expect(activity).toContainText('Finished. Every mandatory check passed')
   await expect(timer).toHaveCount(0)
 })
+
+
+test('cancels generation, shows saved review drafts and enables a new lesson', async ({ page }) => {
+  const run = makeRun('RUNNING', 1)
+  run.stage = 'EVALUATING'
+  await mocks(page, run)
+  let cancellations = 0
+  await page.route('**/api/runs/*/cancel', async route => {
+    cancellations++
+    expect(route.request().method()).toBe('POST')
+    run.status = 'CANCELLED'; run.stage = 'CANCELLED'
+    await route.fulfill({ json: run })
+  })
+  await page.goto('/?run=browser-test-run')
+  await page.getByRole('button', { name: 'Cancel generation', exact: true }).click()
+  const activity = page.getByLabel('Current run status')
+  await expect(activity).toContainText('Cancelled. Saved drafts remain in history')
+  await expect(page.getByRole('button', { name: 'Cancel generation', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Generate lesson', exact: true })).toBeEnabled()
+  await expect(page.getByRole('link', { name: 'Review draft', exact: true })).toBeVisible()
+  expect(cancellations).toBe(1)
+})

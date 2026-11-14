@@ -356,3 +356,41 @@ def test_workspace_is_bounded_and_safe(settings):
         assert first.status_code == 202
         assert client.post("/api/runs", json={"reference_pack_id": "rag-primary-v1"}).status_code == 409
         assert client.post("/api/runs", json={"reference_pack_id": "rag-primary-v1"}, headers={"Origin": "https://evil.example"}).status_code == 403
+
+
+@pytest.mark.parametrize("phase", ["generation", "evaluation"])
+def test_cancel_stops_work_preserves_drafts_and_frees_workspace(settings, phase):
+    from threading import Event
+    entered, stopped = Event(), Event()
+    class WaitingAI(FakeAI):
+        async def pause(self):
+            entered.set()
+            try:
+                await asyncio.Event().wait()
+            finally:
+                stopped.set()
+        async def generate(self, *args, **kwargs):
+            if phase == 'generation': await self.pause()
+            return await super().generate(*args, **kwargs)
+        async def evaluate(self, *args, **kwargs):
+            await self.pause()
+    settings.gemini_api_key = 'fake-cancel-test-key'
+    ai = WaitingAI()
+    with TestClient(create_app(settings=settings, ai=ai)) as client:
+        ident = client.post('/api/runs', json={'reference_pack_id':'rag-primary-v1'}).json()['id']
+        assert entered.wait(3)
+        response = client.post('/api/runs/'+ident+'/cancel')
+        assert response.status_code == 200 and stopped.is_set()
+        run = response.json()
+        assert run['status'] == 'CANCELLED' and run['final_lesson'] is None
+        assert run['attempt_count'] == (1 if phase == 'evaluation' else 0)
+        assert run['finished_at'] and run['error'] is None
+        assert client.get('/api/workspace').json()['busy'] is False
+        assert client.post('/api/runs/'+ident+'/cancel').json()['status'] == 'CANCELLED'
+        events = client.get('/api/runs/'+ident+'/events').json()['events']
+        assert sum(e['stage']=='CANCELLED' for e in events) == 1
+        assert client.post('/api/runs/unknown/cancel').status_code == 404
+        assert client.post('/api/runs/'+ident+'/cancel', headers={'origin':'https://untrusted.example'}).status_code == 403
+        assert client.post('/api/runs', json={'reference_pack_id':'rag-primary-v1'}).status_code == 202
+    saved = Repository(settings.database_path).get_run(ident)
+    assert saved['status'] == 'CANCELLED' and saved['attempt_count'] == run['attempt_count']

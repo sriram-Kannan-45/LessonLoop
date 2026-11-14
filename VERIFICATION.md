@@ -6,9 +6,9 @@ Audited 14 November 2026 on Windows. The user originally chose Gemini only and l
 
 | Check | Observed result |
 | --- | --- |
-| Backend pytest | 91 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
+| Backend pytest | 93 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
 | TypeScript and production build | Passed. |
-| Desktop/mobile Playwright | 36 passed, installed Edge; inference mocked, real local health/configuration checked. |
+| Desktop/mobile Playwright | 38 passed, installed Edge; inference mocked, real local health/configuration checked. |
 | Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
 | Persistence | Actual server restart preserved approved runs, failure observations, inactive proposals and generator-v1. No active job was abandoned during the final restart. |
 
@@ -92,3 +92,7 @@ The final compact-output React run `1788f8f75349482599aac245224ac0ba` completed 
 ## Visible run status
 
 A sticky status panel now shows the current stage, draft number, elapsed time and a countdown derived from the actual PROVIDER_WAIT event timestamp. It explains that a visible draft is not a finished run and highlights intentional error injection. Terminal states replace the wait with a completion/review/error explanation. Desktop/mobile tests verify the ticking countdown, visibility while reading, demonstration warning and transition to completion. The actual Performance testing run was inspected without starting a new model call or interrupting the backend: draft 2 was waiting for Groq, and both viewport sizes displayed status without errors or horizontal overflow.
+
+## User cancellation
+
+Active lesson runs expose Cancel generation in the sticky status panel. POST /api/runs/{id}/cancel cancels and awaits the matching asyncio workflow, stops further local requests/rewrites, records CANCELLED, preserves existing drafts and frees the task slot. A completed run is returned unchanged; cancellation cannot approve a draft or cancel a different comparison. In-flight provider requests may already consume quota. Backend tests cancel both generation and evaluation, verify persistence/idempotence/origin restrictions and start another run. Desktop/mobile tests verify the button, terminal message, review-only export and re-enabled Generate control. No new real inference was started to test cancellation. The backend was restarted after the user's Performance testing run finished APPROVED, and a completed-run cancellation request preserved its entire record unchanged.

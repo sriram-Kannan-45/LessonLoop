@@ -4,7 +4,7 @@ function request<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
   return apiRequest<T>(`/api${path}`, method, body)
 }
 
-export type Status = 'RUNNING' | 'APPROVED' | 'NEEDS_REVIEW' | 'ERROR' | 'INTERRUPTED'
+export type Status = 'CANCELLED' | 'RUNNING' | 'APPROVED' | 'NEEDS_REVIEW' | 'ERROR' | 'INTERRUPTED'
 export type Check = { check_id: string; passed: boolean; evidence: string; reason: string; required_change: string; claim_ids: string[]; missing_content: boolean; evidence_path?: string }
 export type Lesson = {
   title: string; learning_objectives: string[]; prerequisites: string; what_it_is: string; why_it_matters: string; how_it_works: string[]
@@ -31,6 +31,7 @@ export type FrozenRun = Run & { source_snapshot?: { sources: Source[] }; rubric_
 export const workspaceApi = {
   workspace: () => request<Workspace>('/workspace'),
   create: (topic: string, demo_error: boolean) => request<{ id: string; status: Status }>('/runs', 'POST', { topic, learner_profile: 'india_beginner', reference_pack_id: 'auto', demo_error }),
+  cancel: (id: string) => request<FrozenRun>(`/runs/${id}/cancel`, 'POST'),
   run: (id: string) => request<FrozenRun>(`/runs/${id}`),
   history: (offset = 0) => request<{ items: RunSummary[]; total: number; limit: number; offset: number }>(`/runs?limit=10&offset=${offset}`),
   events: (id: string, after = 0) => request<{ events: Event[]; next_cursor: number }>(`/runs/${id}/events?after=${after}`),

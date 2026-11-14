@@ -255,3 +255,5 @@ CLI example from backend/: `.\.venv\Scripts\python.exe -m app.cli run --topic "P
 Reference API documentation: [Wikipedia search](https://www.mediawiki.org/wiki/API:Search), [text extracts](https://www.mediawiki.org/wiki/Extension:TextExtracts). Source excerpts retain their per-source [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) attribution; app source-code licensing does not replace that content license.
 
 Groq accounts can enforce a separate output-token allowance. Evaluation responses are kept concise with a 900-token cap. A full lesson still needs a larger generation budget; a provider allowance that cannot accommodate it produces an explicit unapproved error.
+
+During an active lesson, click **Cancel generation** in the status panel to stop further work. The run becomes **CANCELLED**, saved drafts remain unapproved in history, and a new lesson can be started. Requests already sent to a provider may still consume quota.

@@ -63,6 +63,7 @@ class Evaluation(StrictModel):
 
 
 class RunStatus(str, Enum):
+    cancelled = "CANCELLED"
     running = "RUNNING"
     approved = "APPROVED"
     review = "NEEDS_REVIEW"

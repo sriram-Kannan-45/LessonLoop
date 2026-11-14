@@ -196,7 +196,7 @@ class Repository:
     def finish(self, run_id, status, error=None):
         with self.connection() as conn:
             conn.execute("UPDATE runs SET status=?,stage=?,finished_at=?,error_json=? WHERE id=?", (status, status, now(), encode(error) if error else None, run_id))
-        self.event(run_id, status, {"APPROVED": "All mandatory checks passed. Lesson released.", "NEEDS_REVIEW": "Three drafts used. Unresolved failures remain; this lesson is not approved.", "ERROR": "A technical problem stopped the run. Previous drafts remain available.", "INTERRUPTED": "The run was interrupted; drafts are preserved."}.get(status, status), error)
+        self.event(run_id, status, {"CANCELLED": "Cancelled by the user. Saved drafts are preserved and are not approved.", "APPROVED": "All mandatory checks passed. Lesson released.", "NEEDS_REVIEW": "Three drafts used. Unresolved failures remain; this lesson is not approved.", "ERROR": "A technical problem stopped the run. Previous drafts remain available.", "INTERRUPTED": "The run was interrupted; drafts are preserved."}.get(status, status), error)
 
     def get_run(self, run_id):
         with self.connection() as conn:

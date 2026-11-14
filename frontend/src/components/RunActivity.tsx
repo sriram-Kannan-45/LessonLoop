@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { LoaderCircle } from 'lucide-react'
 import type { Event, Run } from '../lib/workspace'
 
-export function RunActivity({ run, events, stage }: { run: Run; events: Event[]; stage: string }) {
+export function RunActivity({ run, events, stage, onCancel, cancelling }: { run: Run; events: Event[]; stage: string; onCancel: () => void; cancelling: boolean }) {
   const [now, setNow] = useState(Date.now())
   const active = run.status === 'RUNNING'
   useEffect(() => {
@@ -20,8 +20,8 @@ export function RunActivity({ run, events, stage }: { run: Run; events: Event[];
     {active ? <>
       <p>{wait ? 'Groq API allowance wait. Checking continues automatically. You can return to this run through Run history.' : latest?.message || 'The run is active. New drafts and results will appear automatically.'}</p>
       <small role="timer" aria-live="off">Elapsed {Math.floor(elapsed / 60)}m {elapsed % 60}s{wait && (seconds > 0 ? ` · Next request in about ${seconds}s` : ' · Waiting for the provider response')}</small>
-      <p>The visible lesson is a saved draft. Wait for Approved, Needs review, or Error before treating the run as finished.</p>
+      <button className="secondary-button" onClick={onCancel} disabled={cancelling}>{cancelling ? 'Cancelling…' : 'Cancel generation'}</button><p>Requests already sent may still use provider quota.</p><p>The visible lesson is a saved draft. Wait for Approved, Needs review, Cancelled, or Error before treating the run as finished.</p>
       {Boolean(run.demo_error) && <p><b>Error demonstration is ON.</b> Draft 1 contains an intentional false statement. Turn off “Inject a factual error” for your next normal lesson.</p>}
-    </> : <p>{run.status === 'APPROVED' ? 'Finished. Every mandatory check passed; you can read and download the lesson.' : run.status === 'NEEDS_REVIEW' ? 'Finished. Some checks still failed after three drafts. Open Quality report to see the remaining issues.' : 'Stopped. See the error details and saved drafts below.'}</p>}
+    </> : <p>{run.status === 'CANCELLED' ? 'Cancelled. Saved drafts remain in history and are not approved. You can start a new lesson.' : run.status === 'APPROVED' ? 'Finished. Every mandatory check passed; you can read and download the lesson.' : run.status === 'NEEDS_REVIEW' ? 'Finished. Some checks still failed after three drafts. Open Quality report to see the remaining issues.' : 'Stopped. See the error details and saved drafts below.'}</p>}
   </div>
 }

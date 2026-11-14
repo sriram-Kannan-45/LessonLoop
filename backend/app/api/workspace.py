@@ -94,6 +94,16 @@ async def run_detail(run_id: str, request: Request):
     return find_run(runtime(request), run_id)
 
 
+@router.post("/runs/{run_id}/cancel")
+async def cancel_run(run_id: str, request: Request):
+    local_only(request)
+    current = runtime(request)
+    run = find_run(current, run_id)
+    if run["status"] == "RUNNING" and not await current.cancel_run(run_id):
+        raise ApiProblem(409, "CANCEL_UNAVAILABLE", "This run cannot be cancelled right now. Refresh its status and try again.")
+    return find_run(current, run_id)
+
+
 @router.get("/runs/{run_id}/events")
 async def run_events(run_id: str, request: Request, after: int = Query(0, ge=0)):
     current = runtime(request)
