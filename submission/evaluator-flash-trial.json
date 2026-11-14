@@ -1,0 +1,89 @@
+{
+  "model": "gemini-3.5-flash",
+  "started_at": "2026-11-14T06:32:21.183677+00:00",
+  "evaluator_prompt_version": "evaluator-v6-term-context",
+  "run_id": "b5e58c9c1cd74b63a6fe2a855c3dc99b",
+  "purpose": "Judge undefined weights and pipeline in a real naturally generated draft; no desired verdict supplied.",
+  "checks": [
+    {
+      "check_id": "TERMS_EXPLAINED",
+      "passed": false,
+      "evidence": "AI models often guess answers when they do not know the exact facts, which can lead to incorrect information. RAG matters because it connects the AI to real documents, such as company policies, school notices, or updated news. This helps the AI provide truthful answers backed by evidence. Furthermore, looking up documents at question time is different from fine-tuning, which means changing the trained model by updating its internal weights through heavy machine learning. With RAG, you can update your searchable documents anytime without retraining the whole AI system, saving time and resources.",
+      "reason": "The technical terms 'weights' (in why_it_matters) and 'pipeline' (in how_it_works.0) are introduced without everyday plain-language explanations at first use.",
+      "required_change": "Explain 'weights' and 'pipeline' in everyday terms at first use, or rephrase the text to avoid unintroduced technical jargon.",
+      "claim_ids": [
+        "C04",
+        "C05"
+      ],
+      "missing_content": false,
+      "evidence_path": "why_it_matters"
+    },
+    {
+      "check_id": "NO_PREREQUISITES",
+      "passed": false,
+      "evidence": "AI models often guess answers when they do not know the exact facts, which can lead to incorrect information. RAG matters because it connects the AI to real documents, such as company policies, school notices, or updated news. This helps the AI provide truthful answers backed by evidence. Furthermore, looking up documents at question time is different from fine-tuning, which means changing the trained model by updating its internal weights through heavy machine learning. With RAG, you can update your searchable documents anytime without retraining the whole AI system, saving time and resources.",
+      "reason": "The lesson refers to updating 'internal weights through heavy machine learning' without explaining these concepts, assuming prior background in machine learning.",
+      "required_change": "Rephrase explanations of model updates and fine-tuning to use step-by-step plain language suitable for a beginner without prior machine learning knowledge.",
+      "claim_ids": [
+        "C05"
+      ],
+      "missing_content": false,
+      "evidence_path": "why_it_matters"
+    },
+    {
+      "check_id": "WORKED_EXAMPLE",
+      "passed": true,
+      "evidence": "Based on the retrieved notice, the last date to apply for the Asha College book grant is 15 July.",
+      "reason": "The worked example accurately illustrates RAG using an Indian college notice scenario, providing retrieved information, a grounded answer, and proper missing-information handling.",
+      "required_change": "",
+      "claim_ids": [
+        "C03",
+        "P01"
+      ],
+      "missing_content": false,
+      "evidence_path": "worked_example.supported_answer"
+    },
+    {
+      "check_id": "FLOW_AND_PRACTICE",
+      "passed": true,
+      "evidence": "RAG stands for retrieval-augmented generation, which combines document retrieval with text generation.",
+      "reason": "The lesson flows logically, features an accurate recap, and provides three correct practice answers consistent with approved source claims.",
+      "required_change": "",
+      "claim_ids": [
+        "C01",
+        "C05",
+        "C08",
+        "P01"
+      ],
+      "missing_content": false,
+      "evidence_path": "practice_questions.0.answer"
+    }
+  ],
+  "usage": {
+    "candidates_token_count": 547,
+    "prompt_token_count": 5170,
+    "prompt_tokens_details": [
+      {
+        "modality": "TEXT",
+        "token_count": 5170
+      }
+    ],
+    "thoughts_token_count": 3580,
+    "total_token_count": 9297,
+    "attempt_usage": [
+      {
+        "candidates_token_count": 547,
+        "prompt_token_count": 5170,
+        "prompt_tokens_details": [
+          {
+            "modality": "TEXT",
+            "token_count": 5170
+          }
+        ],
+        "thoughts_token_count": 3580,
+        "total_token_count": 9297
+      }
+    ]
+  },
+  "finished_at": "2026-11-14T06:32:58.589275+00:00"
+}

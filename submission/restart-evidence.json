@@ -1,0 +1,33 @@
+{
+  "verified_at": "2026-11-14T06:46:59.787796+00:00",
+  "verification": "Actual backend process stopped and restarted, then API read without inference.",
+  "approved_runs_preserved": [
+    "b0ba902b21e64ce3a8f38a1ff446ef1d",
+    "9d8c5b6391ed485aa5806045ca0ae0ae"
+  ],
+  "statuses": [
+    "APPROVED",
+    "APPROVED"
+  ],
+  "active_prompt_version": "generator-v1",
+  "failure_categories": [
+    {
+      "category": "TERMS_EXPLAINED",
+      "independent_runs": 2
+    },
+    {
+      "category": "HONEST_LIMITATIONS",
+      "independent_runs": 2
+    },
+    {
+      "category": "SOURCES",
+      "independent_runs": 1
+    },
+    {
+      "category": "NO_PREREQUISITES",
+      "independent_runs": 1
+    }
+  ],
+  "active_memory_ids": [],
+  "learned_memory_reuse_demonstrated": false
+}

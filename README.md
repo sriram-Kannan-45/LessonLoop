@@ -2,9 +2,9 @@
 
 LessonLoop creates and evaluates beginner lessons for an Indian grade-12 graduate with limited English vocabulary and no assumed AI or coding knowledge. The prepared submission topic is **Introduction to RAG**.
 
-Gemini generates a structured lesson. A separate Gemini call judges twelve rubric checks, and Python enforces two structure/reference checks. **Every mandatory check must pass** before release. Actual failures drive at most two rewrites; unresolved drafts end **NEEDS_REVIEW**.
+Gemini generates a structured lesson. Separate Gemini calls judge twelve rubric checks, and Python enforces two structure/reference checks. **Every mandatory check must pass** before release. Actual failures drive at most two rewrites; unresolved drafts end **NEEDS_REVIEW**.
 
-The user explicitly chose **Gemini only**. There is no OpenAI SDK or API call. Separate calls avoid a shared generator self-assessment but do not provide independent-provider evaluation or guarantee accurate judgments. [VERIFICATION.md](VERIFICATION.md) separates actual live results from mocked tests.
+The user explicitly chose **Gemini only**. There is no OpenAI SDK or API call. Separate calls avoid a shared generator self-assessment but do not provide independent-provider evaluation or guarantee accurate judgments. [VERIFICATION.md](VERIFICATION.md) separates actual live results from mocked tests. [Sprint acceptance status](docs/SPRINT_STATUS.md) maps every sprint to its evidence and remaining human steps.
 
 ## Implemented system
 
@@ -67,13 +67,13 @@ BACKEND_PORT=8000
 FRONTEND_ORIGIN=http://localhost:5173
 GEMINI_API_KEY=
 GEMINI_MODEL=gemini-3.5-flash-lite
-GEMINI_EVALUATOR_MODEL=gemini-3.5-flash-lite
+GEMINI_EVALUATOR_MODEL=gemini-3.5-flash
 PROVIDER_TIMEOUT_SECONDS=30
 WORKFLOW_TIMEOUT_SECONDS=90
 TECHNICAL_RETRIES=1
 ```
 
-The optional evaluator model defaults to GEMINI_MODEL. No model is silently substituted. Both labels are visible and recorded per run. DATABASE_PATH optionally changes the SQLite file; relative values resolve under backend/. Default: backend/data/lessonloop.sqlite3.
+The checked-in example uses Gemini 3.5 Flash-Lite for generation and Gemini 3.5 Flash for evaluation. Flash caught undefined technical terms missed by Flash-Lite in the recorded same-draft trial. The optional evaluator model defaults to GEMINI_MODEL when omitted. No model is silently substituted. Both labels are visible and recorded per run. DATABASE_PATH optionally changes the SQLite file; relative values resolve under backend/. Default: backend/data/lessonloop.sqlite3.
 
 Process environment variables override file values. The backend resolves .env from its source location; blank provider settings mean missing configuration. Restart after edits. Frontend .env contains only `VITE_API_BASE_URL=http://127.0.0.1:8000`. All VITE values are public; never put keys there.
 
@@ -119,7 +119,7 @@ Attempts shows the original/altered claim, reasons, required changes, paragraph 
 
 Failures count once per category per independent run, not per retry. Two completed supporting runs are required. Demonstration-origin observations are visible. Human feedback starts unverified; review can verify/dismiss it, but arbitrary feedback text never enters prompts automatically.
 
-In Memory & learning, choose an eligible category and Compare prompts. A vetted instruction creates an inactive candidate version. Baseline and candidate each generate from the same two calibration scenarios, then use the fixed rubric. Up to four generations and four evaluations run, each with at most one technical retry.
+In Memory & learning, choose an eligible category and Compare prompts. A vetted instruction creates an inactive candidate version. Baseline and candidate each generate from the same normal assignment and targeted calibration scenario, then use the fixed rubric. Up to four generations and twelve focused evaluation calls run, each with at most one technical retry. Every lesson is checked in three groups of four mandatory checks; the merged result must contain all twelve model checks plus the two code checks.
 
 Activation requires a targeted baseline failure to become a candidate pass with no per-check regression on baseline-passing checks. Ties end NO_IMPROVEMENT and stay inactive. Active memory is selected by topic/learner, capped at four instructions, and saved with each future run. Rollback restores the original or a previously activated version. A tiny stochastic comparison is limited evidence, not proof of universal improvement.
 
@@ -198,7 +198,7 @@ Application errors use status, error_code, and an actionable sanitized message. 
 ## Troubleshooting and limits
 
 - Backend unavailable: start it separately, check the URL, and retry explicitly.
-- Credentials/model/quota: edit backend/.env, restart, and check account access/credits. No fallback changes models.
+- Credentials/model/quota: edit backend/.env, restart, and check account access/credits. No fallback changes models. This project returned a 20-request daily Flash limit during verification; see submission/quota-blocker.json. One comparison needs twelve evaluator calls before retries, and each five-case calibration split needs fifteen. Schedule against your actual project quota; do not repeatedly retry a daily 429.
 - Interrupted: the process stopped; inspect preserved history and start a new run.
 - CORS: localhost:5173 and 127.0.0.1:5173 differ. Match FRONTEND_ORIGIN.
 - Python encodings error: create .venv with a working interpreter; avoid deleting global installations.
@@ -207,7 +207,7 @@ Application errors use status, error_code, and an actionable sanitized message. 
 
 This is **local development software**. It binds to loopback by default. Writes require development mode and the configured browser origin; CORS is not authentication. Public deployment still needs access control, spending limits, and durable execution.
 
-Every generation, evaluation, connection, comparison, and calibration call can incur charges. No inference runs on page load. Content retries are at most two; technical retries are separate and at most one per role invocation.
+Every generation, evaluation, connection, comparison, and calibration call can incur charges. No inference runs on page load. Content retries are at most two; technical retries are separate and at most one per generation or focused evaluation request. Evaluation uses three focused requests per draft, each with at most one retry; a partial result cannot approve.
 
 A human must record/upload the face-visible video and import/publish the document if a sharing link is required. No recording URL, document sharing URL, or assessment submission is invented.
 

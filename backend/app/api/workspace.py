@@ -48,6 +48,7 @@ async def workspace(request: Request):
             "learner_preset": "india_beginner", "generator_model": current.ai.generator_model,
             "evaluator_model": current.ai.evaluator_model, "provider": "gemini", "max_retries": 2,
             "provider_note": "Separate Gemini calls for generation and evaluation. Same-provider judgments can share mistakes.",
+            "evaluation_groups": 3,
             "configured": bool(current.settings.gemini_api_key and current.ai.generator_model and current.ai.evaluator_model),
             "busy": current.busy, "active_prompt_version": current.repository.active_prompt()["version"],
             "improvement_categories": list(INSTRUCTIONS), "demo_enabled": current.settings.app_env == "development"}

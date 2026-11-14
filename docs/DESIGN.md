@@ -4,7 +4,7 @@
 
 LessonLoop accepts a supported topic, creates a standalone beginner lesson, checks it against a fixed rubric, and uses actual failures to request corrections. The target learner is an Indian grade-12 graduate from a non-English-medium school, with limited English vocabulary and no assumed AI or coding background. Engineering details stay in reports rather than learner explanations.
 
-The user explicitly chose Gemini only after reviewing the assessment brief. Gemini therefore performs generation and evaluation in separate, stateless calls. The evaluator receives no generator self-assessment, desired verdict, or demo flag. This is call separation, not independent-provider evaluation. Shared model mistakes remain possible. The OpenAI requirement in the original assessment is intentionally superseded by that user decision.
+The user explicitly chose Gemini only after reviewing the assessment brief. Gemini therefore performs generation and evaluation in separate, stateless calls. The current example configuration generates with Gemini 3.5 Flash-Lite and evaluates with Gemini 3.5 Flash. A recorded same-draft trial showed Flash catching undefined terms that Flash-Lite missed; this is evidence for the explicit configuration change, not a guarantee of independent judgments. The evaluator receives no generator self-assessment, desired verdict, or demo flag. This is call separation, not independent-provider evaluation. Shared model mistakes remain possible. The OpenAI requirement in the original assessment is intentionally superseded by that user decision.
 
 ## Implementation milestones
 
@@ -36,7 +36,7 @@ flowchart TD
   B --> C[load_context: freeze references rubric prompt and memory]
   C --> D[generate_lesson: Gemini generation or rewrite]
   D --> E[validate_structure: Python schema and reference checks]
-  E --> F[evaluate_lesson: separate Gemini call when structure is usable]
+  E --> F[evaluate_lesson: three focused Gemini passes when structure is usable]
   F --> G{Python release decision}
   G -->|All 14 mandatory checks pass| H[persist_final_result: APPROVED]
   G -->|A failure and fewer than 2 retries| D
@@ -62,13 +62,13 @@ Every check has a stable ID, pass/fail conditions, required evidence, evaluator 
 
 Evidence text is checked against the lesson after whitespace normalization. If the model uses explicit omission marks, each quoted fragment must exist in the lesson. This checks provenance, not the semantic soundness of the judgment. Missing content requires an explicit missing-content explanation, not an invented quote. A model can still cite real text and interpret it incorrectly; the labelled evaluator dataset measures examples of that weakness.
 
-Sentence lengths and word counts are reported only as diagnostics. They neither prove suitability nor replace rubric decisions. The roughly 700â€“1,100-word target is a generation guideline.
+For the terminology group, Python supplies the first field containing selected specialist terms as an attention aid. Occurrence alone never determines a verdict: Gemini still judges whether the term needs and receives an ordinary-language explanation. This addresses an observed false pass on undefined weights and pipeline; it does not guarantee semantic correctness. Sentence lengths and word counts are reported only as diagnostics. They neither prove suitability nor replace rubric decisions. The roughly 700â€“1,100-word target is a generation guideline.
 
 ## Attempts and technical failures
 
 The initial draft plus at most two content rewrites gives a maximum of three attempts. Each attempt receives its own row and immutable draft. Actual failed check results, excerpts, and requested corrections go into the next generation request. Successful checks are not averaged against failures. A run with unresolved failures ends `NEEDS_REVIEW`, never automatically approves the last draft.
 
-Technical retries are separate and configured to at most one retry per role invocation. Google SDK automatic retries are disabled. Generation retries a timeout, server error, or observed intermittent bare argument rejection once. Evaluation has at most two requests in total, including a format/evidence repair request or technical retry. Authentication and quota errors are not deliberately retried. Retry events record the role and category. Model identifiers are never substituted. A repaired format still needs a fresh valid, complete evaluation; a retry itself cannot approve anything.
+Technical retries are separate and configured to at most one retry per generation or focused evaluation request. Google SDK automatic retries are disabled. Generation retries a timeout, server error, or observed intermittent bare argument rejection once. Evaluation uses three fixed groups of four checks. Each group has at most two requests, including format/evidence repair or technical retry: at most six evaluator requests per draft. Python validates each expected subset and then the complete merged twelve-check result; an incomplete group cannot release a lesson. Authentication and quota errors are not deliberately retried. Retry events record the role and category. Model identifiers are never substituted. A repaired format still needs a fresh valid, complete evaluation; a retry itself cannot approve anything.
 
 Gemini structured schema handling required a live-tested correction: the lesson uses its complete reference-based Pydantic JSON schema, while the evaluator uses an inlined shape schema with provider-side length/array bounds removed to avoid schema-state rejections. All original limits and types remain enforced by Pydantic locally. A rejected schema request or evaluator format repair may use one JSON-mode retry with the complete schema in its input; the model/provider stay unchanged, and local validation is identical. Both roles normally use `response_json_schema`. Evaluation requests ask for medium internal thinking, without exposing hidden reasoning. The invalid early runs remain in the local audit history rather than being relabelled successful.
 
@@ -86,7 +86,7 @@ At least two independent completed runs must support a category before a compari
 
 ## Controlled prompt improvement
 
-An experiment creates an inactive candidate prompt version with a proposed addition. The current and candidate prompts each generate a fresh lesson from the same two calibration scenarios: a correct-lesson regression case and a labelled seed covering the selected failure. Both resulting lessons are judged with the same frozen rubric and sources. The holdout set is never used for this process.
+An experiment creates an inactive candidate prompt version with a proposed addition. The current and candidate prompts each generate a fresh lesson from the same two scenarios: the normal UI assignment without a correct lesson seed, and a labelled seed covering the selected failure. The earlier protocol supplied a correct seed in the first case; audited v2 removes it because the seed masked jargon failures observed in normal runs. Both resulting lessons are judged with the same frozen rubric and sources. Each generated comparison draft and its generation usage are persisted before evaluation begins, so an evaluator timeout preserves the unevaluated draft without treating it as a passed arm. Technical retry records are saved as they occur. The holdout set is never used for this process.
 
 Per-case baseline and candidate drafts, verdicts, usage, technical retries, seed hashes, model identities, and rubric/reference versions are retained. Activation requires at least one targeted baseline failure to become a candidate pass and no per-check regression from a baseline pass. A tie or a failed comparison leaves the candidate inactive. The rubric is not weakened to make a candidate succeed. The active prompt and its memory can be rolled back to the original or a previously activated version.
 
@@ -112,10 +112,14 @@ Actual test counts, run IDs, evaluator disagreements, and improvement outcomes a
 
 ## Model trial and evaluation limits
 
-A separate, explicitly disclosed trial of gemini-3.8-flash as evaluator did not return a usable result, including a provider HTTP 504 deadline on a minimal request. The application was not silently changed to that unverified model. The configured Gemini 3.5 Flash-Lite roles remain. Evaluator-v2 and evaluator-v3 live reports preserve their actual false passes and technical failures. The v3 revision was based on calibration contradictions; its repeated held-out diagnostics are explicitly labelled as reused data, not unseen validation.
+A separate, explicitly disclosed trial of gemini-3.8-flash as evaluator did not return a usable result, including a provider HTTP 504 deadline on a minimal request. The application was not silently changed to that unverified model. That trial did not change the model at the time. During the later sprint audit, an explicitly recorded Gemini 3.5 Flash trial returned valid judgments and caught naturally occurring jargon failures; the current evaluator setting was then changed to Flash while generation remained Flash-Lite. Evaluator-v2 and evaluator-v3 live reports preserve their actual false passes and technical failures. The v3 revision was based on calibration contradictions; its repeated held-out diagnostics are explicitly labelled as reused data, not unseen validation.
 
 ## Final evidence extraction and teaching-notice guard
 
 Evaluator-v4 can select an existing lesson field by a validated evidence_path with empty evidence text. Python resolves the exact text from that field, capped at 2000 characters. Unknown paths and fabricated nonempty quotes still fail closed. The evaluator still supplies its own verdict and reason; selecting a field is not evidence that its interpretation is correct. Direct exact quotations remain supported. This reliability change does not weaken the rubric or hardcode a verdict for the deliberate error.
 
 Source pack rag-primary-v1.1 adds a reviewed, explicitly invented Asha College teaching notice. Rubric beginner-rag-v1.1 strengthens the code reference check to require an explicit illustrative, fictional, or invented label on the worked example. It does not detect or hardcode the deliberate false-correctness claim. Earlier runs keep their original source and rubric snapshots, and the reader/export uses those frozen references.
+
+## Sprint audit correction: bounded prompt content
+
+The original candidate builder bounded selected memory IDs but appended every prior instruction to the prompt text. It now rebuilds a candidate from the frozen base prompt plus at most the latest three retained instructions and the new proposal. A five-version regression test checks that both selected IDs and actual prompt text contain at most four learned instructions; full version history remains available for rollback.

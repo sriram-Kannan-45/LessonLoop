@@ -3,13 +3,15 @@ import asyncio
 import json
 
 import httpx
+import pytest
 from google import genai
 
 from app.services import providers
 from app.services.providers import request_gemini
-from app.services.lesson_ai import LessonAI
+from app.services.lesson_ai import EVALUATION_GROUPS, LessonAI, WorkflowError
 from app.dataset import BASE
 from app.content import MODEL_CHECK_IDS, PROMPTS, RUBRIC, SOURCE_PACK
+from app.lesson_schemas import Lesson
 
 # Retain the real methods before the autouse no-network fixture patches public role calls.
 real_generate = LessonAI.generate
@@ -67,6 +69,8 @@ def test_evaluator_repairs_format_once_and_preserves_usage(settings, monkeypatch
     def handle(request):
         requests.append(json.loads(request.content))
         raw = model_checks()
+        payload = json.loads(requests[-1]["contents"][0]["parts"][0]["text"].split("\n", 1)[1])
+        raw["checks"] = [item for item in raw["checks"] if item["check_id"] in payload["expected_check_ids"]]
         if len(requests) == 1:
             raw["checks"].pop()
         return model_response(raw)
@@ -74,15 +78,59 @@ def test_evaluator_repairs_format_once_and_preserves_usage(settings, monkeypatch
     install_transport(monkeypatch, handle)
     retries = []
     raw, usage = asyncio.run(real_evaluate(LessonAI(settings), BASE, SOURCE_PACK, RUBRIC, on_retry=lambda n, code: retries.append(code)))
-    assert len(requests) == 2
+    assert len(requests) == 4
     assert retries == ["INVALID_EVALUATION"]
     assert len(raw["checks"]) == 12
-    assert len(usage["attempt_usage"]) == 2
+    assert len(usage["group_usage"]) == 3
+    assert len(usage["group_usage"][0]["attempt_usage"]) == 2
+    assert [item["check_ids"] for item in usage["group_usage"]] == [list(group) for group in EVALUATION_GROUPS]
     json.dumps(usage)  # No recursive structures enter SQLite.
     assert requests[0]["generationConfig"]["thinkingConfig"]["thinking_level"] == "MEDIUM"
     payload = json.loads(requests[0]["contents"][0]["parts"][0]["text"].split("\n", 1)[1])
     assert "demo_error" not in payload
     assert "generator_prompt" not in payload
+
+
+def test_incomplete_group_never_returns_partial_approval(settings, monkeypatch):
+    calls = []
+
+    async def partial_call(self, model, instructions, data, schema, **kwargs):
+        calls.append(data["expected_check_ids"])
+        checks = [item for item in model_checks()["checks"] if item["check_id"] in data["expected_check_ids"]]
+        if len(calls) > 1:
+            checks.pop()
+        return {"checks": checks}, {}
+
+    monkeypatch.setattr(LessonAI, "call", partial_call)
+    with pytest.raises(WorkflowError, match="INVALID_EVALUATION") as error:
+        asyncio.run(real_evaluate(LessonAI(settings), BASE, SOURCE_PACK, RUBRIC))
+    assert len(error.value.diagnostics["completed_checks"]) == 4
+    assert error.value.diagnostics["incomplete_group"] == list(EVALUATION_GROUPS[1])
+    assert calls == [list(EVALUATION_GROUPS[0]), list(EVALUATION_GROUPS[1]), list(EVALUATION_GROUPS[1])]
+    assert len({key for group in EVALUATION_GROUPS for key in group}) == len(MODEL_CHECK_IDS) == 12
+
+
+def test_daily_quota_is_not_retried_and_exposes_only_safe_recovery_details(settings, monkeypatch):
+    settings.gemini_api_key = "fake-test-key"
+    requests = []
+
+    def handle(request):
+        requests.append(request)
+        return httpx.Response(429, json={"error": {"code": 429, "status": "RESOURCE_EXHAUSTED", "message": "private fake-test-key",
+            "details": [{"@type": "type.googleapis.com/google.rpc.QuotaFailure", "violations": [{
+                "quotaMetric": "generate_content_free_tier_requests", "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+                "quotaValue": "20", "quotaDimensions": {"private_project": "do-not-export"}}]},
+                {"@type": "type.googleapis.com/google.rpc.RetryInfo", "retryDelay": "4651s"}]}})
+
+    install_transport(monkeypatch, handle)
+    with pytest.raises(WorkflowError) as error:
+        asyncio.run(LessonAI(settings).call("gemini-3.5-flash", "Test", {}, Lesson))
+    assert error.value.code == "RATE_LIMIT_OR_QUOTA"
+    assert error.value.diagnostics["retry_after_seconds"] == 4651
+    assert error.value.diagnostics["quota_limits"][0]["quotaValue"] == "20"
+    assert len(requests) == 1
+    assert "fake-test-key" not in json.dumps(error.value.public())
+    assert "do-not-export" not in json.dumps(error.value.public())
 
 
 def test_gemini_sdk_uses_configured_model_and_no_retries(monkeypatch):

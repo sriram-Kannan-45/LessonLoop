@@ -1,14 +1,21 @@
 import asyncio
 import json
+import re
 from collections.abc import Callable
 
 from google import genai
 from google.genai import types
 
 from app.config import Settings
-from app.content import MODEL_CHECK_IDS, PROMPTS
+from app.content import PROMPTS
 from app.lesson_schemas import Evaluation, LEARNER, Lesson
 from app.services.providers import map_failure
+
+EVALUATION_GROUPS = (
+    ("RAG_DEFINITION", "RAG_MECHANISM", "NOT_RETRAINING", "GROUNDED_CLAIMS"),
+    ("EXTERNAL_KNOWLEDGE", "DOCUMENT_PREPARATION", "HONEST_LIMITATIONS", "MISSING_INFORMATION"),
+    ("TERMS_EXPLAINED", "NO_PREREQUISITES", "WORKED_EXAMPLE", "FLOW_AND_PRACTICE"),
+)
 
 
 class WorkflowError(Exception):
@@ -80,9 +87,9 @@ class LessonAI:
                         json_mode = True
                     if on_retry:
                         on_retry(attempt + 1, "SCHEMA_JSON_MODE_RETRY" if status == 400 else failure.code)
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(2)
                     continue
-                raise WorkflowError(failure.code, failure.message, {"exception_type": type(exc).__name__, "provider_http_status": status}) from None
+                raise WorkflowError(failure.code, failure.message, self.redact(provider_diagnostics(exc))) from None
 
     async def generate(self, context, previous=None, feedback=None, on_retry=None):
         data = {
@@ -97,18 +104,39 @@ class LessonAI:
         return await self.call(self.generator_model, context["instructions"], data, Lesson, on_retry)
 
     async def evaluate(self, lesson, source_pack, rubric, on_retry=None):
+        from app.quality import validate_evaluation
+
+        checks, usage_groups = [], []
+        for group in EVALUATION_GROUPS:
+            try:
+                raw, usage = await self.evaluate_group(lesson, source_pack, rubric, group, on_retry)
+            except WorkflowError as exc:
+                exc.diagnostics = {**(exc.diagnostics or {}), "incomplete_group": list(group),
+                                   "completed_checks": checks, "completed_group_usage": usage_groups}
+                raise
+            checks.extend(raw["checks"])
+            usage_groups.append({"check_ids": list(group), **usage})
+        result = {"checks": checks}
+        validate_evaluation(result, lesson)
+        return result, {"group_usage": usage_groups, "evaluation_groups": len(EVALUATION_GROUPS)}
+
+    async def evaluate_group(self, lesson, source_pack, rubric, group, on_retry=None):
         from app.quality import evidence_fields, validate_evaluation
 
         data = {"lesson": lesson, "learner_profile": LEARNER, "approved_reference_pack": source_pack,
-                "rubric": [check for check in rubric["checks"] if check["evaluator"] == "model"],
-                "expected_check_ids": MODEL_CHECK_IDS, "allowed_evidence_paths": list(evidence_fields(lesson))}
-        instructions = PROMPTS["evaluator"]
+                "rubric": [check for check in rubric["checks"] if check["id"] in group],
+                "expected_check_ids": list(group), "allowed_evidence_paths": list(evidence_fields(lesson))}
+        instructions = PROMPTS["evaluator"] + " This request evaluates ONLY the expected_check_ids supplied in its input. Read the whole lesson for each of these checks, including every practice answer. Return exactly these IDs; later independent requests cover the remaining checks."
+        if "TERMS_EXPLAINED" in group:
+            # Attention aids only: the model still decides whether each term needs/is given an explanation.
+            data["terminology_attention_aids"] = terminology_occurrences(lesson)
+            instructions += " For TERMS_EXPLAINED, explicitly review every terminology_attention_aids item against its first-use context. These are candidates to inspect, not automatic failures. In your concise reason identify any unexplained candidate, or explain how the candidates are introduced in everyday words. Expanding an acronym or placing another technical term beside it is not a plain-language explanation. Correct definitions of AI and RAG cannot compensate for an unexplained weight, parameter, pipeline or other term elsewhere."
         usage_history = []
         for attempt in range(self.settings.technical_retries + 1):
             try:
                 raw, usage = await self.call(self.evaluator_model, instructions, data, Evaluation, retry_limit=0, json_mode=attempt > 0)
                 usage_history.append(usage)
-                validate_evaluation(raw, lesson)
+                validate_evaluation(raw, lesson, expected_ids=group)
                 usage["attempt_usage"] = [dict(item) for item in usage_history]
                 return raw, usage
             except WorkflowError as exc:
@@ -117,7 +145,40 @@ class LessonAI:
                     raise
                 if on_retry:
                     on_retry(attempt + 1, exc.code)
+                if exc.code in {"TIMEOUT", "PROVIDER_FAILURE"}:
+                    await asyncio.sleep(2)
                 instructions += " Your previous response failed local output/evidence validation. Re-evaluate every check; copy evidence exactly from the supplied lesson. Missing content uses empty evidence and missing_content=true. Do not target a desired verdict."
+
+
+def provider_diagnostics(exc):
+    details = {"exception_type": type(exc).__name__, "provider_http_status": getattr(exc, "code", 0)}
+    structured = getattr(exc, "details", [])
+    if isinstance(structured, dict):
+        structured = structured.get("error", structured).get("details", [])
+    for item in structured if isinstance(structured, list) else []:
+        if not isinstance(item, dict):
+            continue
+        violations = item.get("violations", [])
+        for violation in violations[:8] if isinstance(violations, list) else []:
+            if isinstance(violation, dict):
+                details.setdefault("quota_limits", []).append({key: str(violation[key])[:200] for key in ("quotaMetric", "quotaId", "quotaValue") if key in violation})
+        delay = item.get("retryDelay")
+        if isinstance(delay, str) and re.fullmatch(r"\d+(?:\.\d+)?s", delay):
+            details["retry_after_seconds"] = float(delay[:-1])
+    return details
+
+
+def terminology_occurrences(lesson):
+    from app.quality import evidence_fields
+
+    remaining = {"weights", "parameters", "pipeline", "embeddings", "vectors", "fine-tuning", "semantic reranking", "cosine similarity", "ANN"}
+    occurrences = []
+    for path, value in evidence_fields(lesson).items():
+        for term in sorted(remaining.copy()):
+            if re.search(r"\b" + re.escape(term) + r"\b", value, re.IGNORECASE):
+                occurrences.append({"term": term, "first_use_path": path, "context": value})
+                remaining.remove(term)
+    return occurrences
 
 
 def provider_schema(value):

@@ -11,18 +11,20 @@ from app.content import PROMPTS, RUBRIC, SOURCE_PACK, canonical_hash
 from app.dataset import DATASET_VERSION, labelled_examples
 from app.db import Repository, now
 from app.exports import audit_report, markdown_lesson
-from app.quality import structure_checks, validate_evaluation
-from app.services.lesson_ai import LessonAI, WorkflowError
+from app.quality import releasable, structure_checks, validate_evaluation
+from app.services.lesson_ai import EVALUATION_GROUPS, LessonAI, WorkflowError
 
 
 async def calibrate(settings, split, output):
     repo = Repository(settings.database_path)
-    if any(row["status"] == "RUNNING" for row in repo.history(50)["items"]):
-        raise WorkflowError("WORKSPACE_BUSY", "Wait for active runs before starting evaluator calibration.")
+    if (any(row["status"] == "RUNNING" for row in repo.history(50)["items"])
+            or any(row["status"] == "RUNNING" for row in repo.memory()["experiments"])):
+        raise WorkflowError("WORKSPACE_BUSY", "Wait for active runs and prompt comparisons before starting evaluator calibration.")
     ai = LessonAI(settings)
     report = {"dataset_version": DATASET_VERSION, "split": split, "started_at": now(), "provider": "gemini",
               "model": ai.evaluator_model, "rubric_version": RUBRIC["version"], "rubric_sha256": RUBRIC["content_sha256"],
               "evaluator_prompt_version": PROMPTS["evaluator_version"], "source_pack_version": SOURCE_PACK["version"],
+              "evaluation_groups": [list(group) for group in EVALUATION_GROUPS],
               "cases": [], "note": "Small authored dataset. Holdout is excluded from prompt comparisons. Report actual disagreements; do not treat format validation as correctness."}
     path = Path(output)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -32,10 +34,13 @@ async def calibrate(settings, split, output):
         try:
             raw, usage = await ai.evaluate(example["lesson"], SOURCE_PACK, RUBRIC, on_retry=lambda number, code: row["technical_retries"].append({"number": number, "code": code}))
             checks = validate_evaluation(raw, example["lesson"])
+            _, code_checks = structure_checks(example["lesson"])
+            release = releasable([*code_checks, *checks])
             actual = {check["check_id"]: check["passed"] for check in checks}
             disagreements = [{"check_id": check_id, "expected": expected, "actual": actual[check_id], "kind": "false_pass" if actual[check_id] else "false_rejection"} for check_id, expected in example["expected"].items() if actual[check_id] != expected]
-            row.update(checks=checks, usage=usage, disagreements=disagreements,
-                       false_approval=any(expected is False for expected in example["expected"].values()) and all(actual.values()),
+            row.update(checks=checks, code_checks=code_checks, release_decision=release, usage=usage, disagreements=disagreements,
+                       false_model_approval=any(expected is False for expected in example["expected"].values()) and all(actual.values()),
+                       false_approval=any(expected is False for expected in example["expected"].values()) and release,
                        false_rejection=all(example["expected"].values()) and any(not actual[key] for key in example["expected"]))
         except WorkflowError as exc:
             row["error"] = exc.public()
@@ -47,6 +52,7 @@ async def calibrate(settings, split, output):
     report["summary"] = {"cases": len(cases), "evaluated": sum("checks" in case for case in cases),
                          "technical_errors": sum("error" in case for case in cases),
                          "false_approvals": sum(case.get("false_approval", False) for case in cases),
+                         "false_model_approvals": sum(case.get("false_model_approval", False) for case in cases),
                          "false_rejections": sum(case.get("false_rejection", False) for case in cases),
                          "per_check_false_passes": sum(item["kind"] == "false_pass" for case in cases for item in case.get("disagreements", [])),
                          "per_check_false_rejections": sum(item["kind"] == "false_rejection" for case in cases for item in case.get("disagreements", []))}
@@ -112,11 +118,16 @@ def main():
                 print(json.dumps({"id": run_id, "status": "RUNNING"}), flush=True)
                 if args.wait:
                     import time
+                    previous_stage = None
                     for _ in range(600):
                         current = client.get(base + "/runs/" + run_id).json()
                         if current["status"] != "RUNNING":
                             print(json.dumps({"id": run_id, "status": current["status"], "attempts": current["attempt_count"], "error": current["error"]}))
                             return
+                        stage = (current["stage"], current["attempt_count"])
+                        if stage != previous_stage:
+                            print(json.dumps({"id": run_id, "stage": stage[0], "saved_drafts": stage[1]}), flush=True)
+                            previous_stage = stage
                         time.sleep(2)
                     raise WorkflowError("WAIT_LIMIT", "The CLI wait limit ended. Inspect the run in the app; no status was invented.")
     except WorkflowError as exc:

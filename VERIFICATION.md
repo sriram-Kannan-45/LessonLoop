@@ -1,81 +1,62 @@
-# Sprints 2 to 9 verification
+# Sprint verification
 
-Implementation and verification work completed across 13–14 November 2026 on Windows. Live artifacts retain their own UTC timestamps. The user explicitly chose Gemini only, superseding the brief's OpenAI requirement. Both roles use separate calls to gemini-3.5-flash-lite. Implementation, mocked tests, live evidence, and pending human steps are distinguished below.
+Audited 14 November 2026 on Windows. The user explicitly chose Gemini only. Current settings generate with gemini-3.5-flash-lite and evaluate with gemini-3.5-flash in three separate focused requests. Earlier runs retain their original model/prompt snapshots.
 
-## Automated verification
+## Current checks
 
-| Check | Actual result |
+| Check | Observed result |
 | --- | --- |
-| Backend pytest | **49 passed**; provider inference mocked/in-memory HTTP transport. |
-| Frontend TypeScript | **Passed**. |
-| Production build | **Passed**, Vite 7.3.8. |
-| Desktop/mobile browser tests | **24 passed**, installed Edge, 1440 px desktop and 390 px mobile. Inference mocked; health/configuration uses the real local backend. |
-| Visual review | Desktop studio, real reader, quality report, history/memory, narrow reader/report, and clean document print pages inspected. |
-| Export download | Browser downloaded and read the Markdown contents; approved/review labels tested. |
-| Secrets | Environment/database/generated QA folders ignored; source and staged-artifact scans run before push without displaying keys. |
+| Backend pytest | 54 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
+| TypeScript and production build | Passed. |
+| Desktop/mobile Playwright | 24 passed, installed Edge; inference mocked, real local health/configuration checked. |
+| Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
+| Persistence | Actual server restart preserved approved runs, failure observations, inactive proposals and generator-v1. No active job was abandoned during the final restart. |
 
-The backend tests enforce all mandatory checks, strict booleans, complete unique IDs, source/evidence validity, the three-draft maximum, actual failed-check feedback, immutable attempts, NEEDS_REVIEW exhaustion, technical errors, restart interruption, unverified-feedback isolation, bounded comparison activation, persistent selected memory, and rollback. SDK transport tests verify the same-model JSON-format retry and the maximum two evaluator requests, without a network call.
+Tests enforce complete strict check IDs/booleans, evidence provenance, all-fourteen release, actual correction feedback, the three-draft limit, NEEDS_REVIEW exhaustion, technical errors, restart interruption, immutable attempts, unverified-feedback isolation, successful mocked activation/reuse/rollback, and safe exports. New tests cover per-group repair/incomplete rejection, bounded prompt text as well as memory IDs, preserving comparison drafts on evaluator failure, quota diagnostics without automatic quota retries, and model-vs-Python release counts.
 
-## Real application runs
+## Real normal runs with the current evaluator
 
-### Final normal run started through React
+- b0ba902b21e64ce3a8f38a1ff446ef1d: APPROVED, two drafts, final 14/14. First draft failed TERMS_EXPLAINED and NO_PREREQUISITES. Actual feedback drove the correction. This is the current final lesson in submission/final-lesson/ and submission/lesson-for-google-docs.html.
+- 9d8c5b6391ed485aa5806045ca0ae0ae: APPROVED, two drafts, final 14/14. First draft failed TERMS_EXPLAINED. Export: submission/second-natural-run/.
+- Both are natural failures without deliberate-error injection, generator-v1, evaluator-v6-term-context, references rag-primary-v1.1 and rubric beginner-rag-v1.1.
+- The earlier normal run a791fca8f9004ca1828c59ef1b63794e was started through the real React interface and approved under evaluator-v3. Its original artifacts remain in submission/earlier-approved-v3/; they are not relabelled as current-protocol results.
 
-- ID: `a791fca8f9004ca1828c59ef1b63794e`.
-- Final status: **APPROVED**, one draft, **14/14 mandatory checks passed**.
-- Generator/evaluator model: gemini-3.5-flash-lite in separate calls.
-- Frozen source pack: rag-primary-v1.1. Frozen rubric: beginner-rag-v1.1. Evaluator prompt: evaluator-v3.
-- The worked example explicitly labels Asha College and its notice as invented teaching material.
-- Actual exports are in submission/final-lesson/. The clean HTML version is generated from this approved draft, not manually edited into a claimed approval.
-- The current evaluator-v4 evidence-selector protocol is tested separately below; this saved v3 run is not relabelled as a v4 run.
+## Real deliberate-error backup
 
-### Deliberate-error demonstration
+Saved run d7f428ad985b4aceba7b8a17610bfeef was APPROVED after two drafts. Draft one was actually generated and preserved before replacing its limitations with the false always-correct guarantee. The real evaluator rejected SOURCES and HONEST_LIMITATIONS, without receiving a demo flag. The next draft passed. Original, altered draft, evidence, changes and events remain in submission/backup-demo/. This is a saved historical live backup, not a newly recorded current-evaluator demo.
 
-- Saved live backup ID: `d7f428ad985b4aceba7b8a17610bfeef`.
-- Final status: **APPROVED**, two drafts.
-- Draft 1 was generated, the original preserved, then the false always-correct claim injected.
-- Actual rejected checks: SOURCES and HONEST_LIMITATIONS. The evaluator received no demo flag or desired verdict.
-- Draft 2 passed all fourteen checks. The audit contains both drafts, the original pre-mutation draft, actual evidence, requested changes, and events.
-- Exports are in submission/backup-demo/.
+## Evaluator evidence and known defects
 
-Additional early live runs failed with provider request errors or invalid model evidence. They remain ERROR in local history; none was silently promoted. A real browser error run also recorded zero JavaScript page errors. Repeated application restarts preserved approved and failed history. Active-run interruption is exercised deterministically by tests rather than claimed as a surviving background job.
-
-## Live evaluator evidence
-
-| Report | Evaluated / authored | Technical errors | False overall approvals | Per-check false passes |
+| Historical report | Evaluated / authored | Technical errors | Model-wide false approvals | Per-check false passes |
 | --- | --- | --- | --- | --- |
 | evaluator-v2-first-report.json | 5 / 10 | 5 | 1 | 6 |
 | evaluator-calibration.json, v3 | 7 / 10 | 3 | 0 | 6 |
 | evaluator-v4-calibration.json | 3 / 5 | 2 | 0 | 2 |
+| evaluator-calibration-v5.json | 4 / 5 | 1 | 0 | 2 |
 
-There were zero recorded false overall rejections on the completed labelled cases in these reports. That does not make the judge universally accurate. Unlabelled checks are not counted as correctly classified by default. Technical failures are not counted as successful judgments. The v4 technical failures include actual provider HTTP 503 service errors. A false per-check pass remains a defect even when another check prevents overall approval.
+The old reports' overall approval field measures all twelve model checks, not the final Python release gate. The CLI now reports false_model_approval and the fourteen-check release decision separately. Technical errors are not successful judgments. There were no false overall rejections on completed labelled cases in these historical reports; this is a tiny authored set, not a general accuracy claim.
 
-The five calibration examples and five fixed holdout examples are manually authored/reviewed teaching fixtures, not independent population samples. Holdout is excluded from prompt-improvement comparisons. It was first run with v2; the v3 reused-set report explicitly records this history and is not presented as unseen validation. The v4 report is calibration-only. Earlier reports and labels are preserved rather than overwritten to hide disagreements.
+Five reviewed calibration and five fixed holdout fixtures are inspectable in app/dataset.py. Holdout is excluded from prompt comparisons. It was already used in v2/v3 diagnostics and is explicitly not unseen. No current Flash calibration/holdout report is claimed: its daily quota was exhausted before that work. Precise credential/quota evidence is in submission/quota-blocker.json.
 
-A disclosed trial of gemini-3.8-flash did not produce a usable evaluator response. Its minimal request ended HTTP 504 DEADLINE_EXCEEDED. The app was not silently switched to that unverified model; see submission/model-trial.json.
+Flash-Lite also falsely passed undefined weights and pipeline in naturally generated lessons. A same-draft real trial with Flash correctly rejected terminology/prerequisite failures; submission/evaluator-flash-trial.json records it. This motivated the explicit evaluator model change. Earlier Flash-Lite approvals remain historical. A separate unsuccessful gemini-3.8-flash trial remains in submission/model-trial.json; it was not silently adopted.
 
-## Memory and controlled improvement
+## Learning: implemented, live acceptance still pending
 
-- HONEST_LIMITATIONS has supporting failed verdicts from two independent completed runs. Multiple attempts in one run count once. Those supporting runs came from deliberate-error demonstrations and are identified as such.
-- Completed live experiment: `360b5fbb9d7241208287721aa94a8835`, **NO_IMPROVEMENT**.
-- Both baseline and candidate were generated/evaluated on the same correct-lesson and perfect-guarantee calibration scenarios, with a fixed rubric. All four arms completed.
-- There were no per-check regressions, no newly fixed checks, and no targeted baseline failure fixed by the candidate. The candidate correctly remained inactive.
-- Earlier comparisons stopped on technical errors/invalid evidence and remained inactive. Their records are preserved.
-- **Zero active learned instructions. Live learned-memory activation/reuse is not demonstrated.** Deterministic mocked tests exercise an actual successful comparison gate, selection in a later run after repository reopening, and rollback. This must not be described as real-model improvement evidence.
-- Persistent observations/proposals/versions/outcomes are exported in submission/memory-evidence.json. The completed real comparison is submission/prompt-improvement-v4.json.
+Two independent completed natural runs support TERMS_EXPLAINED. Multiple attempts in one run count once. Earlier HONEST_LIMITATIONS observations came from clearly identified deliberate-error demos.
 
-## Submission artifacts and external steps
+- Historical complete experiment 360b5fbb9d7241208287721aa94a8835 ended NO_IMPROVEMENT, correctly inactive; submission/prompt-improvement-v4.json.
+- Current experiment 0f6314b8c6bf4608a4e3c96588f31d20 completed three arms, then ended ERROR on HTTP 429 during the fourth evaluation. Completed baselines had no target failure; no qualifying benefit is claimed. The candidate stayed inactive; submission/prompt-improvement-v6.json.
+- A sanitized SDK probe confirmed GenerateRequestsPerDayPerProjectPerModel-FreeTier, limit 20, and a 4651-second retry delay. Estimated next reset: 14 November 08:00 UTC / 13:30 IST. Billing was not changed.
+- The audited paired-normal-and-targeted-v2 protocol now compares the actual normal UI assignment without a correct seed in the first pair, then the same targeted calibration seed in the second pair. This addresses a coverage flaw: the correct seed hid natural jargon failures. It is tested offline but has not yet run live.
+- Actual prompt text and selected memory are both capped at four instructions. Comparison drafts and generation usage are persisted before evaluation; partial groups/failed comparisons never approve or activate.
+- Zero active learned instructions. Real qualifying activation and subsequent reuse remain unobserved and cannot be marked complete. Mocked tests demonstrate the implementation, persistence and rollback, not real-model improvement.
 
-- Actual approved Markdown, rejection log, audit, metadata: submission/final-lesson/.
-- Saved live deliberate-error backup: submission/backup-demo/.
-- Clean document: submission/lesson-for-google-docs.html. Its four A4 print pages were rendered and visually inspected. It still needs human import/copy and sharing if a Google Docs/Notion URL is required; no connected Word/document session was available.
-- Design: docs/DESIGN.md. Face-visible recording script: docs/VIDEO_WALKTHROUGH.md. Final checklist: docs/SUBMISSION_CHECKLIST.md.
-- Real repository: https://github.com/sriram-Kannan-45/LessonLoop. Push status is verified at task completion.
-- The human must record/upload the face-visible video and supply its real sharing link. No video, document sharing URL, or assessment submission is invented.
+## Deliverables and completion boundary
 
-## Completion boundary
+The implementation, API, UI, exports, tests, design, clean lesson document and recording materials are ready. Sprint 5 still needs a qualifying live comparison and a later real run selecting its instruction; current-protocol dataset validation also needs quota. See docs/SPRINT_STATUS.md and submission/quota-blocker.json. Provider failures and model false passes remain practical limitations.
 
-The workflow, API, UI, persistence, comparison gate, tests, and submission preparation are implemented. Normal generation and deliberate-error rejection/rewrite have real successful runs. The original requirement for observed live learned-memory benefit/reuse remains **unmet** because no candidate showed a qualifying benefit; the system correctly refused activation. Further model-quality evidence, a passing controlled improvement, and a later run selecting its instruction are needed before claiming that criterion complete. Model false passes and intermittent provider failures also limit reliability. Human document/video publishing remains pending.
+Current approved artifacts: submission/final-lesson/. Clean importable document: submission/lesson-for-google-docs.html. Saved real demonstration: submission/backup-demo/. Recording script: docs/VIDEO_WALKTHROUGH.md. Checklist: docs/SUBMISSION_CHECKLIST.md.
 
-## Runtime notes
+A human must record/upload the face-visible video and publish/import the lesson if a Google Docs/Notion sharing link is required. No video, public document URL or assessment submission is invented. GitHub synchronization is reported only after a verified push.
 
-Python 3.11.16, FastAPI 0.162.6, Uvicorn 0.54.0, google-genai 2.34.0, LangGraph 1.2.21, pydantic-settings 2.16.3, pytest 9.2.0, HTTPX 0.28.1, React 19.3.1, TypeScript 5.9.3, Tailwind 4.3.5, Playwright 1.65.0. Full dependency pins are in the backend requirements files and frontend lockfile. No new backend service was added. The broken global Python installation and global environment variables were not changed.
+Runtime: Python 3.11.16, FastAPI 0.162.6, google-genai 2.34.0, LangGraph 1.2.21, pytest 9.2.0, React 19.3.1, TypeScript 5.9.3, Vite 7.3.8 and Playwright 1.65.0. Exact pins remain in requirements/lockfiles. Secrets, databases, caches and generated QA files are ignored.

@@ -8,7 +8,7 @@ The project workflow requires a verified push after completed updates. Check VER
 
 ## Approved lesson and audit
 
-- Final normal browser run: `a791fca8f9004ca1828c59ef1b63794e`, **APPROVED**, one draft, 14/14 checks.
+- Current final normal run: `b0ba902b21e64ce3a8f38a1ff446ef1d`, **APPROVED**, two drafts, 14/14 final checks. The earlier browser-started v3 run is preserved in submission/earlier-approved-v3/.
 - Frozen references: rag-primary-v1.1. Frozen rubric: beginner-rag-v1.1.
 - Actual Markdown: submission/final-lesson/lesson-approved.md.
 - Actual rejection log: submission/final-lesson/rejection-log.md.
@@ -26,12 +26,13 @@ Saved live run: `d7f428ad985b4aceba7b8a17610bfeef`, **APPROVED** after two draft
 
 - submission/evaluator-v2-first-report.json preserves the first live calibration/holdout results, including a false overall approval.
 - submission/evaluator-calibration.json records the v3 combined report with disclosed held-out-set reuse.
-- submission/evaluator-v4-calibration.json records the current evidence protocol's calibration-only test. Do not present it as unseen holdout validation.
+- submission/evaluator-v4-calibration.json and submission/evaluator-calibration-v5.json preserve earlier calibration-only tests. Do not present it as unseen holdout validation.
 - submission/model-trial.json records the unverified stronger-Gemini trial; the actual app model was not silently changed.
 - submission/prompt-improvement-v4.json records a completed real baseline/candidate comparison with **NO_IMPROVEMENT**. There were no per-check regressions, but no targeted benefit either, so the candidate stayed inactive.
+- submission/prompt-improvement-v6.json records the later Flash comparison stopped by the actual HTTP 429 daily quota. submission/quota-blocker.json records the limit (20/day), provider retry delay and estimated reset.
 - submission/memory-evidence.json records persistent supporting runs, proposals, versions, and outcomes. There are **zero active learned instructions**. Mocked tests demonstrate activation, reuse, persistence, and rollback; live activation/reuse has not been observed.
 
-This is an honest limitation, not permission to bypass the activation gate. For more evidence, collect genuine repeated failures, run a new bounded comparison, and activate only if the actual criteria are met. Do not weaken the rubric or fabricate a passing experiment.
+This is an honest limitation, not permission to bypass the activation gate. Two genuine independent terminology failures are now saved. Once the quota resets or the project has sufficient quota, run the new paired-normal-and-targeted-v2 comparison, activate only if the actual criteria are met, restart the backend and start a later run to inspect its selected memory. Current evaluator dataset validation is also pending quota; historical reports are not relabelled as current validation. Do not weaken the rubric or fabricate a passing experiment.
 
 ## Human document publishing step
 

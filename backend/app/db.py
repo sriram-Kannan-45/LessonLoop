@@ -223,10 +223,14 @@ class Repository:
         experiment_id, memory_id = identifier(), identifier()
         candidate = "generator-" + experiment_id[:12]
         with self.connection() as conn:
+            retained_ids = baseline["memory_ids"][-3:]
+            retained = [conn.execute("SELECT instruction FROM memory_instructions WHERE id=?", (item,)).fetchone()[0] for item in retained_ids]
+            base_instructions = conn.execute("SELECT instructions FROM prompt_versions WHERE version=?", (PROMPTS["generator_version"],)).fetchone()[0]
+            candidate_instructions = base_instructions + "".join("\nAdditional teaching instruction: " + item for item in [*retained, instruction])
             demo_count = sum(bool(conn.execute("SELECT demo_error FROM runs WHERE id=?", (run_id,)).fetchone()[0]) for run_id in supports)
             origin = f"Repeated failures across {len(supports)} independent runs, including {demo_count} deliberate-error demonstrations; controlled comparison required"
             conn.execute("INSERT INTO memory_instructions VALUES(?,?,?,?,?,?,?,?,?,?)", (memory_id, "Introduction to RAG", "india_beginner", category, instruction, "proposed", origin, encode(supports), candidate, now()))
-            conn.execute("INSERT INTO prompt_versions VALUES(?,?,?,?,?,?)", (candidate, baseline["instructions"] + "\nAdditional teaching instruction: " + instruction, baseline["version"], 0, encode([*baseline["memory_ids"], memory_id][-4:]), now()))
+            conn.execute("INSERT INTO prompt_versions VALUES(?,?,?,?,?,?)", (candidate, candidate_instructions, baseline["version"], 0, encode([*retained_ids, memory_id]), now()))
             conn.execute("INSERT INTO improvement_experiments(id,category,status,stage,baseline_prompt_version,candidate_prompt_version,memory_id,dataset_version,created_at) VALUES(?,?,?,?,?,?,?,?,?)", (experiment_id, category, "RUNNING", "QUEUED", baseline["version"], candidate, memory_id, dataset_version, now()))
         return experiment_id
 

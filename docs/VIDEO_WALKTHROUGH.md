@@ -58,7 +58,7 @@ Files/screens:
 - `backend/content/rag_sources.json`: reviewed primary sources, claims, notes, access dates.
 - Quality report → Inspect approved references.
 
-Speaker notes: “Python enforces release and stopping rules. Initial generation plus two retries is three drafts. Reaching the limit never means approval. Source IDs are checked in code, but whether a claim follows a source still needs evaluation. We test the evaluator too.”
+Speaker notes: “The current generator is Gemini Flash-Lite and the evaluator is Gemini Flash. Evaluation runs three focused groups of mandatory checks; partial results cannot approve. Python enforces release and stopping rules. Initial generation plus two retries is three drafts. Reaching the limit never means approval. Source IDs are checked in code, but whether a claim follows a source still needs evaluation. We test the evaluator too.”
 
 ## 14 to 17 minutes — Persistent learning and evidence
 
@@ -72,7 +72,7 @@ App actions:
 6. If an instruction was actually activated, open the subsequent live run and show its selected memory IDs and prompt version. Otherwise identify live reuse as unobserved rather than inventing it.
 7. Show Feedback: a new observation starts unverified. Demonstrate review with an honest human note only if you personally checked the claim.
 
-Files: `backend/app/improvements.py`, `tests/test_workflow.py`, `submission/prompt-improvement.json`, and `submission/memory-evidence.json` when present.
+Files: `backend/app/improvements.py`, `tests/test_workflow.py`, `submission/prompt-improvement-v6.json`, and `submission/memory-evidence.json` when present.
 
 ## 17 to 20 minutes — Tests, limitations, outputs, repository
 

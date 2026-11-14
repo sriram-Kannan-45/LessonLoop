@@ -1,0 +1,804 @@
+{
+  "audit_version": "lessonloop-audit-v1",
+  "provider_note": "Gemini generates and evaluates in separate calls; this is not cross-provider independence.",
+  "run": {
+    "id": "a791fca8f9004ca1828c59ef1b63794e",
+    "topic": "Introduction to RAG",
+    "learner_profile": "india_beginner",
+    "status": "APPROVED",
+    "stage": "APPROVED",
+    "started_at": "2026-11-13T17:39:24.018242+00:00",
+    "finished_at": "2026-11-13T17:39:44.115471+00:00",
+    "source_pack_version": "rag-primary-v1.1",
+    "rubric_version": "beginner-rag-v1.1",
+    "generator_prompt_version": "generator-v1",
+    "evaluator_prompt_version": "evaluator-v3",
+    "generator_model": "gemini-3.5-flash-lite",
+    "evaluator_model": "gemini-3.5-flash-lite",
+    "provider": "gemini",
+    "retry_count": 0,
+    "demo_error": 0,
+    "source_snapshot": {
+      "id": "rag-primary-v1",
+      "version": "rag-primary-v1.1",
+      "topic": "Introduction to RAG",
+      "approved_topics": [
+        "introduction to rag",
+        "rag",
+        "retrieval augmented generation",
+        "retrieval-augmented generation",
+        "rag basics"
+      ],
+      "review_note": "Primary-source notes reviewed for this beginner lesson. Notes are paraphrases, not copied articles. The scholarship notice is invented teaching data, never real eligibility advice. No live research occurs during a run.",
+      "sources": [
+        {
+          "id": "S1",
+          "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+          "url": "https://arxiv.org/abs/2005.11401v4",
+          "accessed_at": "2026-11-13",
+          "version": "arXiv 2005.11401v4, 2021-04-12",
+          "notes": [
+            {
+              "id": "N1",
+              "text": "RAG combines a language model with information retrieved from an external collection.",
+              "claim_ids": [
+                "C01",
+                "C02"
+              ]
+            },
+            {
+              "id": "N2",
+              "text": "The original work studied retrieval alongside model training. Using retrieved information at question time does not itself mean retraining the model.",
+              "claim_ids": [
+                "C05"
+              ]
+            }
+          ],
+          "notes_sha256": "cd5454dee99bfaae44e183d948e808b681d97bd7ab63556af482f5a3e1be52e3"
+        },
+        {
+          "id": "S2",
+          "title": "Retrieval-augmented generation in Azure AI Search",
+          "url": "https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview",
+          "accessed_at": "2026-11-13",
+          "version": "reviewed factual notes 2026-11-13; local note hash recorded by application",
+          "notes": [
+            {
+              "id": "N3",
+              "text": "Retrieval quality matters: search must find material relevant to the user's question, rather than sending an entire collection.",
+              "claim_ids": [
+                "C06"
+              ]
+            },
+            {
+              "id": "N4",
+              "text": "Search indexes can be updated as documents change. Old or poorly retrieved information can weaken an answer.",
+              "claim_ids": [
+                "C07",
+                "C08"
+              ]
+            }
+          ],
+          "notes_sha256": "9e0d8197a38ed07ad790a656986fabf3da881d41129aa38cab7a75a59ec650b4"
+        },
+        {
+          "id": "S3",
+          "title": "Classic RAG in Azure AI Search",
+          "url": "https://github.com/Azure-Samples/azure-search-classic-rag",
+          "accessed_at": "2026-11-13",
+          "version": "reviewed README and indexing description 2026-11-13; local note hash recorded by application",
+          "notes": [
+            {
+              "id": "N5",
+              "text": "A preparation pipeline loads documents, divides them into smaller pieces, and puts them into a searchable index. Some systems also create number-based representations for searching by meaning; these are not required knowledge for a first lesson.",
+              "claim_ids": [
+                "C04"
+              ]
+            },
+            {
+              "id": "N6",
+              "text": "Classic RAG searches first, then passes the search results to a language model to formulate an answer.",
+              "claim_ids": [
+                "C03"
+              ]
+            }
+          ],
+          "notes_sha256": "2a2c9f7b05d77d179584a692a55fad0e1ee13addc035502df92ed8196e9f4929"
+        },
+        {
+          "id": "S4",
+          "title": "Retrieve data and generate AI responses with Amazon Bedrock Knowledge Bases",
+          "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html",
+          "accessed_at": "2026-11-13",
+          "version": "reviewed factual notes 2026-11-13; local note hash recorded by application",
+          "notes": [
+            {
+              "id": "N7",
+              "text": "External data can help a model answer questions about information outside its general knowledge. Relevant retrieved text can be added to the prompt, meaning the input given to the model.",
+              "claim_ids": [
+                "C02",
+                "C03"
+              ]
+            },
+            {
+              "id": "N8",
+              "text": "Citations let a reader return to the original source and check accuracy. Retrieval helps responses but does not promise perfect correctness.",
+              "claim_ids": [
+                "C08"
+              ]
+            }
+          ],
+          "notes_sha256": "74db41b005efa2138875eecca3198dc1d0ca5eb3669448101d2ae2cd778e6e87"
+        }
+      ],
+      "claims": [
+        {
+          "id": "C01",
+          "statement": "RAG stands for retrieval-augmented generation and combines retrieval with text generation.",
+          "note_ids": [
+            "N1"
+          ]
+        },
+        {
+          "id": "C02",
+          "statement": "External material can help answer questions needing facts absent from a model's stored knowledge.",
+          "note_ids": [
+            "N1",
+            "N7"
+          ]
+        },
+        {
+          "id": "C03",
+          "statement": "Search for relevant text, add it to the input, then generate an answer using it.",
+          "note_ids": [
+            "N6",
+            "N7"
+          ]
+        },
+        {
+          "id": "C04",
+          "statement": "Documents are prepared, split into useful pieces, and organized for search.",
+          "note_ids": [
+            "N5"
+          ]
+        },
+        {
+          "id": "C05",
+          "statement": "Retrieval at question time is distinct from changing model weights through training or fine-tuning.",
+          "note_ids": [
+            "N2"
+          ]
+        },
+        {
+          "id": "C06",
+          "statement": "The relevance of retrieved material affects the quality of the answer.",
+          "note_ids": [
+            "N3"
+          ]
+        },
+        {
+          "id": "C07",
+          "statement": "Documents and searchable indexes need maintenance when facts change.",
+          "note_ids": [
+            "N4"
+          ]
+        },
+        {
+          "id": "C08",
+          "statement": "RAG can still return wrong or unsupported answers; check important claims against sources.",
+          "note_ids": [
+            "N4",
+            "N8"
+          ]
+        },
+        {
+          "id": "P01",
+          "statement": "Lesson policy: when the supplied notice lacks an answer, say the information is missing and suggest consulting an appropriate official source; never invent dates or eligibility.",
+          "note_ids": [
+            "N8"
+          ],
+          "kind": "reviewed teaching policy"
+        }
+      ],
+      "illustrative_teaching_notice": {
+        "context": "Illustrative Indian college example. Asha College and every detail in this notice are invented for learning; they are not real scholarship advice.",
+        "source_passage": "Illustrative Asha College notice: Book grant applications close on 15 July. Students must submit the application form at the college office. This notice does not state the grant amount or eligibility rules.",
+        "learner_question": "What is the last date to apply for the Asha College book grant?",
+        "missing_information_question": "How much money will I receive from this book grant?",
+        "policy": "This Asha College notice is invented teaching data. Prefer this reviewed example and explicitly label the example as illustrative. Do not present an invented notice as a real scholarship announcement."
+      },
+      "content_sha256": "5566d5a78b99bfd8d792f5bf32921840e6c1217a0935c0af825f98522adbfb9f"
+    },
+    "rubric_snapshot": {
+      "version": "beginner-rag-v1.1",
+      "release_rule": "Every mandatory check must pass. No averaging, no approval on retry exhaustion.",
+      "checks": [
+        {
+          "id": "STRUCTURE",
+          "name": "Complete lesson structure",
+          "group": "general",
+          "pass": "All required lesson sections, a complete worked example, and exactly three questions with answers are present.",
+          "fail": "A required field is absent, empty, or malformed.",
+          "evidence": "Validated Pydantic lesson and question count.",
+          "evaluator": "code",
+          "mandatory": true
+        },
+        {
+          "id": "SOURCES",
+          "name": "Approved reference identifiers",
+          "group": "general",
+          "pass": "Every source reference and claim ID exists in this frozen pack and is linked to the cited source notes. The invented worked-example notice is explicitly labelled illustrative, fictional, or invented.",
+          "fail": "Unknown, mismatched, or absent source/claim identifiers. Or an invented notice is presented without an explicit illustrative label.",
+          "evidence": "Source IDs and claim IDs checked against pack.",
+          "evaluator": "code",
+          "mandatory": true
+        },
+        {
+          "id": "RAG_DEFINITION",
+          "name": "Correct RAG definition",
+          "group": "rag",
+          "pass": "Defines retrieval-augmented generation as finding outside information to help generate an answer.",
+          "fail": "Wrong expansion or definition, or defines it as training alone.",
+          "evidence": "Exact definition excerpt and C01.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "EXTERNAL_KNOWLEDGE",
+          "name": "Why outside information helps",
+          "group": "rag",
+          "pass": "Explains why a question can need facts in documents rather than only model knowledge.",
+          "fail": "Missing reason, or claims the model already knows every fact.",
+          "evidence": "Exact explanation and C02.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "RAG_MECHANISM",
+          "name": "Retrieve then add then generate",
+          "group": "rag",
+          "pass": "Clearly orders retrieval, adding relevant text to model input, and generating a supported answer.",
+          "fail": "Omits input augmentation, reverses stages, or says search itself generates the final answer.",
+          "evidence": "Exact process excerpt and C03.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "DOCUMENT_PREPARATION",
+          "name": "Preparing documents for search",
+          "group": "rag",
+          "pass": "Briefly explains collecting documents, useful pieces, and organizing them for search using beginner language.",
+          "fail": "No preparation explanation or unexplained dense implementation jargon.",
+          "evidence": "Exact preparation excerpt and C04.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "NOT_RETRAINING",
+          "name": "Retrieval differs from retraining",
+          "group": "rag",
+          "pass": "Explains looking up material at question time does not itself retrain the model; changing trained model behavior is distinct.",
+          "fail": "Says RAG necessarily retrains the model on every question or equates retrieval with fine-tuning.",
+          "evidence": "Exact comparison and C05.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "GROUNDED_CLAIMS",
+          "name": "Claims supported by references",
+          "group": "rag",
+          "pass": "Material claims agree with the approved notes; invented example facts are labelled illustrative and answers follow the passage.",
+          "fail": "Unsupported material facts, false claims, invented real notices, or scholarship eligibility beyond the supplied passage.",
+          "evidence": "Exact claim excerpts and relevant approved claim IDs.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "TERMS_EXPLAINED",
+          "name": "Technical terms explained on first use",
+          "group": "general",
+          "pass": "Essential terms such as AI, retrieval, generation, prompt, index, or embeddings are explained in plain words before or at first use. Optional jargon is omitted.",
+          "fail": "Uses unexplained essential technical terms or assumes later definitions are enough.",
+          "evidence": "Exact first-use excerpts; identify absent explanations without inventing quotes.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "NO_PREREQUISITES",
+          "name": "No hidden prerequisite knowledge",
+          "group": "general",
+          "pass": "A grade-12 learner with limited English and no AI or coding background can follow; respectful plain explanations build ideas step by step.",
+          "fail": "Assumes coding, database, vector, or machine-learning knowledge, or oversimplifies in a misleading way.",
+          "evidence": "Exact confusing or enabling excerpts; sentence length alone cannot decide.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "WORKED_EXAMPLE",
+          "name": "Worked example demonstrates the mechanism",
+          "group": "general",
+          "pass": "Illustrative familiar notice, question, relevant source passage, retrieved information added to input, and an answer actually supported by that passage.",
+          "fail": "Example is missing, does not show augmentation, or answer contradicts/exceeds its passage.",
+          "evidence": "Exact source passage, retrieval explanation, and supported answer; C03.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "HONEST_LIMITATIONS",
+          "name": "No guarantee of perfect correctness",
+          "group": "rag",
+          "pass": "Explicitly says RAG can still make mistakes and explains effects of irrelevant results or stale sources. No contradictory guarantee anywhere.",
+          "fail": "Claims RAG guarantees correct answers, or omits errors, retrieval quality, or freshness limitations.",
+          "evidence": "Exact limitation or contradictory claim; C06 C07 C08.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "MISSING_INFORMATION",
+          "name": "Honest absent-information response",
+          "group": "rag",
+          "pass": "A missing-information example explicitly refuses to invent absent facts and points to checking an official source.",
+          "fail": "Guesses an answer absent from the source or gives no missing-information behavior.",
+          "evidence": "Exact missing question and answer; P01.",
+          "evaluator": "model",
+          "mandatory": true
+        },
+        {
+          "id": "FLOW_AND_PRACTICE",
+          "name": "Coherent flow and correct practice",
+          "group": "general",
+          "pass": "Clear objectives, sensible progression, accurate recap, and three correct practice answers consistent with the lesson and sources.",
+          "fail": "Disjointed teaching, wrong recap, missing practice answers, or any incorrect practice answer.",
+          "evidence": "Relevant lesson excerpts and practice answer; applicable claim IDs.",
+          "evaluator": "model",
+          "mandatory": true
+        }
+      ],
+      "content_sha256": "6ea9878c86622313905f25164ffe5f0a16b5505ea14f5357575ddf6b61abeff7"
+    },
+    "selected_memory": [],
+    "error": null,
+    "attempts": [
+      {
+        "id": 12,
+        "run_id": "a791fca8f9004ca1828c59ef1b63794e",
+        "number": 1,
+        "created_at": "2026-11-13T17:39:34.190708+00:00",
+        "status": "APPROVED",
+        "original_draft": null,
+        "draft": {
+          "title": "Introduction to Retrieval-Augmented Generation",
+          "learning_objectives": [
+            "Define RAG in simple everyday English.",
+            "Explain how looking up documents differs from changing a trained model.",
+            "Recognize why retrieval relevance, source freshness, and accuracy checks matter."
+          ],
+          "prerequisites": "This lesson is designed for beginners starting an AI career with no prior technical knowledge, coding background, or database experience.",
+          "what_it_is": "RAG stands for retrieval-augmented generation. In simple terms, it is a method that helps an artificial intelligence (AI), which is a computer system that can think or answer questions like a human, give correct answers by looking up information from external documents instead of guessing from memory. When you ask a question, the system first performs a retrieval, which means searching through a collection of external texts to find the right facts. Then, it uses generation, which is the AI's ability to write a clear, natural answer using the facts it just found. This is different from fine-tuning, which means changing the permanent knowledge inside the trained model itself. With RAG, you keep the model the same and simply hand it the right document at question time.",
+          "why_it_matters": "AI models often fail when asked about new facts, local rules, or private documents that were not present when the model was first trained. Without RAG, the model might guess or make up an answer that sounds correct but is totally wrong. By using retrieval, the AI can look at current documents, such as college notices, company rules, or news updates. This helps the AI provide useful, fact-based answers while letting readers check the original sources for accuracy.",
+          "how_it_works": [
+            "A preparation pipeline loads documents, divides them into smaller pieces, and organizes them into a searchable index, which is an organized list that makes finding specific text fast.",
+            "When a user asks a question, the system searches the index for text that is relevant to that specific question.",
+            "The system places the relevant retrieved text into the prompt, which is the input text given to the model.",
+            "The language model reads the prompt with the added text and generates a final, helpful answer."
+          ],
+          "worked_example": {
+            "context": "Illustrative Indian college example. Asha College and every detail in this notice are invented for learning; they are not real scholarship advice.",
+            "learner_question": "What is the last date to apply for the Asha College book grant?",
+            "source_passage": "Illustrative Asha College notice: Book grant applications close on 15 July. Students must submit the application form at the college office. This notice does not state the grant amount or eligibility rules.",
+            "retrieved_information": "Illustrative Asha College notice: Book grant applications close on 15 July. Students must submit the application form at the college office.",
+            "supported_answer": "Based on the retrieved notice, the last date to apply for the Asha College book grant is 15 July, and students must submit their forms at the college office.",
+            "missing_information_question": "How much money will I receive from this book grant?",
+            "missing_information_answer": "The provided notice does not state the grant amount. That information is missing, and you should consult an appropriate official college source rather than guessing."
+          },
+          "limitations": "RAG is very powerful, but it is not perfect. If the retrieval system brings back poorly matched or outdated documents, the quality of the answer will weaken. Furthermore, RAG does not guarantee 100 percent correctness. The AI can still misread text or return a wrong answer, so it is important to check important claims against the original sources.",
+          "recap": [
+            "RAG combines document retrieval with AI text generation.",
+            "Looking up documents at question time does not require retraining the model.",
+            "Retrieval relevance and source freshness ensure the AI has good facts to work with.",
+            "RAG can still make errors, so users should always check important facts against the source."
+          ],
+          "practice_questions": [
+            {
+              "question": "What does RAG stand for, and what are its two main parts?",
+              "answer": "RAG stands for retrieval-augmented generation. Its two main parts are retrieval, which searches for relevant external information, and generation, which writes out a clear answer using that information."
+            },
+            {
+              "question": "How is looking up documents at question time different from fine-tuning a model?",
+              "answer": "Looking up documents means feeding external text into the prompt at the moment a question is asked without altering the model's inner weights, whereas fine-tuning changes the trained model itself."
+            },
+            {
+              "question": "Why is it important to check the original source when using a RAG system?",
+              "answer": "RAG does not promise perfect correctness and can still return wrong or unsupported answers, so checking the source helps verify accuracy."
+            }
+          ],
+          "source_references": [
+            {
+              "source_id": "S1",
+              "claim_ids": [
+                "C01",
+                "C02",
+                "C05"
+              ]
+            },
+            {
+              "source_id": "S2",
+              "claim_ids": [
+                "C06",
+                "C07",
+                "C08"
+              ]
+            },
+            {
+              "source_id": "S3",
+              "claim_ids": [
+                "C03",
+                "C04"
+              ]
+            },
+            {
+              "source_id": "S4",
+              "claim_ids": [
+                "C02",
+                "C03",
+                "C08",
+                "P01"
+              ]
+            }
+          ]
+        },
+        "evaluation": [
+          {
+            "check_id": "STRUCTURE",
+            "passed": true,
+            "evidence": "Validated structured lesson",
+            "reason": "All required sections and exactly three practice answers are present.",
+            "required_change": "",
+            "claim_ids": [],
+            "missing_content": false
+          },
+          {
+            "check_id": "SOURCES",
+            "passed": true,
+            "evidence": "S1, S2, S3, S4",
+            "reason": "Source/claim identifiers match the pack and the teaching notice is explicitly labelled illustrative.",
+            "required_change": "",
+            "claim_ids": [],
+            "missing_content": false
+          },
+          {
+            "check_id": "RAG_DEFINITION",
+            "passed": true,
+            "evidence": "RAG stands for retrieval-augmented generation.",
+            "reason": "The lesson correctly defines RAG as retrieval-augmented generation and explains its core purpose.",
+            "required_change": "",
+            "claim_ids": [
+              "C01"
+            ],
+            "missing_content": false
+          },
+          {
+            "check_id": "EXTERNAL_KNOWLEDGE",
+            "passed": true,
+            "evidence": "AI models often fail when asked about new facts, local rules, or private documents that were not present when the model was first trained.",
+            "reason": "The lesson clearly explains why external documents are needed when facts are absent from model memory.",
+            "required_change": "",
+            "claim_ids": [
+              "C02"
+            ],
+            "missing_content": false
+          },
+          {
+            "check_id": "RAG_MECHANISM",
+            "passed": true,
+            "evidence": "The system places the relevant retrieved text into the prompt, which is the input text given to the model.",
+            "reason": "The lesson correctly orders retrieval, adding text to the prompt, and generating the final answer.",
+            "required_change": "",
+            "claim_ids": [
+              "C03"
+            ],
+            "missing_content": false
+          },
+          {
+            "check_id": "DOCUMENT_PREPARATION",
+            "passed": true,
+            "evidence": "A preparation pipeline loads documents, divides them into smaller pieces, and organizes them into a searchable index",
+            "reason": "The lesson explains document preparation and indexing using accessible beginner language.",
+            "required_change": "",
+            "claim_ids": [
+              "C04"
+            ],
+            "missing_content": false
+          },
+          {
+            "check_id": "NOT_RETRAINING",
+            "passed": true,
+            "evidence": "With RAG, you keep the model the same and simply hand it the right document at question time.",
+            "reason": "The lesson correctly distinguishes question-time retrieval from retraining or fine-tuning model weights.",
+            "required_change": "",
+            "claim_ids": [
+              "C05"
+            ],
+            "missing_content": false
+          },
+          {
+            "check_id": "GROUNDED_CLAIMS",
+            "passed": true,
+            "evidence": "Illustrative Indian college example. Asha College and every detail in this notice are invented for learning",
+            "reason": "All material claims are grounded in approved notes and the example is properly labelled as illustrative.",
+            "required_change": "",
+            "claim_ids": [
+              "C01",
+              "C02",
+              "C03",
+              "C04",
+              "C05",
+              "C06",
+              "C07",
+              "C08",
+              "P01"
+            ],
+            "missing_content": false
+          },
+          {
+            "check_id": "TERMS_EXPLAINED",
+            "passed": true,
+            "evidence": "an artificial intelligence (AI), which is a computer system that can think or answer questions like a human",
+            "reason": "Technical terms such as AI, retrieval, generation, prompt, and index are clearly explained on first use.",
+            "required_change": "",
+            "claim_ids": [],
+            "missing_content": false
+          },
+          {
+            "check_id": "NO_PREREQUISITES",
+            "passed": true,
+            "evidence": "This lesson is designed for beginners starting an AI career with no prior technical knowledge",
+            "reason": "The lesson adopts a beginner-friendly approach suitable for grade-12 graduates without coding or AI backgrounds.",
+            "required_change": "",
+            "claim_ids": [],
+            "missing_content": false
+          },
+          {
+            "check_id": "WORKED_EXAMPLE",
+            "passed": true,
+            "evidence": "Based on the retrieved notice, the last date to apply for the Asha College book grant is 15 July",
+            "reason": "The worked example features an illustrative college notice, retrieval, and a supported answer.",
+            "required_change": "",
+            "claim_ids": [
+              "C03"
+            ],
+            "missing_content": false
+          },
+          {
+            "check_id": "HONEST_LIMITATIONS",
+            "passed": true,
+            "evidence": "Furthermore, RAG does not guarantee 100 percent correctness.",
+            "reason": "The lesson honestly addresses limitations, noting that RAG can make mistakes and is affected by retrieval quality and freshness.",
+            "required_change": "",
+            "claim_ids": [
+              "C06",
+              "C07",
+              "C08"
+            ],
+            "missing_content": false
+          },
+          {
+            "check_id": "MISSING_INFORMATION",
+            "passed": true,
+            "evidence": "The provided notice does not state the grant amount. That information is missing, and you should consult an appropriate official college source rather than guessing.",
+            "reason": "The missing information scenario correctly refuses to invent facts and directs consultation of official sources.",
+            "required_change": "",
+            "claim_ids": [
+              "P01"
+            ],
+            "missing_content": false
+          },
+          {
+            "check_id": "FLOW_AND_PRACTICE",
+            "passed": true,
+            "evidence": "RAG stands for retrieval-augmented generation. Its two main parts are retrieval...",
+            "reason": "The lesson has a coherent pedagogical flow, accurate recap, and three correct practice answers consistent with the sources.",
+            "required_change": "",
+            "claim_ids": [],
+            "missing_content": false
+          }
+        ],
+        "generation_usage": {
+          "candidates_token_count": 1308,
+          "prompt_token_count": 4066,
+          "prompt_tokens_details": [
+            {
+              "modality": "TEXT",
+              "token_count": 4066
+            }
+          ],
+          "total_token_count": 5374
+        },
+        "evaluator_usage": {
+          "candidates_token_count": 1303,
+          "prompt_token_count": 4933,
+          "prompt_tokens_details": [
+            {
+              "modality": "TEXT",
+              "token_count": 4933
+            }
+          ],
+          "thoughts_token_count": 851,
+          "total_token_count": 7087,
+          "attempt_usage": [
+            {
+              "candidates_token_count": 1303,
+              "prompt_token_count": 4933,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 4933
+                }
+              ],
+              "thoughts_token_count": 851,
+              "total_token_count": 7087
+            }
+          ]
+        },
+        "diagnostics": {
+          "word_count": 732,
+          "sentences_over_25_words": 4,
+          "note": "Diagnostics only. Neither word count nor sentence length decides approval."
+        }
+      }
+    ],
+    "feedback": [],
+    "final_lesson": {
+      "title": "Introduction to Retrieval-Augmented Generation",
+      "learning_objectives": [
+        "Define RAG in simple everyday English.",
+        "Explain how looking up documents differs from changing a trained model.",
+        "Recognize why retrieval relevance, source freshness, and accuracy checks matter."
+      ],
+      "prerequisites": "This lesson is designed for beginners starting an AI career with no prior technical knowledge, coding background, or database experience.",
+      "what_it_is": "RAG stands for retrieval-augmented generation. In simple terms, it is a method that helps an artificial intelligence (AI), which is a computer system that can think or answer questions like a human, give correct answers by looking up information from external documents instead of guessing from memory. When you ask a question, the system first performs a retrieval, which means searching through a collection of external texts to find the right facts. Then, it uses generation, which is the AI's ability to write a clear, natural answer using the facts it just found. This is different from fine-tuning, which means changing the permanent knowledge inside the trained model itself. With RAG, you keep the model the same and simply hand it the right document at question time.",
+      "why_it_matters": "AI models often fail when asked about new facts, local rules, or private documents that were not present when the model was first trained. Without RAG, the model might guess or make up an answer that sounds correct but is totally wrong. By using retrieval, the AI can look at current documents, such as college notices, company rules, or news updates. This helps the AI provide useful, fact-based answers while letting readers check the original sources for accuracy.",
+      "how_it_works": [
+        "A preparation pipeline loads documents, divides them into smaller pieces, and organizes them into a searchable index, which is an organized list that makes finding specific text fast.",
+        "When a user asks a question, the system searches the index for text that is relevant to that specific question.",
+        "The system places the relevant retrieved text into the prompt, which is the input text given to the model.",
+        "The language model reads the prompt with the added text and generates a final, helpful answer."
+      ],
+      "worked_example": {
+        "context": "Illustrative Indian college example. Asha College and every detail in this notice are invented for learning; they are not real scholarship advice.",
+        "learner_question": "What is the last date to apply for the Asha College book grant?",
+        "source_passage": "Illustrative Asha College notice: Book grant applications close on 15 July. Students must submit the application form at the college office. This notice does not state the grant amount or eligibility rules.",
+        "retrieved_information": "Illustrative Asha College notice: Book grant applications close on 15 July. Students must submit the application form at the college office.",
+        "supported_answer": "Based on the retrieved notice, the last date to apply for the Asha College book grant is 15 July, and students must submit their forms at the college office.",
+        "missing_information_question": "How much money will I receive from this book grant?",
+        "missing_information_answer": "The provided notice does not state the grant amount. That information is missing, and you should consult an appropriate official college source rather than guessing."
+      },
+      "limitations": "RAG is very powerful, but it is not perfect. If the retrieval system brings back poorly matched or outdated documents, the quality of the answer will weaken. Furthermore, RAG does not guarantee 100 percent correctness. The AI can still misread text or return a wrong answer, so it is important to check important claims against the original sources.",
+      "recap": [
+        "RAG combines document retrieval with AI text generation.",
+        "Looking up documents at question time does not require retraining the model.",
+        "Retrieval relevance and source freshness ensure the AI has good facts to work with.",
+        "RAG can still make errors, so users should always check important facts against the source."
+      ],
+      "practice_questions": [
+        {
+          "question": "What does RAG stand for, and what are its two main parts?",
+          "answer": "RAG stands for retrieval-augmented generation. Its two main parts are retrieval, which searches for relevant external information, and generation, which writes out a clear answer using that information."
+        },
+        {
+          "question": "How is looking up documents at question time different from fine-tuning a model?",
+          "answer": "Looking up documents means feeding external text into the prompt at the moment a question is asked without altering the model's inner weights, whereas fine-tuning changes the trained model itself."
+        },
+        {
+          "question": "Why is it important to check the original source when using a RAG system?",
+          "answer": "RAG does not promise perfect correctness and can still return wrong or unsupported answers, so checking the source helps verify accuracy."
+        }
+      ],
+      "source_references": [
+        {
+          "source_id": "S1",
+          "claim_ids": [
+            "C01",
+            "C02",
+            "C05"
+          ]
+        },
+        {
+          "source_id": "S2",
+          "claim_ids": [
+            "C06",
+            "C07",
+            "C08"
+          ]
+        },
+        {
+          "source_id": "S3",
+          "claim_ids": [
+            "C03",
+            "C04"
+          ]
+        },
+        {
+          "source_id": "S4",
+          "claim_ids": [
+            "C02",
+            "C03",
+            "C08",
+            "P01"
+          ]
+        }
+      ]
+    },
+    "review_draft": null,
+    "attempt_count": 1
+  },
+  "events": [
+    {
+      "sequence": 94,
+      "run_id": "a791fca8f9004ca1828c59ef1b63794e",
+      "stage": "QUEUED",
+      "message": "Run accepted. Up to three drafts; every mandatory check must pass.",
+      "created_at": "2026-11-13T17:39:24.028320+00:00",
+      "details": {}
+    },
+    {
+      "sequence": 95,
+      "run_id": "a791fca8f9004ca1828c59ef1b63794e",
+      "stage": "LOADING_CONTEXT",
+      "message": "Loaded frozen references, rubric, learner profile, and validated memory.",
+      "created_at": "2026-11-13T17:39:24.076707+00:00",
+      "details": {
+        "selected_memory_ids": []
+      }
+    },
+    {
+      "sequence": 96,
+      "run_id": "a791fca8f9004ca1828c59ef1b63794e",
+      "stage": "GENERATING",
+      "message": "Creating draft 1 of 3.",
+      "created_at": "2026-11-13T17:39:24.089036+00:00",
+      "details": {
+        "attempt": 1,
+        "failed_check_ids": []
+      }
+    },
+    {
+      "sequence": 97,
+      "run_id": "a791fca8f9004ca1828c59ef1b63794e",
+      "stage": "VALIDATING",
+      "message": "Checking the lesson structure and approved reference identifiers.",
+      "created_at": "2026-11-13T17:39:34.206908+00:00",
+      "details": {}
+    },
+    {
+      "sequence": 98,
+      "run_id": "a791fca8f9004ca1828c59ef1b63794e",
+      "stage": "EVALUATING",
+      "message": "A separate Gemini call is judging every rubric check against the frozen references.",
+      "created_at": "2026-11-13T17:39:34.214979+00:00",
+      "details": {
+        "attempt": 1
+      }
+    },
+    {
+      "sequence": 99,
+      "run_id": "a791fca8f9004ca1828c59ef1b63794e",
+      "stage": "VERDICT",
+      "message": "All mandatory checks passed.",
+      "created_at": "2026-11-13T17:39:44.098980+00:00",
+      "details": {
+        "failed_check_ids": [],
+        "passed_checks": 14,
+        "evaluated_checks": 14
+      }
+    },
+    {
+      "sequence": 100,
+      "run_id": "a791fca8f9004ca1828c59ef1b63794e",
+      "stage": "APPROVED",
+      "message": "All mandatory checks passed. Lesson released.",
+      "created_at": "2026-11-13T17:39:44.127701+00:00",
+      "details": {}
+    }
+  ]
+}

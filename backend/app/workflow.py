@@ -69,7 +69,7 @@ def build_graph(repository, ai):
     async def evaluate_lesson(state):
         checks = list(state["structure"])
         if checks[0]["passed"]:
-            repository.event(state["run_id"], "EVALUATING", "A separate Gemini call is judging every rubric check against the frozen references.", {"attempt": len(state["attempts"])})
+            repository.event(state["run_id"], "EVALUATING", "Gemini is checking the frozen rubric in three focused passes, separate from generation.", {"attempt": len(state["attempts"]), "evaluation_groups": 3})
             raw, usage = await ai.evaluate(state["current_lesson"], state["context"]["source_pack"], state["context"]["rubric"], retry_event(state["run_id"], "evaluation"))
             try:
                 checks.extend(validate_evaluation(raw, state["current_lesson"]))

@@ -30,13 +30,13 @@ def structure_checks(draft, source_pack=SOURCE_PACK):
     return lesson, checks
 
 
-def validate_evaluation(raw, lesson):
+def validate_evaluation(raw, lesson, expected_ids=None):
     try:
         evaluation = Evaluation.model_validate(raw)
     except ValidationError:
         raise WorkflowError("INVALID_EVALUATION", "Evaluator output did not match the required check schema. No lesson was approved.") from None
     ids = [check.check_id for check in evaluation.checks]
-    if len(ids) != len(set(ids)) or set(ids) != set(MODEL_CHECK_IDS):
+    if len(ids) != len(set(ids)) or set(ids) != set(expected_ids if expected_ids is not None else MODEL_CHECK_IDS):
         raise WorkflowError("INVALID_EVALUATION", "Evaluator omitted, duplicated, or invented a check ID. No lesson was approved.")
     text = " ".join(lesson_text(lesson).split())
     for check in evaluation.checks:

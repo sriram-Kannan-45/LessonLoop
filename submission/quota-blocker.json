@@ -1,0 +1,21 @@
+{
+  "recorded_at": "2026-11-14T06:45:37.784007+00:00",
+  "provider": "gemini",
+  "model": "gemini-3.5-flash",
+  "http_status": 429,
+  "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+  "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+  "quotaValue": 20,
+  "observed_retry_delay_seconds": 4651,
+  "note": "Retry delay was observed in a separate sanitized SDK probe after the comparison. It is relative to that response, not this file timestamp. Daily quotas reset at midnight Pacific according to official documentation.",
+  "estimated_next_reset_utc": "2026-11-14T08:00:00+00:00",
+  "source": "https://ai.google.dev/gemini-api/docs/rate-limits",
+  "affected_experiment": "0f6314b8c6bf4608a4e3c96588f31d20",
+  "candidate_activated": false,
+  "remaining_live_acceptance": [
+    "Qualifying controlled improvement under paired-normal-and-targeted-v2",
+    "Later real run selecting its validated memory after restart",
+    "Current evaluator calibration/held-out diagnostics, respecting the quota budget"
+  ],
+  "billing_changed": false
+}

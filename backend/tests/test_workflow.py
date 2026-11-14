@@ -216,6 +216,18 @@ def test_memory_is_persistent_selected_bounded_and_rollback_works(repo):
     assert not start(repo, FakeAI())["selected_memory"]
 
 
+def test_prompt_text_and_selected_memory_share_the_four_instruction_bound(repo):
+    run = start(repo, FakeAI())
+    for number in range(5):
+        experiment = repo.create_experiment("TERMS_EXPLAINED", f"Unique teaching note {number}.", [run["id"]], "mocked-bound-test")
+        repo.finish_experiment(experiment, "ACTIVATED", [{"mocked": True}])
+    prompt = repo.active_prompt()
+    assert len(prompt["memory_ids"]) == 4
+    assert "Unique teaching note 0." not in prompt["instructions"]
+    assert all(f"Unique teaching note {number}." in prompt["instructions"] for number in range(1, 5))
+    assert len(start(Repository(repo.path), FakeAI())["selected_memory"]) == 4
+
+
 def test_full_controlled_comparison_activates_only_observed_benefit(repo):
     from app.improvements import INSTRUCTIONS
 
@@ -231,11 +243,32 @@ def test_full_controlled_comparison_activates_only_observed_benefit(repo):
     first = start(repo, FakeAI(failures=1))
     second = start(repo, FakeAI(failures=1))
     experiment_id = repo.create_experiment("TERMS_EXPLAINED", INSTRUCTIONS["TERMS_EXPLAINED"], [first["id"], second["id"]], "mocked-calibration")
-    asyncio.run(execute_improvement(repo, ComparisonAI(), experiment_id))
+    ai = ComparisonAI()
+    asyncio.run(execute_improvement(repo, ai, experiment_id))
     experiment = repo.experiment(experiment_id)
     assert experiment["status"] == "ACTIVATED"
     assert len(experiment["results"]) == 2
+    assert "comparison_case" not in ai.generated[0]["context"]
+    assert "comparison_case" not in ai.generated[1]["context"]
+    assert ai.generated[2]["context"]["comparison_case"] == ai.generated[3]["context"]["comparison_case"]
+    assert all(row["comparison_protocol"] == "paired-normal-and-targeted-v2" for row in experiment["results"])
     assert start(Repository(repo.path), FakeAI())["selected_memory"]
+
+
+def test_comparison_preserves_generated_draft_when_evaluation_fails(repo):
+    class FailedComparison(FakeAI):
+        async def evaluate(self, *args, **kwargs):
+            raise WorkflowError("TIMEOUT", "Mocked evaluator timeout.")
+
+    run = start(repo, FakeAI())
+    experiment_id = repo.create_experiment("TERMS_EXPLAINED", "Explain first-use terms.", [run["id"]], "mocked-error-test")
+    asyncio.run(execute_improvement(repo, FailedComparison(), experiment_id))
+    result = Repository(repo.path).experiment(experiment_id)
+    assert result["status"] == "ERROR"
+    assert result["results"][0]["baseline"]["draft"]["title"].endswith("draft 1")
+    assert result["results"][0]["baseline"]["status"] == "EVALUATION_PENDING"
+    assert result["results"][0]["baseline"]["approved"] is False
+    assert repo.active_prompt()["version"] == "generator-v1"
 
 
 def test_api_topic_guard_events_exports_and_feedback(settings):
