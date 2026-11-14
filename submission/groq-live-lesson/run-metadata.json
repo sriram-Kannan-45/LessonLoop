@@ -1,0 +1,36 @@
+{
+  "id": "2b13bb0094e348b8935480142a81deb8",
+  "topic": "Introduction to RAG",
+  "learner_profile": "india_beginner",
+  "status": "APPROVED",
+  "stage": "APPROVED",
+  "started_at": "2026-11-14T13:46:46.043256+00:00",
+  "finished_at": "2026-11-14T13:47:26.419388+00:00",
+  "source_pack_version": "rag-primary-v1.1",
+  "rubric_version": "beginner-rag-v1.1",
+  "generator_prompt_version": "generator-v1",
+  "evaluator_prompt_version": "evaluator-v6-term-context",
+  "generator_model": "gemini-3.5-flash-lite",
+  "evaluator_model": "gemini-3.5-flash",
+  "provider": "gemini",
+  "retry_count": 0,
+  "demo_error": 0,
+  "selected_memory": [],
+  "error": null,
+  "feedback": [],
+  "attempt_count": 1,
+  "providers_used": [
+    {
+      "provider": "gemini",
+      "model": "gemini-3.5-flash"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b"
+    }
+  ]
+}

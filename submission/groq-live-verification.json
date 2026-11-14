@@ -1,0 +1,171 @@
+{
+  "run_id": "2b13bb0094e348b8935480142a81deb8",
+  "started_via": "Real React Generate lesson button",
+  "page_errors": [],
+  "status": "APPROVED",
+  "attempts": 1,
+  "error": null,
+  "providers_used": [
+    {
+      "provider": "gemini",
+      "model": "gemini-3.5-flash"
+    },
+    {
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b"
+    }
+  ],
+  "generation_usage": [
+    {
+      "candidates_token_count": 1679,
+      "prompt_token_count": 4151,
+      "prompt_tokens_details": [
+        {
+          "modality": "TEXT",
+          "token_count": 4151
+        }
+      ],
+      "total_token_count": 5830,
+      "provider": "gemini",
+      "model": "gemini-3.5-flash-lite",
+      "requested_model": "gemini-3.5-flash-lite",
+      "role": "generation",
+      "fallback": false
+    }
+  ],
+  "evaluation_usage": [
+    {
+      "group_usage": [
+        {
+          "check_ids": [
+            "RAG_DEFINITION",
+            "RAG_MECHANISM",
+            "NOT_RETRAINING",
+            "GROUNDED_CLAIMS"
+          ],
+          "candidates_token_count": 568,
+          "prompt_token_count": 5015,
+          "prompt_tokens_details": [
+            {
+              "modality": "TEXT",
+              "token_count": 5015
+            }
+          ],
+          "thoughts_token_count": 1534,
+          "total_token_count": 7117,
+          "provider": "gemini",
+          "model": "gemini-3.5-flash",
+          "requested_model": "gemini-3.5-flash",
+          "role": "evaluation",
+          "fallback": false,
+          "attempt_usage": [
+            {
+              "candidates_token_count": 568,
+              "prompt_token_count": 5015,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 5015
+                }
+              ],
+              "thoughts_token_count": 1534,
+              "total_token_count": 7117,
+              "provider": "gemini",
+              "model": "gemini-3.5-flash",
+              "requested_model": "gemini-3.5-flash",
+              "role": "evaluation",
+              "fallback": false
+            }
+          ]
+        },
+        {
+          "check_ids": [
+            "EXTERNAL_KNOWLEDGE",
+            "DOCUMENT_PREPARATION",
+            "HONEST_LIMITATIONS",
+            "MISSING_INFORMATION"
+          ],
+          "candidates_token_count": 503,
+          "prompt_token_count": 5010,
+          "prompt_tokens_details": [
+            {
+              "modality": "TEXT",
+              "token_count": 5010
+            }
+          ],
+          "thoughts_token_count": 1024,
+          "total_token_count": 6537,
+          "provider": "gemini",
+          "model": "gemini-3.5-flash",
+          "requested_model": "gemini-3.5-flash",
+          "role": "evaluation",
+          "fallback": false,
+          "attempt_usage": [
+            {
+              "candidates_token_count": 503,
+              "prompt_token_count": 5010,
+              "prompt_tokens_details": [
+                {
+                  "modality": "TEXT",
+                  "token_count": 5010
+                }
+              ],
+              "thoughts_token_count": 1024,
+              "total_token_count": 6537,
+              "provider": "gemini",
+              "model": "gemini-3.5-flash",
+              "requested_model": "gemini-3.5-flash",
+              "role": "evaluation",
+              "fallback": false
+            }
+          ]
+        },
+        {
+          "check_ids": [
+            "TERMS_EXPLAINED",
+            "NO_PREREQUISITES",
+            "WORKED_EXAMPLE",
+            "FLOW_AND_PRACTICE"
+          ],
+          "prompt_tokens": 5502,
+          "completion_tokens": 584,
+          "total_tokens": 6086,
+          "provider": "groq",
+          "model": "qwen/qwen3.8-27b",
+          "requested_model": "qwen/qwen3.8-27b",
+          "role": "evaluation",
+          "fallback": true,
+          "primary_provider": "gemini",
+          "primary_model": "gemini-3.5-flash",
+          "fallback_reason": "RATE_LIMIT_OR_QUOTA",
+          "gemini_retry_at": 1794729603.5893958,
+          "attempt_usage": [
+            {
+              "prompt_tokens": 5502,
+              "completion_tokens": 584,
+              "total_tokens": 6086,
+              "provider": "groq",
+              "model": "qwen/qwen3.8-27b",
+              "requested_model": "qwen/qwen3.8-27b",
+              "role": "evaluation",
+              "fallback": true,
+              "primary_provider": "gemini",
+              "primary_model": "gemini-3.5-flash",
+              "fallback_reason": "RATE_LIMIT_OR_QUOTA",
+              "gemini_retry_at": 1794729603.5893958
+            }
+          ]
+        }
+      ],
+      "evaluation_groups": 3
+    }
+  ],
+  "failed_checks_by_draft": [
+    []
+  ],
+  "final_passed_checks": 14
+}

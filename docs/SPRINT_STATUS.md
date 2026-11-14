@@ -27,4 +27,4 @@ The software cannot supply a human face-visible recording. Use docs/VIDEO_WALKTH
 
 ## Groq backup update
 
-Automatic quota-only fallback is implemented and transport/browser-tested. Add GROQ_API_KEY in backend/.env and restart to enable real Groq use. The user has not set that key yet; live Groq access, failover and judge accuracy are not claimed as verified. Actual providers are shown per draft and in audit JSON, and mixed-provider prompt comparisons cannot activate a candidate.
+Automatic quota-only fallback is implemented and transport/browser-tested. Add GROQ_API_KEY in backend/.env and restart to enable real Groq use. The user has now set the key. Real run 2b13bb0094e348b8935480142a81deb8 verified automatic Gemini-quota -> Groq evaluation fallback and ended APPROVED, 14/14 on draft one. Broader judge accuracy, Groq generation and all-Groq evaluation remain unverified live. Actual providers are shown per draft and in audit JSON, and mixed-provider prompt comparisons cannot activate a candidate.
