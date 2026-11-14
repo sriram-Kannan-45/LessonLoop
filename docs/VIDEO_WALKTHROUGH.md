@@ -18,7 +18,7 @@ Target length: 18 to 20 minutes. A human must record with their own face visible
 
 App action: show Lesson studio and the learner summary.
 
-Speaker notes: “Our learner has finished grade 12 in India, studied outside English-medium education, and is starting an AI career. A fluent AI answer may still use unexplained jargon or invent a fact. LessonLoop creates a lesson and checks specific requirements before releasing it. I chose Gemini only; generation and evaluation are separate calls, which can still share mistakes.”
+Speaker notes: “Our learner has finished grade 12 in India, studied outside English-medium education, and is starting an AI career. A fluent AI answer may still use unexplained jargon or invent a fact. LessonLoop creates a lesson and checks specific requirements before releasing it. Gemini is primary and Groq is a quota backup. Generation and evaluation are separate calls, which can still share mistakes. Actual providers are shown per draft.”
 
 ## 2 to 6 minutes — Normal end-to-end run
 

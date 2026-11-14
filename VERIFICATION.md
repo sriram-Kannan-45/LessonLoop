@@ -1,14 +1,14 @@
 # Sprint verification
 
-Audited 14 November 2026 on Windows. The user explicitly chose Gemini only. Current settings generate with gemini-3.5-flash-lite and evaluate with gemini-3.5-flash in three separate focused requests. Earlier runs retain their original model/prompt snapshots.
+Audited 14 November 2026 on Windows. The user originally chose Gemini only and later explicitly requested automatic Groq fallback on Gemini quota/rate limits. Primary settings remain gemini-3.5-flash-lite for generation and gemini-3.5-flash for three evaluation groups. Configured Groq models can handle affected calls; actual usage is recorded. Earlier runs retain their original model/prompt snapshots.
 
 ## Current checks
 
 | Check | Observed result |
 | --- | --- |
-| Backend pytest | 63 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
+| Backend pytest | 79 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
 | TypeScript and production build | Passed. |
-| Desktop/mobile Playwright | 26 passed, installed Edge; inference mocked, real local health/configuration checked. |
+| Desktop/mobile Playwright | 30 passed, installed Edge; inference mocked, real local health/configuration checked. |
 | Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
 | Persistence | Actual server restart preserved approved runs, failure observations, inactive proposals and generator-v1. No active job was abandoned during the final restart. |
 
@@ -68,3 +68,9 @@ The reported failed run 36bcb7eab9224e069482430174503add returned HTTP 503 from 
 The real Try again test e92eaa409983478aacd9ae1b303fcb5d finished NEEDS_REVIEW after three drafts, with no provider error. It detected the deliberately injected false guarantee; a wrong S3:C06 source mapping remained. Its honest 13/14 result is in submission/provider-recovery.json. This exposed ambiguous source feedback: the validator now names the invalid pairs and supplies the allowed mapping in its correction, and generation receives the same compact approved mapping. The acceptance rule is unchanged; claims are never automatically relabelled or approved. A targeted regression test keeps this failure actionable.
 
 Final normal-mode live verification after the citation correction: fe2597a7169142e4a82f9de226521cb6, started through the real React Generate lesson button, APPROVED after two drafts with all 14 checks passed. Draft one failed TERMS_EXPLAINED; the actual feedback drove the rewrite. Both source checks passed. No provider error or browser JavaScript error occurred. The structured result is in submission/provider-normal-recovery.json. This verifies the current provider-recovery workflow, not the separately pending learned-memory or evaluator-dataset acceptance checks.
+
+## Groq quota fallback verification
+
+The fallback implementation is verified with deterministic in-memory HTTP transports, not a live Groq key. Tests exercise Gemini quota -> Groq generation/evaluation, per-model cooldown reuse and expiry, a healthy generator while only its evaluator quota is exhausted, disabled/missing backup configuration, invalid backup credentials and backup quota, no fallback on non-quota errors, native strict schema serialization, redaction of both keys, request pacing and real workflow/API persistence of actual providers. Invalid Groq booleans fail local evaluation and cannot approve a lesson. Provider/model drift makes a prompt comparison ineligible for activation. Browser tests cover backup readiness, missing-key guidance and actual saved provider identities on desktop/mobile.
+
+The user clarified that GROQ_API_KEY has not yet been set. The ignored backend/.env and checked-in .env.example have empty key placeholders plus the Qwen model settings. A real Groq connection, end-to-end live failover, token-budget suitability and judge accuracy remain unverified until the user supplies the key and live checks run. No successful Groq call or approved Groq lesson is invented. Existing real Gemini lessons remain valid historical evidence under their original snapshots. The separate pending memory/dataset acceptance work was not silently resumed.

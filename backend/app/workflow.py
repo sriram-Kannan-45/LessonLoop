@@ -31,6 +31,17 @@ class RunState(TypedDict, total=False):
 
 
 def build_graph(repository, ai):
+    def provider_events(run_id):
+        def record(event):
+            if event["type"] == "PROVIDER_FALLBACK":
+                message = f"Gemini quota reached. Switching {event['role']} to Groq ({event['model']})."
+            elif event["type"] == "PROVIDER_WAIT":
+                message = f"Waiting {event['wait_seconds']} seconds before the next Groq request to respect its token allowance."
+            else:
+                message = f"{event['role'].capitalize()} response received from {event['provider']} ({event['model']})."
+            repository.event(run_id, event["type"], message, event)
+        return record
+
     def retry_event(run_id, role):
         return lambda number, code: repository.event(run_id, "TECHNICAL_RETRY", f"Retrying {role} request after a temporary failure.", {"role": role, "technical_retry": number, "code": code})
 
@@ -49,7 +60,7 @@ def build_graph(repository, ai):
         number = len(state["attempts"]) + 1
         stage = "GENERATING" if number == 1 else "REWRITING"
         repository.event(state["run_id"], stage, f"{'Creating' if number == 1 else 'Revising'} draft {number} of 3.", {"attempt": number, "failed_check_ids": [check["check_id"] for check in state["failure_feedback"]]})
-        draft, usage = await ai.generate(state["context"], state.get("current_lesson"), state["failure_feedback"], retry_event(state["run_id"], "generation"))
+        draft, usage = await ai.generate(state["context"], state.get("current_lesson"), state["failure_feedback"], retry_event(state["run_id"], "generation"), on_provider_event=provider_events(state["run_id"]))
         original = None
         if number == 1 and state["context"]["demo_error"]:
             original = copy.deepcopy(draft)
@@ -69,8 +80,8 @@ def build_graph(repository, ai):
     async def evaluate_lesson(state):
         checks = list(state["structure"])
         if checks[0]["passed"]:
-            repository.event(state["run_id"], "EVALUATING", "Gemini is checking the frozen rubric in three focused passes, separate from generation.", {"attempt": len(state["attempts"]), "evaluation_groups": 3})
-            raw, usage = await ai.evaluate(state["current_lesson"], state["context"]["source_pack"], state["context"]["rubric"], retry_event(state["run_id"], "evaluation"))
+            repository.event(state["run_id"], "EVALUATING", "Checking the frozen rubric in three focused passes, separate from generation.", {"attempt": len(state["attempts"]), "evaluation_groups": 3})
+            raw, usage = await ai.evaluate(state["current_lesson"], state["context"]["source_pack"], state["context"]["rubric"], retry_event(state["run_id"], "evaluation"), on_provider_event=provider_events(state["run_id"]))
             try:
                 checks.extend(validate_evaluation(raw, state["current_lesson"]))
             except WorkflowError:

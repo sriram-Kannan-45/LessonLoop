@@ -29,7 +29,7 @@ class FakeAI:
         self.failures, self.technical, self.malformed = failures, technical, malformed
         self.generated, self.evaluated = [], []
 
-    async def generate(self, context, previous=None, feedback=None, on_retry=None):
+    async def generate(self, context, previous=None, feedback=None, on_retry=None, on_provider_event=None):
         if self.technical:
             raise WorkflowError("TIMEOUT", "Mocked timeout; no provider called.")
         self.generated.append(copy.deepcopy({"context": context, "previous": previous, "feedback": feedback}))
@@ -37,7 +37,7 @@ class FakeAI:
         lesson["title"] += f" draft {len(self.generated)}"
         return lesson, {"total_token_count": 10}
 
-    async def evaluate(self, lesson, source_pack, rubric, on_retry=None):
+    async def evaluate(self, lesson, source_pack, rubric, on_retry=None, on_provider_event=None):
         self.evaluated.append(copy.deepcopy(lesson))
         result = passing_checks(lesson)
         if self.malformed:
@@ -228,6 +228,21 @@ def test_memory_is_persistent_selected_bounded_and_rollback_works(repo):
     assert not start(repo, FakeAI())["selected_memory"]
 
 
+def test_a_provider_change_cannot_be_credited_to_a_prompt_improvement():
+    from app.improvements import annotate_comparison
+
+    row = {"baseline": {"checks": [{"check_id": "TERMS_EXPLAINED", "passed": False}],
+                        "generation_usage": {"provider": "gemini", "model": "generator"},
+                        "evaluation_usage": {"group_usage": [{"provider": "gemini", "model": "judge"}]}},
+           "candidate": {"checks": [{"check_id": "TERMS_EXPLAINED", "passed": True}],
+                         "generation_usage": {"provider": "gemini", "model": "generator"},
+                         "evaluation_usage": {"group_usage": [{"provider": "groq", "model": "qwen"}]}}}
+    assert not comparison_passes([row], "TERMS_EXPLAINED")
+    assert annotate_comparison([row], "TERMS_EXPLAINED")[0]["provider_comparison_valid"] is False
+    row["baseline"]["evaluation_usage"] = copy.deepcopy(row["candidate"]["evaluation_usage"])
+    assert comparison_passes([row], "TERMS_EXPLAINED")
+
+
 def test_prompt_text_and_selected_memory_share_the_four_instruction_bound(repo):
     run = start(repo, FakeAI())
     for number in range(5):
@@ -308,6 +323,23 @@ def test_api_topic_guard_events_exports_and_feedback(settings):
         assert client.post(f"/api/runs/{run_id}/feedback", json={"category": "factual_issue", "message": "Please check this claim."}).json()["status"] == "unverified"
         assert client.get("/api/runs?limit=1").json()["total"] == 1
         assert client.post("/api/improvements", json={"category": "RAG_DEFINITION"}).status_code == 422
+
+
+def test_workspace_and_feedback_keep_both_provider_keys_private(settings):
+    settings.gemini_api_key = "fake-gemini-secret"
+    settings.gemini_model = "mocked-gemini"
+    settings.groq_api_key = "fake-groq-secret"
+    with TestClient(create_app(settings=settings, ai=FakeAI())) as client:
+        workspace = client.get("/api/workspace")
+        assert workspace.json()["fallback"]["configured"] is True
+        assert "fake-groq-secret" not in workspace.text
+        run_id = client.post("/api/runs", json={}).json()["id"]
+        feedback = client.post(f"/api/runs/{run_id}/feedback", json={"category": "factual_issue", "message": "Check fake-gemini-secret and fake-groq-secret."}).json()
+        reviewed = client.post(f"/api/feedback/{feedback['id']}/review", json={"action": "verified", "review_note": "Reviewed fake-gemini-secret and fake-groq-secret."})
+        assert "fake-groq-secret" not in reviewed.text
+        assert "fake-gemini-secret" not in reviewed.text
+        saved = client.get(f"/api/runs/{run_id}").text
+        assert "fake-groq-secret" not in saved and "fake-gemini-secret" not in saved
 
 
 def test_workspace_is_bounded_and_safe(settings):

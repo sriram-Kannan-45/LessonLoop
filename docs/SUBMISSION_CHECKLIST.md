@@ -47,7 +47,7 @@ Use docs/VIDEO_WALKTHROUGH.md to record a face-visible 15–20-minute walkthroug
 - Follow README.md to start the app and check local health.
 - Run backend tests and frontend checks, or show the recorded verified results.
 - Read docs/DESIGN.md for the actual local-process, same-provider, and dataset limitations.
-- Do not claim independent OpenAI evaluation: the user chose Gemini only.
+- Do not claim independent OpenAI evaluation: the current routing uses Gemini primary and an explicitly authorized Groq quota backup.
 - Do not claim learned memory improved a live run while all candidates remain inactive.
 - Review the lesson yourself for overlooked clarity/factual issues before using it as teaching material.
 - Verify GitHub, document, and video links. The app's localhost URL is not a public deployment URL.

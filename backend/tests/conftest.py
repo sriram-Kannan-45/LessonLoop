@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from app.config import Settings, get_settings
 from app.main import create_app
 from app.services import providers
+from app.services import groq
 from app.services.lesson_ai import LessonAI
 
 
@@ -18,6 +19,7 @@ def isolated_environment(monkeypatch):
     monkeypatch.setattr(providers, "request_gemini", AsyncMock(side_effect=AssertionError("Network calls are forbidden in tests")))
     monkeypatch.setattr(LessonAI, "generate", AsyncMock(side_effect=AssertionError("Network calls are forbidden in tests")))
     monkeypatch.setattr(LessonAI, "evaluate", AsyncMock(side_effect=AssertionError("Network calls are forbidden in tests")))
+    monkeypatch.setattr(groq, "request_groq", AsyncMock(side_effect=AssertionError("Network calls are forbidden in tests")))
     yield
     get_settings.cache_clear()
 

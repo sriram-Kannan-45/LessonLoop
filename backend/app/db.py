@@ -181,6 +181,14 @@ class Repository:
         run["final_lesson"] = run["attempts"][-1]["draft"] if run["status"] == "APPROVED" and run["attempts"] else None
         run["review_draft"] = run["attempts"][-1]["draft"] if run["status"] != "APPROVED" and run["attempts"] else None
         run["attempt_count"] = len(run["attempts"])
+        used = set()
+        for attempt in run["attempts"]:
+            generation = attempt["generation_usage"] or {}
+            evaluation = attempt["evaluator_usage"] or {}
+            for usage in [generation, *evaluation.get("group_usage", [evaluation])]:
+                if usage.get("provider") and usage.get("model"):
+                    used.add((usage["provider"], usage["model"]))
+        run["providers_used"] = [{"provider": provider, "model": model} for provider, model in sorted(used)]
         return run
 
     def history(self, limit=20, offset=0):

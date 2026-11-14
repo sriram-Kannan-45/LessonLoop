@@ -2,6 +2,7 @@ import asyncio
 import json
 import re
 import random
+import time
 from collections.abc import Callable
 
 from google import genai
@@ -30,19 +31,102 @@ class WorkflowError(Exception):
 
 
 class LessonAI:
-    """Separate stateless Gemini calls. No chat history or generator verdict reaches the judge."""
+    """Separate role calls, Gemini primary and quota-only Groq fallback."""
     def __init__(self, settings: Settings):
         self.settings = settings
         self.generator_model = settings.gemini_model or ""
         self.evaluator_model = settings.gemini_evaluator_model or settings.gemini_model or ""
+        self._quota = {}
+        self._groq_last_request = {}
+        self._groq_lock = asyncio.Lock()
 
     def redact(self, value):
-        if not self.settings.gemini_api_key:
-            return value
         text = json.dumps(value, ensure_ascii=False)
-        return json.loads(text.replace(self.settings.gemini_api_key.get_secret_value(), "[redacted]"))
+        for secret in (self.settings.gemini_api_key, self.settings.groq_api_key):
+            if secret:
+                text = text.replace(secret.get_secret_value(), "[redacted]")
+        return json.loads(text)
 
-    async def call(self, model, instructions, data, schema, on_retry: Callable | None = None, retry_limit=None, json_mode=False):
+    @property
+    def fallback_configured(self):
+        return bool(self.settings.groq_fallback_enabled and self.settings.groq_api_key and self.settings.groq_model)
+
+    async def call(self, model, instructions, data, schema, on_retry: Callable | None = None, retry_limit=None, json_mode=False, on_provider_event=None):
+        role = "generation" if schema is Lesson else "evaluation"
+        quota = self._quota.get(model)
+        if quota and quota["until"] > time.time():
+            return await self._fallback(model, instructions, data, schema, quota, on_retry, retry_limit, json_mode, on_provider_event)
+        try:
+            value, usage = await self._call_gemini(model, instructions, data, schema, on_retry, retry_limit, json_mode)
+        except WorkflowError as exc:
+            if exc.code != "RATE_LIMIT_OR_QUOTA":
+                raise
+            details = exc.diagnostics or {}
+            daily = any("PerDay" in item.get("quotaId", "") for item in details.get("quota_limits", []))
+            delay = details.get("retry_after_seconds")
+            delay = delay if isinstance(delay, (int, float)) and 0 < delay <= 86400 else (3600 if daily else 60)
+            quota = {"until": time.time() + delay, "diagnostics": details, "message": exc.message}
+            self._quota[model] = quota
+            return await self._fallback(model, instructions, data, schema, quota, on_retry, retry_limit, json_mode, on_provider_event)
+        usage.update(provider="gemini", model=model, requested_model=model, role=role, fallback=False)
+        if on_provider_event:
+            on_provider_event({"type": "PROVIDER_USED", "provider": "gemini", "model": model, "role": role})
+        return value, usage
+
+    async def _fallback(self, primary_model, instructions, data, schema, quota, on_retry, retry_limit, json_mode, on_provider_event):
+        role = "generation" if schema is Lesson else "evaluation"
+        model = (self.settings.groq_evaluator_model or self.settings.groq_model) if role == "evaluation" else self.settings.groq_model
+        if not self.fallback_configured or not model:
+            message = quota["message"]
+            if self.settings.groq_fallback_enabled:
+                message += " To enable automatic backup, set GROQ_API_KEY in backend/.env and restart the backend."
+            raise WorkflowError("RATE_LIMIT_OR_QUOTA", message, {**quota["diagnostics"], "fallback_configured": False})
+        event = {"type": "PROVIDER_FALLBACK", "from_provider": "gemini", "from_model": primary_model,
+                 "provider": "groq", "model": model, "role": role, "reason": "RATE_LIMIT_OR_QUOTA", "gemini_retry_at": quota["until"]}
+        if on_provider_event:
+            on_provider_event(event)
+        value, usage = await self._call_groq(model, instructions, data, schema, on_retry, retry_limit, json_mode, on_provider_event)
+        usage.update(role=role, fallback=True, primary_provider="gemini", primary_model=primary_model,
+                     fallback_reason="RATE_LIMIT_OR_QUOTA", gemini_retry_at=quota["until"])
+        if on_provider_event:
+            on_provider_event({"type": "PROVIDER_USED", "provider": "groq", "model": usage["model"], "role": role})
+        return value, usage
+
+    async def _call_groq(self, model, instructions, data, schema, on_retry, retry_limit, json_mode, on_provider_event):
+        from app.services.groq import request_groq
+
+        limit = self.settings.technical_retries if retry_limit is None else retry_limit
+        for attempt in range(limit + 1):
+            try:
+                async with self._groq_lock:
+                    last = self._groq_last_request.get(model)
+                    delay = max(0, self.settings.groq_min_interval_seconds - (time.monotonic() - last)) if last is not None else 0
+                    if delay:
+                        if on_provider_event:
+                            on_provider_event({"type": "PROVIDER_WAIT", "provider": "groq", "model": model,
+                                               "role": "generation" if schema is Lesson else "evaluation", "wait_seconds": round(delay, 1)})
+                        await asyncio.sleep(delay)
+                    self._groq_last_request[model] = time.monotonic()
+                    async with asyncio.timeout(self.settings.workflow_timeout_seconds):
+                        value, usage = await request_groq(self.settings, model, instructions, data, schema, json_mode)
+                return self.redact(value), self.redact(usage)
+            except WorkflowError as exc:
+                error = exc
+            except Exception as exc:
+                failure = map_failure(exc)
+                error = WorkflowError(failure.code, failure.message.replace("Gemini", "Groq"), {"provider": "groq", "provider_model": model, "exception_type": type(exc).__name__})
+            details = self.redact(error.diagnostics or {})
+            format_fallback = error.code == "INVALID_REQUEST" and not json_mode
+            delay = 0 if format_fallback else retry_delay(attempt + 1, details)
+            if attempt < limit and (format_fallback or error.code in TRANSIENT_FAILURES) and delay is not None:
+                json_mode = json_mode or format_fallback
+                if on_retry:
+                    on_retry(attempt + 1, error.code)
+                await asyncio.sleep(delay)
+                continue
+            raise WorkflowError(error.code, self.redact(error.message), details) from None
+
+    async def _call_gemini(self, model, instructions, data, schema, on_retry=None, retry_limit=None, json_mode=False):
         key = self.settings.gemini_api_key
         if not key or not model:
             raise WorkflowError("NOT_CONFIGURED", "Add the Gemini key and model to backend/.env, then restart the backend.")
@@ -81,7 +165,7 @@ class LessonAI:
             except Exception as exc:
                 failure = map_failure(exc)
                 status = getattr(exc, "code", 0)
-                details = self.redact({**provider_diagnostics(exc), "provider_model": model})
+                details = self.redact({**provider_diagnostics(exc), "provider": "gemini", "provider_model": model})
                 # Live tests observed intermittent bare 400s for otherwise accepted schemas.
                 # A 400 retry changes the request format; it never repeats the same invalid request.
                 format_fallback = status == 400 and failure.code == "INVALID_REQUEST" and not json_mode
@@ -95,7 +179,7 @@ class LessonAI:
                     continue
                 raise WorkflowError(failure.code, failure.message, details) from None
 
-    async def generate(self, context, previous=None, feedback=None, on_retry=None):
+    async def generate(self, context, previous=None, feedback=None, on_retry=None, on_provider_event=None):
         from app.quality import source_claim_mappings
 
         data = {
@@ -108,15 +192,15 @@ class LessonAI:
             data.update(previous_draft=previous, failed_checks=feedback or [])
         if context.get("comparison_case"):
             data["writing_scenario"] = context["comparison_case"]
-        return await self.call(self.generator_model, context["instructions"], data, Lesson, on_retry)
+        return await self.call(self.generator_model, context["instructions"], data, Lesson, on_retry, on_provider_event=on_provider_event)
 
-    async def evaluate(self, lesson, source_pack, rubric, on_retry=None):
+    async def evaluate(self, lesson, source_pack, rubric, on_retry=None, on_provider_event=None):
         from app.quality import validate_evaluation
 
         checks, usage_groups = [], []
         for group in EVALUATION_GROUPS:
             try:
-                raw, usage = await self.evaluate_group(lesson, source_pack, rubric, group, on_retry)
+                raw, usage = await self.evaluate_group(lesson, source_pack, rubric, group, on_retry, on_provider_event)
             except WorkflowError as exc:
                 exc.diagnostics = {**(exc.diagnostics or {}), "incomplete_group": list(group),
                                    "completed_checks": checks, "completed_group_usage": usage_groups}
@@ -127,7 +211,7 @@ class LessonAI:
         validate_evaluation(result, lesson)
         return result, {"group_usage": usage_groups, "evaluation_groups": len(EVALUATION_GROUPS)}
 
-    async def evaluate_group(self, lesson, source_pack, rubric, group, on_retry=None):
+    async def evaluate_group(self, lesson, source_pack, rubric, group, on_retry=None, on_provider_event=None):
         from app.quality import evidence_fields, validate_evaluation
 
         data = {"lesson": lesson, "learner_profile": LEARNER, "approved_reference_pack": source_pack,
@@ -142,7 +226,7 @@ class LessonAI:
         json_mode = False
         for attempt in range(self.settings.technical_retries + 1):
             try:
-                raw, usage = await self.call(self.evaluator_model, instructions, data, Evaluation, retry_limit=0, json_mode=json_mode)
+                raw, usage = await self.call(self.evaluator_model, instructions, data, Evaluation, retry_limit=0, json_mode=json_mode, on_provider_event=on_provider_event)
                 usage_history.append(usage)
                 validate_evaluation(raw, lesson, expected_ids=group)
                 usage["attempt_usage"] = [dict(item) for item in usage_history]

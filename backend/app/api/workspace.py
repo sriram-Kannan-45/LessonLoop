@@ -47,9 +47,14 @@ async def workspace(request: Request):
     return {"source_pack": SOURCE_PACK, "rubric": RUBRIC, "learner_profile": LEARNER,
             "learner_preset": "india_beginner", "generator_model": current.ai.generator_model,
             "evaluator_model": current.ai.evaluator_model, "provider": "gemini", "max_retries": 2,
-            "provider_note": "Separate Gemini calls for generation and evaluation. Same-provider judgments can share mistakes.",
+            "provider_note": "Gemini is primary. Groq is used only when Gemini reports a quota/rate limit. Actual providers are recorded per response; judges can still share mistakes.",
             "evaluation_groups": 3,
             "technical_retries": current.settings.technical_retries,
+            "fallback": {"provider": "groq", "enabled": current.settings.groq_fallback_enabled,
+                         "configured": bool(current.settings.groq_api_key and current.settings.groq_model),
+                         "generator_model": current.settings.groq_model,
+                         "evaluator_model": current.settings.groq_evaluator_model or current.settings.groq_model,
+                         "min_interval_seconds": current.settings.groq_min_interval_seconds},
             "configured": bool(current.settings.gemini_api_key and current.ai.generator_model and current.ai.evaluator_model),
             "busy": current.busy, "active_prompt_version": current.repository.active_prompt()["version"],
             "improvement_categories": list(INSTRUCTIONS), "demo_enabled": current.settings.app_env == "development"}
@@ -96,8 +101,9 @@ async def feedback(run_id: str, body: FeedbackRequest, request: Request):
     current = runtime(request)
     find_run(current, run_id)
     message = body.message
-    if current.settings.gemini_api_key:
-        message = message.replace(current.settings.gemini_api_key.get_secret_value(), "[redacted]")
+    for secret in (current.settings.gemini_api_key, current.settings.groq_api_key):
+        if secret:
+            message = message.replace(secret.get_secret_value(), "[redacted]")
     return current.repository.feedback(run_id, body.category, message)
 
 
@@ -106,8 +112,9 @@ async def review_feedback(feedback_id: str, body: FeedbackReview, request: Reque
     local_only(request)
     current = runtime(request)
     note = body.review_note
-    if current.settings.gemini_api_key:
-        note = note.replace(current.settings.gemini_api_key.get_secret_value(), "[redacted]")
+    for secret in (current.settings.gemini_api_key, current.settings.groq_api_key):
+        if secret:
+            note = note.replace(secret.get_secret_value(), "[redacted]")
     result = current.repository.review_feedback(feedback_id, body.action, note)
     if not result:
         raise ApiProblem(404, "FEEDBACK_NOT_FOUND", "That feedback record was not found.")

@@ -25,14 +25,16 @@ async def calibrate(settings, split, output):
               "model": ai.evaluator_model, "rubric_version": RUBRIC["version"], "rubric_sha256": RUBRIC["content_sha256"],
               "evaluator_prompt_version": PROMPTS["evaluator_version"], "source_pack_version": SOURCE_PACK["version"],
               "evaluation_groups": [list(group) for group in EVALUATION_GROUPS],
+              "provider_note": "Model field is the configured Gemini primary. Actual provider/model per group is in usage; quota fallback can use Groq.",
               "cases": [], "note": "Small authored dataset. Holdout is excluded from prompt comparisons. Report actual disagreements; do not treat format validation as correctness."}
     path = Path(output)
     path.parent.mkdir(parents=True, exist_ok=True)
     for example in labelled_examples(None if split == "all" else split):
         row = {"id": example["id"], "split": example["split"], "description": example["description"], "content_sha256": example["content_sha256"], "expected": example["expected"]}
         row["technical_retries"] = []
+        row["provider_events"] = []
         try:
-            raw, usage = await ai.evaluate(example["lesson"], SOURCE_PACK, RUBRIC, on_retry=lambda number, code: row["technical_retries"].append({"number": number, "code": code}))
+            raw, usage = await ai.evaluate(example["lesson"], SOURCE_PACK, RUBRIC, on_retry=lambda number, code: row["technical_retries"].append({"number": number, "code": code}), on_provider_event=row["provider_events"].append)
             checks = validate_evaluation(raw, example["lesson"])
             _, code_checks = structure_checks(example["lesson"])
             release = releasable([*code_checks, *checks])

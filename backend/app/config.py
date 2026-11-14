@@ -21,12 +21,17 @@ class Settings(BaseSettings):
     gemini_api_key: SecretStr | None = None
     gemini_model: str | None = None
     gemini_evaluator_model: str | None = None
+    groq_api_key: SecretStr | None = None
+    groq_model: str = "qwen/qwen3.8-27b"
+    groq_evaluator_model: str | None = None
+    groq_fallback_enabled: bool = True
+    groq_min_interval_seconds: float = Field(default=65, ge=0, le=120)
     provider_timeout_seconds: float = Field(default=30, gt=0, le=120)
     workflow_timeout_seconds: float = Field(default=90, gt=0, le=180)
     technical_retries: int = Field(default=2, ge=0, le=2)
     database_path: Path = ENV_FILE.parent / "data" / "lessonloop.sqlite3"
 
-    @field_validator("gemini_api_key", "gemini_model", "gemini_evaluator_model", mode="before")
+    @field_validator("gemini_api_key", "gemini_model", "gemini_evaluator_model", "groq_api_key", "groq_evaluator_model", mode="before")
     @classmethod
     def empty_is_missing(cls, value):
         if isinstance(value, str):

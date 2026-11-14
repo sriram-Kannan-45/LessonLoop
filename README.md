@@ -2,9 +2,9 @@
 
 LessonLoop creates and evaluates beginner lessons for an Indian grade-12 graduate with limited English vocabulary and no assumed AI or coding knowledge. The prepared submission topic is **Introduction to RAG**.
 
-Gemini generates a structured lesson. Separate Gemini calls judge twelve rubric checks, and Python enforces two structure/reference checks. **Every mandatory check must pass** before release. Actual failures drive at most two rewrites; unresolved drafts end **NEEDS_REVIEW**.
+Gemini is the primary generator and evaluator. On a Gemini quota/rate-limit response, the affected call automatically switches to configured Groq backup. Separate evaluation calls judge twelve rubric checks, and Python enforces two structure/reference checks. **Every mandatory check must pass** before release. Actual failures drive at most two rewrites; unresolved drafts end **NEEDS_REVIEW**.
 
-The user explicitly chose **Gemini only**. There is no OpenAI SDK or API call. Separate calls avoid a shared generator self-assessment but do not provide independent-provider evaluation or guarantee accurate judgments. [VERIFICATION.md](VERIFICATION.md) separates actual live results from mocked tests. [Sprint acceptance status](docs/SPRINT_STATUS.md) maps every sprint to its evidence and remaining human steps.
+The user originally chose Gemini only and later explicitly requested **Groq quota fallback**. No OpenAI service or SDK is used; Groq is called directly over HTTPS with a Qwen model by default. Separate calls and provider fallback do not guarantee accurate or independent judgments. [VERIFICATION.md](VERIFICATION.md) separates actual live results from mocked tests. [Sprint acceptance status](docs/SPRINT_STATUS.md) maps every sprint to its evidence and remaining human steps.
 
 ## Implemented system
 
@@ -15,9 +15,13 @@ flowchart LR
   UI[React] --> API[FastAPI single local task]
   API --> L[Load frozen sources rubric prompt memory]
   L --> G[Gemini generation]
-  G --> S[Python structure and reference checks]
+  G -->|Gemini quota| GB[Groq generation]
+  GB --> S[Python structure and reference checks]
+  G --> S
   S --> E[Separate Gemini evaluation]
-  E --> D{Every mandatory check passes?}
+  E -->|Gemini quota| EB[Groq evaluation]
+  EB --> D{Every mandatory check passes?}
+  E --> D
   D -->|Yes| A[APPROVED]
   D -->|No and fewer than 2 retries| G
   D -->|No after draft 3| R[NEEDS_REVIEW]
@@ -68,12 +72,17 @@ FRONTEND_ORIGIN=http://localhost:5173
 GEMINI_API_KEY=
 GEMINI_MODEL=gemini-3.5-flash-lite
 GEMINI_EVALUATOR_MODEL=gemini-3.5-flash
+GROQ_FALLBACK_ENABLED=true
+GROQ_API_KEY=
+GROQ_MODEL=qwen/qwen3.8-27b
+GROQ_EVALUATOR_MODEL=qwen/qwen3.8-27b
+GROQ_MIN_INTERVAL_SECONDS=65
 PROVIDER_TIMEOUT_SECONDS=30
 WORKFLOW_TIMEOUT_SECONDS=90
 TECHNICAL_RETRIES=2
 ```
 
-The checked-in example uses Gemini 3.5 Flash-Lite for generation and Gemini 3.5 Flash for evaluation. Flash caught undefined technical terms missed by Flash-Lite in the recorded same-draft trial. The optional evaluator model defaults to GEMINI_MODEL when omitted. No model is silently substituted. Both labels are visible and recorded per run. DATABASE_PATH optionally changes the SQLite file; relative values resolve under backend/. Default: backend/data/lessonloop.sqlite3.
+The checked-in example uses Gemini 3.5 Flash-Lite for generation and Gemini 3.5 Flash for evaluation. Flash caught undefined technical terms missed by Flash-Lite in the recorded same-draft trial. The optional evaluator model defaults to GEMINI_MODEL when omitted. Gemini remains primary; only its HTTP 429 quota/rate-limit result authorizes automatic Groq use. Primary model labels and actual per-response providers are visible and recorded. No fallback occurs for invalid Gemini credentials, malformed verdicts or ordinary service outages. DATABASE_PATH optionally changes the SQLite file; relative values resolve under backend/. Default: backend/data/lessonloop.sqlite3.
 
 Process environment variables override file values. The backend resolves .env from its source location; blank provider settings mean missing configuration. Restart after edits. Frontend .env contains only `VITE_API_BASE_URL=http://127.0.0.1:8000`. All VITE values are public; never put keys there.
 
@@ -198,7 +207,7 @@ Application errors use status, error_code, and an actionable sanitized message. 
 ## Troubleshooting and limits
 
 - Backend unavailable: start it separately, check the URL, and retry explicitly.
-- Credentials/model/quota: edit backend/.env, restart, and check account access/credits. No fallback changes models. An earlier verification key returned a 20-request daily Flash limit; see submission/quota-blocker.json. One comparison needs twelve evaluator calls before retries, and each five-case calibration split needs fifteen. Schedule against your actual project quota; do not repeatedly retry a daily 429.
+- Credentials/model/quota: edit backend/.env, restart, and check account access/credits. Only the explicitly configured Groq quota fallback changes provider/model; the change is recorded. An earlier verification key returned a 20-request daily Flash limit; see submission/quota-blocker.json. One comparison needs twelve evaluator calls before retries, and each five-case calibration split needs fifteen. Schedule against your actual project quota; do not repeatedly retry a daily 429.
 - Interrupted: the process stopped; inspect preserved history and start a new run.
 - CORS: localhost:5173 and 127.0.0.1:5173 differ. Match FRONTEND_ORIGIN.
 - Python encodings error: create .venv with a working interpreter; avoid deleting global installations.
@@ -208,10 +217,27 @@ Application errors use status, error_code, and an actionable sanitized message. 
 
 This is **local development software**. It binds to loopback by default. Writes require development mode and the configured browser origin; CORS is not authentication. Public deployment still needs access control, spending limits, and durable execution.
 
-Every generation, evaluation, connection, comparison, and calibration call can incur charges. No inference runs on page load. Content retries are at most two; technical retries are separate and at most two per generation or focused evaluation request. Evaluation uses three focused requests per draft, each with at most two retries; a partial result cannot approve.
+Every generation, evaluation, connection, comparison, and calibration call consumes provider quota and can incur charges under the account plan. No inference runs on page load. Content retries are at most two; technical retries are separate and at most two per generation or focused evaluation request. Evaluation uses three focused requests per draft, each with at most two retries; a partial result cannot approve.
 
 A human must record/upload the face-visible video and import/publish the document if a sharing link is required. No recording URL, document sharing URL, or assessment submission is invented.
 
 Primary reference links/access dates are in the source pack. No third-party application code was copied; dependencies retain their licenses. SDK syntax follows the [Google SDK](https://github.com/googleapis/python-genai), [structured-output docs](https://ai.google.dev/gemini-api/docs/structured-output), and [LangGraph Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api).
 
 Repository: [sriram-Kannan-45/LessonLoop](https://github.com/sriram-Kannan-45/LessonLoop).
+
+## Automatic Groq quota fallback
+
+1. Put the Groq key only in `backend/.env` as `GROQ_API_KEY=...`; never put it in frontend variables or Git. Keep the model fields from `.env.example`, or choose Groq models your account supports.
+2. Restart the backend. The studio displays **Groq quota fallback** and whether the key is configured. Configuration is not a successful live connection check. Connections tests the Gemini primary only; a primary quota failure does not test Groq access.
+3. Generate normally. Gemini is always tried first unless that same model has a cached quota cooldown. On HTTP 429, the affected generation or evaluator request switches to Groq automatically. A judge quota does not disable a healthy Gemini generator.
+4. Inspect live events and the provider trace for each draft. They identify the actual provider/model, including mixed Gemini/Groq evaluation groups. Audit JSON stores the same information. Run model fields remain the originally configured primary snapshots.
+
+The same JSON/schema, source, evidence, strict-boolean and all-mandatory-check validation applies to Groq. A fallback is not approval. If Groq also fails, the run remains ERROR and saved drafts are retained. Authentication failures and non-quota Gemini failures do not switch providers. There is no provider loop.
+
+Quota cooldowns are per Gemini model in the current backend process. The provider retry time is used when available; absent that hint, a daily quota is cached for one hour and another rate limit for one minute. Once the cooldown expires, the next request tries Gemini again. Restarting clears these in-memory cooldowns; it may make one new Gemini quota request before switching again.
+
+The default Groq request interval is 65 seconds to reduce token-per-minute failures on its free plan. Waiting is shown as a real workflow event. Requests omit duplicate prompt schemas and use bounded completion budgets; outside usage, large prompts or daily token limits can still cause Groq 429. Change `GROQ_MIN_INTERVAL_SECONDS` only for the actual allowance of your account. Groq's strict schema rules are applied in the transport; all original Pydantic rules remain enforced locally.
+
+A prompt comparison cannot activate if the actual generation/evaluation provider signatures differ across its arms: the result is INCOMPARABLE, not credited to the prompt. Historical Gemini-only runs remain unchanged.
+
+Official Groq references: [Chat API](https://console.groq.com/docs/api-reference), [structured outputs](https://console.groq.com/docs/structured-outputs), [free-plan limits](https://console.groq.com/docs/rate-limits). Live Groq quality and account access still need verification with a real configured key; deterministic transport tests do not establish model accuracy.
