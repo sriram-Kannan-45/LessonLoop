@@ -194,3 +194,28 @@ for (const topic of ['Photosynthesis', 'Python programming']) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   })
 }
+
+
+test('keeps API wait, draft status and demonstration warning visible until the run finishes', async ({ page }) => {
+  const run = makeRun('RUNNING', 2, true)
+  run.stage = 'PROVIDER_WAIT'
+  run.started_at = new Date().toISOString()
+  await mocks(page, run)
+  const created = new Date().toISOString()
+  await page.route('**/api/runs/*/events*', route => route.fulfill({ json: { events: [{ sequence: 2, stage: 'PROVIDER_WAIT', message: 'Waiting for allowance.', created_at: created, details: { wait_seconds: 65 } }], next_cursor: 2 } }))
+  await page.goto('/?run=browser-test-run')
+  const activity = page.getByLabel('Current run status')
+  await expect(activity).toContainText('RUNNING · Draft 2 of 3')
+  await expect(activity).toContainText('Groq API allowance wait')
+  await expect(activity).toContainText('Error demonstration is ON')
+  const timer = activity.getByRole('timer')
+  await expect(timer).toContainText('Next request in about')
+  const first = await timer.textContent()
+  await expect.poll(() => timer.textContent()).not.toBe(first)
+  await page.locator('.lesson-reader').scrollIntoViewIfNeeded()
+  await expect(activity).toBeInViewport()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  run.status = 'APPROVED'; run.stage = 'APPROVED'
+  await expect(activity).toContainText('Finished. Every mandatory check passed')
+  await expect(timer).toHaveCount(0)
+})

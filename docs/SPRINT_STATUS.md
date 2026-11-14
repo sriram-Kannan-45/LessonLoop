@@ -10,7 +10,7 @@ Audited 14 November 2026 against the implementation brief. Gemini Flash-Lite/Fla
 | 4 — Persistence | Complete | SQLite immutable attempts, checks/events, snapshots, history, feedback, prompt versions; restart tests. |
 | 5 — Cross-run learning | Live acceptance pending | Two natural independent terminology failures; last comparison stopped on the earlier key’s daily 20-request quota; the user chose to leave live acceptance pending. New paired-normal-and-targeted-v2 protocol awaits live verification before any activation. Prompt content and selected memory are both capped at four learned instructions. |
 | 6 — API and React | Complete | Create/progress/reader/reports/attempts/history/memory/feedback/rollback/exports; normal workflow exercised through React. |
-| 7 — Verification | Automated checks complete; current live dataset report pending | 91 backend tests, TypeScript/build, 34 desktop/mobile browser tests; historical live disagreements preserved; current-model dataset rerun remains pending as requested. |
+| 7 — Verification | Automated checks complete; current live dataset report pending | 91 backend tests, TypeScript/build, 36 desktop/mobile browser tests; historical live disagreements preserved; current-model dataset rerun remains pending as requested. |
 | 8 — Deliverables | Complete | Approved lesson/audit/rejection log, clean HTML, README, design, verification and checklist. |
 | 9 — Demonstration | Recording materials complete | 15–20-minute script, exact app actions, privacy checklist and saved real deliberate-error backup. Human face-visible recording/upload remains external. |
 

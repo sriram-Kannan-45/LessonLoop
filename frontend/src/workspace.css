@@ -68,3 +68,9 @@
 .inline-error > p{margin:0}.failure-recovery{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px}.failure-recovery > span{font-size:11px}
 
 .fallback-config{display:flex;flex-direction:column;gap:6px;margin:14px 0;padding:12px;border:1px solid #e5def7;border-radius:6px;font-size:10px;color:#766a91}.fallback-config strong{color:#63558c}.fallback-config code{font-size:9px;overflow-wrap:anywhere}.provider-trace{padding:12px 14px;background:#f7f5fd;border:1px solid #e8e2f4;border-radius:6px;margin:12px 0;font-size:11px;line-height:1.8;overflow-wrap:anywhere}.provider-trace p{margin:2px 0}.provider-trace strong{color:#6952a7}.provider-trace span{font-family:Consolas,monospace}
+
+.run-activity { position: sticky; top: 10px; z-index: 8; padding: 14px 18px; margin-bottom: 14px; border: 1px solid #d9d2f0; border-radius: 10px; background: #f8f6ff; color: #49415f; box-shadow: 0 3px 14px #29204412; font-size: 12px; overflow-wrap: anywhere; }
+.run-activity > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.run-activity strong { display: flex; align-items: center; gap: 7px; }
+.run-activity p { margin: 7px 0 0; line-height: 1.5; }
+.run-activity small { display: block; margin-top: 7px; font-variant-numeric: tabular-nums; }

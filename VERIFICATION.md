@@ -8,7 +8,7 @@ Audited 14 November 2026 on Windows. The user originally chose Gemini only and l
 | --- | --- |
 | Backend pytest | 91 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
 | TypeScript and production build | Passed. |
-| Desktop/mobile Playwright | 34 passed, installed Edge; inference mocked, real local health/configuration checked. |
+| Desktop/mobile Playwright | 36 passed, installed Edge; inference mocked, real local health/configuration checked. |
 | Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
 | Persistence | Actual server restart preserved approved runs, failure observations, inactive proposals and generator-v1. No active job was abandoned during the final restart. |
 
@@ -88,3 +88,7 @@ Offline tests cover Photosynthesis, Python programming and the French Revolution
 A live Groq diagnostic identified an account-specific output allowance of 1,000 tokens per minute. A rejected evaluation was estimated at 1,377 output tokens even though the ordinary 8,000-token allowance was available. Evaluation responses now have a 900-token cap and concise reasons/corrections; oversized-request errors explain that waiting alone cannot fix them. This is separate from an exhausted daily quota. The generation response budget remains 4,096, and live Groq generation remains unverified under this account's output allowance.
 
 The final compact-output React run `1788f8f75349482599aac245224ac0ba` completed all nine real Groq evaluation groups over three naturally generated Photosynthesis drafts, with zero technical retries. Generation used Gemini. It ended **NEEDS_REVIEW, 12/14**, with GROUNDED_CLAIMS and TERMS_EXPLAINED still failing. The final feedback identified an unsupported statement about artificial photosynthesis and an unexplained use of "biomimics". The release gate correctly retained review status. This verifies the dynamic-topic retrieval/generation/evaluation/rewrite path and real quota fallback, not a successful general-topic approval or broad model accuracy. Earlier format/quota failures remain in the same verification report. Desktop/mobile review showed the topic-specific fourteen-check rubric, real references, no browser errors and no horizontal overflow. Existing approved RAG histories remained approved after restart.
+
+## Visible run status
+
+A sticky status panel now shows the current stage, draft number, elapsed time and a countdown derived from the actual PROVIDER_WAIT event timestamp. It explains that a visible draft is not a finished run and highlights intentional error injection. Terminal states replace the wait with a completion/review/error explanation. Desktop/mobile tests verify the ticking countdown, visibility while reading, demonstration warning and transition to completion. The actual Performance testing run was inspected without starting a new model call or interrupting the backend: draft 2 was waiting for Groq, and both viewport sizes displayed status without errors or horizontal overflow.
