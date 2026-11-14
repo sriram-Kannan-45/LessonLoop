@@ -12,6 +12,13 @@ def result(check_id, passed, evidence, reason, required_change="", claim_ids=Non
                        required_change=required_change, claim_ids=claim_ids or [], missing_content=missing).model_dump()
 
 
+def source_claim_mappings(source_pack):
+    allowed = {source["id"]: {claim for note in source["notes"] for claim in note["claim_ids"]} for source in source_pack["sources"]}
+    if "S4" in allowed:
+        allowed["S4"].add("P01")  # Existing approved teaching-example mapping.
+    return allowed
+
+
 def structure_checks(draft, source_pack=SOURCE_PACK):
     try:
         lesson = Lesson.model_validate(draft)
@@ -20,13 +27,21 @@ def structure_checks(draft, source_pack=SOURCE_PACK):
         return None, [result("STRUCTURE", False, "", "Required lesson structure is missing or malformed: " + fields,
                              "Return all required sections, a complete worked example, and exactly three questions with answers.", missing=True)]
     checks = [result("STRUCTURE", True, "Validated structured lesson", "All required sections and exactly three practice answers are present.")]
-    allowed = {source["id"]: {claim for note in source["notes"] for claim in note["claim_ids"]} for source in source_pack["sources"]}
-    valid = all(ref.source_id in allowed and all(claim in allowed[ref.source_id] or claim == "P01" and ref.source_id == "S4" for claim in ref.claim_ids) for ref in lesson.source_references)
+    allowed = source_claim_mappings(source_pack)
+    invalid = [f"{ref.source_id}:{claim}" for ref in lesson.source_references for claim in ref.claim_ids if ref.source_id not in allowed or claim not in allowed[ref.source_id]]
     explicitly_illustrative = bool(re.search(r"\b(illustrative|fictional|invented)\b", lesson.worked_example.context + " " + lesson.worked_example.source_passage, re.IGNORECASE))
-    valid = valid and explicitly_illustrative
+    valid = not invalid and explicitly_illustrative
+    problems, corrections = [], []
+    if invalid:
+        problems.append("Unapproved source/claim mappings: " + ", ".join(invalid) + ".")
+        mapping = "; ".join(source + "=[" + ", ".join(sorted(claims)) + "]" for source, claims in allowed.items())
+        corrections.append("Replace or remove the invalid pairs " + ", ".join(invalid) + ". Approved mappings: " + mapping + ".")
+    if not explicitly_illustrative:
+        problems.append("The invented notice lacks an explicit illustrative label.")
+        corrections.append("Label worked_example.context as illustrative, fictional or invented; prefer the reviewed Asha College teaching notice from the source pack.")
     checks.append(result("SOURCES", valid, ", ".join(ref.source_id for ref in lesson.source_references),
-                         "Source/claim identifiers match the pack and the teaching notice is explicitly labelled illustrative." if valid else "A source mapping is unknown or the invented notice lacks an explicit illustrative label.",
-                         "" if valid else "Use approved source/claim IDs. Label worked_example.context as an illustrative or invented notice; prefer the reviewed Asha College teaching notice from the source pack."))
+                         "Source/claim identifiers match the pack and the teaching notice is explicitly labelled illustrative." if valid else " ".join(problems),
+                         " ".join(corrections)))
     return lesson, checks
 
 

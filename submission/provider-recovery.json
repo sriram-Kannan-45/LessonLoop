@@ -1,0 +1,31 @@
+{
+  "run_id": "e92eaa409983478aacd9ae1b303fcb5d",
+  "started_via": "Real React Try again button",
+  "page_errors": [],
+  "status": "NEEDS_REVIEW",
+  "attempts": 3,
+  "demo_error": true,
+  "generator_model": "gemini-3.5-flash-lite",
+  "evaluator_model": "gemini-3.5-flash",
+  "error": null,
+  "failed_checks_by_draft": [
+    [
+      "SOURCES",
+      "GROUNDED_CLAIMS",
+      "HONEST_LIMITATIONS",
+      "TERMS_EXPLAINED",
+      "NO_PREREQUISITES",
+      "FLOW_AND_PRACTICE"
+    ],
+    [
+      "SOURCES"
+    ],
+    [
+      "SOURCES"
+    ]
+  ],
+  "final_passed_checks": 13,
+  "technical_retry_events": [],
+  "original_failed_run": "36bcb7eab9224e069482430174503add",
+  "original_status_preserved": "ERROR"
+}

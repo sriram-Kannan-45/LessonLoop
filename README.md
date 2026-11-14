@@ -70,7 +70,7 @@ GEMINI_MODEL=gemini-3.5-flash-lite
 GEMINI_EVALUATOR_MODEL=gemini-3.5-flash
 PROVIDER_TIMEOUT_SECONDS=30
 WORKFLOW_TIMEOUT_SECONDS=90
-TECHNICAL_RETRIES=1
+TECHNICAL_RETRIES=2
 ```
 
 The checked-in example uses Gemini 3.5 Flash-Lite for generation and Gemini 3.5 Flash for evaluation. Flash caught undefined technical terms missed by Flash-Lite in the recorded same-draft trial. The optional evaluator model defaults to GEMINI_MODEL when omitted. No model is silently substituted. Both labels are visible and recorded per run. DATABASE_PATH optionally changes the SQLite file; relative values resolve under backend/. Default: backend/data/lessonloop.sqlite3.
@@ -119,7 +119,7 @@ Attempts shows the original/altered claim, reasons, required changes, paragraph 
 
 Failures count once per category per independent run, not per retry. Two completed supporting runs are required. Demonstration-origin observations are visible. Human feedback starts unverified; review can verify/dismiss it, but arbitrary feedback text never enters prompts automatically.
 
-In Memory & learning, choose an eligible category and Compare prompts. A vetted instruction creates an inactive candidate version. Baseline and candidate each generate from the same normal assignment and targeted calibration scenario, then use the fixed rubric. Up to four generations and twelve focused evaluation calls run, each with at most one technical retry. Every lesson is checked in three groups of four mandatory checks; the merged result must contain all twelve model checks plus the two code checks.
+In Memory & learning, choose an eligible category and Compare prompts. A vetted instruction creates an inactive candidate version. Baseline and candidate each generate from the same normal assignment and targeted calibration scenario, then use the fixed rubric. Up to four generations and twelve focused evaluation calls run, each with at most two technical retries. Every lesson is checked in three groups of four mandatory checks; the merged result must contain all twelve model checks plus the two code checks.
 
 Activation requires a targeted baseline failure to become a candidate pass with no per-check regression on baseline-passing checks. Ties end NO_IMPROVEMENT and stay inactive. Active memory is selected by topic/learner, capped at four instructions, and saved with each future run. Rollback restores the original or a previously activated version. A tiny stochastic comparison is limited evidence, not proof of universal improvement.
 
@@ -198,16 +198,17 @@ Application errors use status, error_code, and an actionable sanitized message. 
 ## Troubleshooting and limits
 
 - Backend unavailable: start it separately, check the URL, and retry explicitly.
-- Credentials/model/quota: edit backend/.env, restart, and check account access/credits. No fallback changes models. This project returned a 20-request daily Flash limit during verification; see submission/quota-blocker.json. One comparison needs twelve evaluator calls before retries, and each five-case calibration split needs fifteen. Schedule against your actual project quota; do not repeatedly retry a daily 429.
+- Credentials/model/quota: edit backend/.env, restart, and check account access/credits. No fallback changes models. An earlier verification key returned a 20-request daily Flash limit; see submission/quota-blocker.json. One comparison needs twelve evaluator calls before retries, and each five-case calibration split needs fifteen. Schedule against your actual project quota; do not repeatedly retry a daily 429.
 - Interrupted: the process stopped; inspect preserved history and start a new run.
 - CORS: localhost:5173 and 127.0.0.1:5173 differ. Match FRONTEND_ORIGIN.
 - Python encodings error: create .venv with a working interpreter; avoid deleting global installations.
 - Full C drive/error 112: set TEMP, TMP, UV_CACHE_DIR, and npm_config_cache under the ignored project .cache directory before installation. No user files need deletion.
+- Gemini HTTP 503: the service is temporarily busy. LessonLoop retries transient server/network failures at most twice with increasing waits and jitter (normally 4–5 then 8–9 seconds), keeping the same model and request format. Longer provider wait instructions stop the automatic retries. If retries are exhausted, use **Try again** to start a new run; the failed run remains in history. Authentication and daily quota errors are not automatically retried.
 - Gemini schema/evidence errors: bounded technical retries can repair requests/responses; unresolved failures remain ERROR. Early unsuccessful development runs are preserved honestly.
 
 This is **local development software**. It binds to loopback by default. Writes require development mode and the configured browser origin; CORS is not authentication. Public deployment still needs access control, spending limits, and durable execution.
 
-Every generation, evaluation, connection, comparison, and calibration call can incur charges. No inference runs on page load. Content retries are at most two; technical retries are separate and at most one per generation or focused evaluation request. Evaluation uses three focused requests per draft, each with at most one retry; a partial result cannot approve.
+Every generation, evaluation, connection, comparison, and calibration call can incur charges. No inference runs on page load. Content retries are at most two; technical retries are separate and at most two per generation or focused evaluation request. Evaluation uses three focused requests per draft, each with at most two retries; a partial result cannot approve.
 
 A human must record/upload the face-visible video and import/publish the document if a sharing link is required. No recording URL, document sharing URL, or assessment submission is invented.
 

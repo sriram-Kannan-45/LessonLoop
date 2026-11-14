@@ -1,0 +1,44 @@
+{
+  "run_id": "fe2597a7169142e4a82f9de226521cb6",
+  "started_via": "Real React Generate lesson button, normal mode",
+  "page_errors": [],
+  "status": "APPROVED",
+  "attempts": 2,
+  "demo_error": false,
+  "generator_model": "gemini-3.5-flash-lite",
+  "evaluator_model": "gemini-3.5-flash",
+  "error": null,
+  "failed_checks_by_draft": [
+    [
+      "TERMS_EXPLAINED"
+    ],
+    []
+  ],
+  "final_passed_checks": 14,
+  "source_checks_by_draft": [
+    [
+      {
+        "check_id": "SOURCES",
+        "passed": true,
+        "evidence": "S1, S2, S3, S4",
+        "reason": "Source/claim identifiers match the pack and the teaching notice is explicitly labelled illustrative.",
+        "required_change": "",
+        "claim_ids": [],
+        "missing_content": false,
+        "evidence_path": ""
+      }
+    ],
+    [
+      {
+        "check_id": "SOURCES",
+        "passed": true,
+        "evidence": "S1, S2, S3, S4",
+        "reason": "Source/claim identifiers match the pack and the teaching notice is explicitly labelled illustrative.",
+        "required_change": "",
+        "claim_ids": [],
+        "missing_content": false,
+        "evidence_path": ""
+      }
+    ]
+  ]
+}

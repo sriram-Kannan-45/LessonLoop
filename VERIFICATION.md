@@ -6,9 +6,9 @@ Audited 14 November 2026 on Windows. The user explicitly chose Gemini only. Curr
 
 | Check | Observed result |
 | --- | --- |
-| Backend pytest | 54 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
+| Backend pytest | 63 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
 | TypeScript and production build | Passed. |
-| Desktop/mobile Playwright | 24 passed, installed Edge; inference mocked, real local health/configuration checked. |
+| Desktop/mobile Playwright | 26 passed, installed Edge; inference mocked, real local health/configuration checked. |
 | Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
 | Persistence | Actual server restart preserved approved runs, failure observations, inactive proposals and generator-v1. No active job was abandoned during the final restart. |
 
@@ -36,7 +36,7 @@ Saved run d7f428ad985b4aceba7b8a17610bfeef was APPROVED after two drafts. Draft 
 
 The old reports' overall approval field measures all twelve model checks, not the final Python release gate. The CLI now reports false_model_approval and the fourteen-check release decision separately. Technical errors are not successful judgments. There were no false overall rejections on completed labelled cases in these historical reports; this is a tiny authored set, not a general accuracy claim.
 
-Five reviewed calibration and five fixed holdout fixtures are inspectable in app/dataset.py. Holdout is excluded from prompt comparisons. It was already used in v2/v3 diagnostics and is explicitly not unseen. No current Flash calibration/holdout report is claimed: its daily quota was exhausted before that work. Precise credential/quota evidence is in submission/quota-blocker.json.
+Five reviewed calibration and five fixed holdout fixtures are inspectable in app/dataset.py. Holdout is excluded from prompt comparisons. It was already used in v2/v3 diagnostics and is explicitly not unseen. No current Flash calibration/holdout report is claimed. The earlier daily quota was exhausted before that work, and the user chose to leave those checks pending. A later key connection check and the provider-recovery workflow do not substitute for dataset validation. Precise credential/quota evidence is in submission/quota-blocker.json.
 
 Flash-Lite also falsely passed undefined weights and pipeline in naturally generated lessons. A same-draft real trial with Flash correctly rejected terminology/prerequisite failures; submission/evaluator-flash-trial.json records it. This motivated the explicit evaluator model change. Earlier Flash-Lite approvals remain historical. A separate unsuccessful gemini-3.8-flash trial remains in submission/model-trial.json; it was not silently adopted.
 
@@ -60,3 +60,11 @@ Current approved artifacts: submission/final-lesson/. Clean importable document:
 A human must record/upload the face-visible video and publish/import the lesson if a Google Docs/Notion sharing link is required. No video, public document URL or assessment submission is invented. GitHub synchronization is reported only after a verified push.
 
 Runtime: Python 3.11.16, FastAPI 0.162.6, google-genai 2.34.0, LangGraph 1.2.21, pytest 9.2.0, React 19.3.1, TypeScript 5.9.3, Vite 7.3.8 and Playwright 1.65.0. Exact pins remain in requirements/lockfiles. Secrets, databases, caches and generated QA files are ignored.
+
+## Provider recovery fix
+
+The reported failed run 36bcb7eab9224e069482430174503add returned HTTP 503 from Gemini during generation and saved no draft. A subsequent real generation request using the configured key returned a valid lesson, confirming the failure was intermittent. The fix distinguishes temporary service failures from credential/model errors, adds up to two bounded technical retries with increasing backoff and jitter, honors short provider retry delays, and keeps the same native schema on availability retries. Format-only repair remains separate. Authentication and quota errors are not retried automatically; the three-content-draft limit is unchanged. React now explains old 503 diagnostics and offers an explicit Try again action, preserving the failed run and its original request settings. SDK-transport tests exercise recovery after two 503s, exhaustion, schema preservation and long retry instructions. Desktop/mobile browser tests exercise explicit recovery and immutable failed history.
+
+The real Try again test e92eaa409983478aacd9ae1b303fcb5d finished NEEDS_REVIEW after three drafts, with no provider error. It detected the deliberately injected false guarantee; a wrong S3:C06 source mapping remained. Its honest 13/14 result is in submission/provider-recovery.json. This exposed ambiguous source feedback: the validator now names the invalid pairs and supplies the allowed mapping in its correction, and generation receives the same compact approved mapping. The acceptance rule is unchanged; claims are never automatically relabelled or approved. A targeted regression test keeps this failure actionable.
+
+Final normal-mode live verification after the citation correction: fe2597a7169142e4a82f9de226521cb6, started through the real React Generate lesson button, APPROVED after two drafts with all 14 checks passed. Draft one failed TERMS_EXPLAINED; the actual feedback drove the rewrite. Both source checks passed. No provider error or browser JavaScript error occurred. The structured result is in submission/provider-normal-recovery.json. This verifies the current provider-recovery workflow, not the separately pending learned-memory or evaluator-dataset acceptance checks.

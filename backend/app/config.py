@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     gemini_evaluator_model: str | None = None
     provider_timeout_seconds: float = Field(default=30, gt=0, le=120)
     workflow_timeout_seconds: float = Field(default=90, gt=0, le=180)
-    technical_retries: int = Field(default=1, ge=0, le=1)
+    technical_retries: int = Field(default=2, ge=0, le=2)
     database_path: Path = ENV_FILE.parent / "data" / "lessonloop.sqlite3"
 
     @field_validator("gemini_api_key", "gemini_model", "gemini_evaluator_model", mode="before")

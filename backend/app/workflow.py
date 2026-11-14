@@ -32,7 +32,7 @@ class RunState(TypedDict, total=False):
 
 def build_graph(repository, ai):
     def retry_event(run_id, role):
-        return lambda number, code: repository.event(run_id, "TECHNICAL_RETRY", f"Retrying {role} request once after a technical failure.", {"role": role, "technical_retry": number, "code": code})
+        return lambda number, code: repository.event(run_id, "TECHNICAL_RETRY", f"Retrying {role} request after a temporary failure.", {"role": role, "technical_retry": number, "code": code})
 
     async def load_context(state):
         run = repository.get_run(state["run_id"])

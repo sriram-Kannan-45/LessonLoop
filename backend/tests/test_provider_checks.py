@@ -54,7 +54,9 @@ def test_success_maps_actual_text_and_metadata(client, configured, monkeypatch):
     (errors.ClientError(403, {"message": "secret-provider-diagnostic"}), 403, "MODEL_UNAVAILABLE"),
     (errors.ClientError(404, {"message": "secret-provider-diagnostic"}), 404, "MODEL_UNAVAILABLE"),
     (errors.ClientError(429, {"message": "secret-provider-diagnostic"}), 429, "RATE_LIMIT_OR_QUOTA"),
-    (httpx.ConnectError("secret-provider-diagnostic"), 502, "PROVIDER_FAILURE"),
+    (errors.ServerError(503, {"message": "secret-provider-diagnostic"}), 503, "SERVICE_UNAVAILABLE"),
+    (errors.ServerError(500, {"message": "secret-provider-diagnostic"}), 502, "PROVIDER_SERVER_ERROR"),
+    (httpx.ConnectError("secret-provider-diagnostic"), 502, "CONNECTION_ERROR"),
     (RuntimeError("secret-provider-diagnostic"), 502, "PROVIDER_FAILURE"),
 ])
 def test_errors_are_sanitized(client, configured, monkeypatch, exception, status, code):

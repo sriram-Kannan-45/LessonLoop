@@ -57,6 +57,12 @@ def map_failure(exc: Exception) -> ProviderFailure:
         return ProviderFailure("MODEL_UNAVAILABLE", "The model is unavailable or access was denied. Check the model ID and account permissions.", 403 if status == 403 else 404)
     if status == 429:
         return ProviderFailure("RATE_LIMIT_OR_QUOTA", "The provider limit was reached. Check your API quota and billing before retrying.", 429)
+    if status == 503:
+        return ProviderFailure("SERVICE_UNAVAILABLE", "Gemini is temporarily busy or unavailable (HTTP 503). Please wait a moment, then try again.", 503)
+    if isinstance(status, int) and 500 <= status < 600:
+        return ProviderFailure("PROVIDER_SERVER_ERROR", "Gemini encountered a temporary server error. Please wait a moment, then try again.", 502)
+    if isinstance(exc, (httpx.NetworkError, httpx.RemoteProtocolError)):
+        return ProviderFailure("CONNECTION_ERROR", "The connection to Gemini was interrupted. Check your internet connection, then try again.", 502)
     # Gemini reports invalid API keys as 400 with a structured reason.
     if isinstance(exc, errors.APIError) and status == 400:
         details = getattr(exc, "details", None)

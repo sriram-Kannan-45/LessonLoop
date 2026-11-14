@@ -87,6 +87,31 @@ test('provider failure stays unapproved and history is retrievable after refresh
   await expect(page.getByText('browser-', { exact: true })).toBeVisible()
 })
 
+test('a temporary Gemini outage can be retried explicitly without changing failed history', async ({ page }) => {
+  const failed = { ...makeRun('ERROR', 0, true), error: { code: 'PROVIDER_FAILURE', message: 'The provider request failed.', diagnostics: { provider_http_status: 503 } } }
+  await mocks(page, failed)
+  let posts = 0
+  await page.route('**/api/runs', async route => {
+    if (route.request().method() !== 'POST') return route.fallback()
+    posts++
+    expect(route.request().postDataJSON()).toMatchObject({ topic: failed.topic, demo_error: true })
+    return route.fulfill({ status: 202, json: { id: 'recovered-run', status: 'RUNNING' } })
+  })
+  await page.route('**/api/runs/recovered-run', route => route.fulfill({ json: { ...makeRun(), id: 'recovered-run' } }))
+  await page.goto('/?run=browser-test-run')
+  await expect(page.getByRole('alert')).toContainText('Gemini is temporarily busy or unavailable (HTTP 503)')
+  expect(posts).toBe(0)
+  await page.getByRole('button', { name: 'Try again', exact: true }).click()
+  await expect(page).toHaveURL(/run=recovered-run/)
+  await expect(page.getByRole('heading', { name: 'Lesson approved' })).toBeVisible()
+  expect(posts).toBe(1)
+  await expect(page.getByLabel('Inject a factual error into the first draft')).toBeChecked()
+  await page.goto('/?run=browser-test-run')
+  await expect(page.getByRole('alert')).toContainText('HTTP 503')
+  expect(posts).toBe(1)
+})
+
+
 test('feedback stays unverified and memory has honest empty states', async ({ page }) => {
   await mocks(page)
   await page.goto('/?run=browser-test-run')

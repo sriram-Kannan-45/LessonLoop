@@ -1,6 +1,7 @@
 import asyncio
 import json
 import re
+import random
 from collections.abc import Callable
 
 from google import genai
@@ -16,6 +17,7 @@ EVALUATION_GROUPS = (
     ("EXTERNAL_KNOWLEDGE", "DOCUMENT_PREPARATION", "HONEST_LIMITATIONS", "MISSING_INFORMATION"),
     ("TERMS_EXPLAINED", "NO_PREREQUISITES", "WORKED_EXAMPLE", "FLOW_AND_PRACTICE"),
 )
+TRANSIENT_FAILURES = {"TIMEOUT", "SERVICE_UNAVAILABLE", "PROVIDER_SERVER_ERROR", "CONNECTION_ERROR"}
 
 
 class WorkflowError(Exception):
@@ -79,23 +81,28 @@ class LessonAI:
             except Exception as exc:
                 failure = map_failure(exc)
                 status = getattr(exc, "code", 0)
+                details = self.redact({**provider_diagnostics(exc), "provider_model": model})
                 # Live tests observed intermittent bare 400s for otherwise accepted schemas.
-                # Retry once; invalid credentials and quota failures never enter this path.
-                transient = failure.code == "TIMEOUT" or isinstance(status, int) and (status >= 500 or status == 400 and failure.code != "INVALID_CREDENTIALS")
-                if transient and attempt < retry_limit:
-                    if status == 400:
+                # A 400 retry changes the request format; it never repeats the same invalid request.
+                format_fallback = status == 400 and failure.code == "INVALID_REQUEST" and not json_mode
+                delay = 0 if format_fallback else retry_delay(attempt + 1, details)
+                if (failure.code in TRANSIENT_FAILURES or format_fallback) and attempt < retry_limit and delay is not None:
+                    if format_fallback:
                         json_mode = True
                     if on_retry:
-                        on_retry(attempt + 1, "SCHEMA_JSON_MODE_RETRY" if status == 400 else failure.code)
-                    await asyncio.sleep(2)
+                        on_retry(attempt + 1, "SCHEMA_JSON_MODE_RETRY" if format_fallback else failure.code)
+                    await asyncio.sleep(delay)
                     continue
-                raise WorkflowError(failure.code, failure.message, self.redact(provider_diagnostics(exc))) from None
+                raise WorkflowError(failure.code, failure.message, details) from None
 
     async def generate(self, context, previous=None, feedback=None, on_retry=None):
+        from app.quality import source_claim_mappings
+
         data = {
             "topic": context["topic"], "learner_profile": LEARNER, "language": "simple English",
             "approved_reference_pack": context["source_pack"],
             "required_structure": Lesson.model_json_schema(), "validated_memory": context.get("memory", []),
+            "approved_source_claim_mappings": {key: sorted(claims) for key, claims in source_claim_mappings(context["source_pack"]).items()},
         }
         if previous is not None:
             data.update(previous_draft=previous, failed_checks=feedback or [])
@@ -132,29 +139,44 @@ class LessonAI:
             data["terminology_attention_aids"] = terminology_occurrences(lesson)
             instructions += " For TERMS_EXPLAINED, explicitly review every terminology_attention_aids item against its first-use context. These are candidates to inspect, not automatic failures. In your concise reason identify any unexplained candidate, or explain how the candidates are introduced in everyday words. Expanding an acronym or placing another technical term beside it is not a plain-language explanation. Correct definitions of AI and RAG cannot compensate for an unexplained weight, parameter, pipeline or other term elsewhere."
         usage_history = []
+        json_mode = False
         for attempt in range(self.settings.technical_retries + 1):
             try:
-                raw, usage = await self.call(self.evaluator_model, instructions, data, Evaluation, retry_limit=0, json_mode=attempt > 0)
+                raw, usage = await self.call(self.evaluator_model, instructions, data, Evaluation, retry_limit=0, json_mode=json_mode)
                 usage_history.append(usage)
                 validate_evaluation(raw, lesson, expected_ids=group)
                 usage["attempt_usage"] = [dict(item) for item in usage_history]
                 return raw, usage
             except WorkflowError as exc:
-                repairable = exc.code in {"INVALID_EVALUATION", "INVALID_EVIDENCE", "MALFORMED_OUTPUT", "EMPTY_RESPONSE", "TIMEOUT", "PROVIDER_FAILURE", "INVALID_REQUEST"}
-                if not repairable or attempt >= self.settings.technical_retries:
+                format_failure = exc.code in {"INVALID_EVALUATION", "INVALID_EVIDENCE", "MALFORMED_OUTPUT", "EMPTY_RESPONSE"} or exc.code == "INVALID_REQUEST" and not json_mode
+                transient = exc.code in TRANSIENT_FAILURES
+                delay = 0 if format_failure else retry_delay(attempt + 1, exc.diagnostics or {})
+                if not (format_failure or transient) or attempt >= self.settings.technical_retries or delay is None:
                     raise
                 if on_retry:
                     on_retry(attempt + 1, exc.code)
-                if exc.code in {"TIMEOUT", "PROVIDER_FAILURE"}:
-                    await asyncio.sleep(2)
-                instructions += " Your previous response failed local output/evidence validation. Re-evaluate every check; copy evidence exactly from the supplied lesson. Missing content uses empty evidence and missing_content=true. Do not target a desired verdict."
+                await asyncio.sleep(delay)
+                if format_failure:
+                    json_mode = True
+                    instructions += " Your previous response failed local output/evidence validation. Re-evaluate every check; copy evidence exactly from the supplied lesson. Missing content uses empty evidence and missing_content=true. Do not target a desired verdict."
+
+
+def retry_delay(number, diagnostics):
+    suggested = diagnostics.get("retry_after_seconds", 0)
+    if not isinstance(suggested, (int, float)) or suggested < 0:
+        suggested = 0
+    # Longer provider delays require an explicit later run, not a sleeping background loop.
+    if suggested > 30:
+        return None
+    return min(30, max(4 * 2 ** (number - 1), suggested) + random.uniform(0, 1))
 
 
 def provider_diagnostics(exc):
     details = {"exception_type": type(exc).__name__, "provider_http_status": getattr(exc, "code", 0)}
     structured = getattr(exc, "details", [])
     if isinstance(structured, dict):
-        structured = structured.get("error", structured).get("details", [])
+        error = structured.get("error", structured)
+        structured = error.get("details", []) if isinstance(error, dict) else []
     for item in structured if isinstance(structured, list) else []:
         if not isinstance(item, dict):
             continue
