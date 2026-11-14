@@ -1,0 +1,10 @@
+{
+  "model": "gemini-3.8-flash",
+  "purpose": "Explicit trial of a stronger Gemini evaluator after calibration failures",
+  "evaluation_trial_status": "No usable evaluator result",
+  "minimal_request_status": "Failed",
+  "http_status": 504,
+  "provider_status": "DEADLINE_EXCEEDED",
+  "application_model_changed": false,
+  "note": "The verified Gemini 3.5 Flash-Lite configuration was preserved; no successful access or evaluation is claimed."
+}

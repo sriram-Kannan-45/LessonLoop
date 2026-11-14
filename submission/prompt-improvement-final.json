@@ -1,0 +1,41 @@
+{
+  "id": "d13e76cceb0d493abc9e61d3838ece81",
+  "category": "HONEST_LIMITATIONS",
+  "status": "ERROR",
+  "stage": "ERROR",
+  "baseline_prompt_version": "generator-v1",
+  "candidate_prompt_version": "generator-d13e76cceb0d",
+  "memory_id": "605ca8bea64347a89ac6f94651eeba43",
+  "dataset_version": "rag-evaluator-reviewed-v1",
+  "created_at": "2026-11-13T17:39:44.785643+00:00",
+  "finished_at": "2026-11-13T17:40:15.145652+00:00",
+  "results": [
+    {
+      "case_id": "simple-correct",
+      "expected_seed_labels": {
+        "RAG_DEFINITION": true,
+        "EXTERNAL_KNOWLEDGE": true,
+        "RAG_MECHANISM": true,
+        "DOCUMENT_PREPARATION": true,
+        "NOT_RETRAINING": true,
+        "GROUNDED_CLAIMS": true,
+        "TERMS_EXPLAINED": true,
+        "NO_PREREQUISITES": true,
+        "WORKED_EXAMPLE": true,
+        "HONEST_LIMITATIONS": true,
+        "MISSING_INFORMATION": true,
+        "FLOW_AND_PRACTICE": true
+      },
+      "seed_sha256": "a4e52c0cd007dd24d74c383dd4ff851389447ecde28731c129b4feac971ec51e",
+      "rubric_version": "beginner-rag-v1.1",
+      "rubric_sha256": "6ea9878c86622313905f25164ffe5f0a16b5505ea14f5357575ddf6b61abeff7",
+      "source_pack_version": "rag-primary-v1.1",
+      "generator_model": "gemini-3.5-flash-lite",
+      "evaluator_model": "gemini-3.5-flash-lite"
+    }
+  ],
+  "error": {
+    "code": "INVALID_EVIDENCE",
+    "message": "Evaluator evidence was not an exact lesson excerpt. No lesson was approved."
+  }
+}

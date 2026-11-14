@@ -1,55 +1,81 @@
-# Sprint 1 verification
+# Sprints 2 to 9 verification
 
-Verified on 13 November 2026 on Windows. The application now uses Gemini only for the connection foundation and planned lesson generation/evaluation. Automated checks and real provider results are recorded separately below.
+Implementation and verification work completed across 13–14 November 2026 on Windows. Live artifacts retain their own UTC timestamps. The user explicitly chose Gemini only, superseding the brief's OpenAI requirement. Both roles use separate calls to gemini-3.5-flash-lite. Implementation, mocked tests, live evidence, and pending human steps are distinguished below.
 
-## Results
+## Automated verification
 
-| Check | Outcome |
+| Check | Actual result |
 | --- | --- |
-| Backend tests | **26 passed**. No external provider requests. |
-| Frontend type check | **Passed** (`tsc --noEmit`). |
-| Frontend production build | **Passed** (`vite build`). |
-| Browser tests | **12 passed** across installed Edge desktop (1440 px) and mobile (390 px) viewports. |
-| Visual review | Desktop and mobile screenshots inspected. Real local configuration, mocked success results, and backend downtime/retry states verified. |
-| Real local backend health | **HTTP 200**, correct LessonLoop/development response. |
-| Real local configuration endpoint | **HTTP 200**, contains only the configured Gemini provider and its selected model ID; no keys are returned. |
-| Real local frontend | **HTTP 200**, opens and reaches the backend. No browser page errors in the live-backend test. |
-| Real Gemini request | **Success**, `gemini-3.5-flash-lite`, **1,576 ms**. Actual text: `LessonLoop connection OK.` Checked at `2026-11-13T16:48:29.573393Z` (10:18:29 PM IST). |
-| Secret hygiene | Local backend/frontend `.env` files and generated folders confirmed ignored. No real environment files tracked. Candidate source scan found no provider key prefixes. |
+| Backend pytest | **49 passed**; provider inference mocked/in-memory HTTP transport. |
+| Frontend TypeScript | **Passed**. |
+| Production build | **Passed**, Vite 7.3.8. |
+| Desktop/mobile browser tests | **24 passed**, installed Edge, 1440 px desktop and 390 px mobile. Inference mocked; health/configuration uses the real local backend. |
+| Visual review | Desktop studio, real reader, quality report, history/memory, narrow reader/report, and clean document print pages inspected. |
+| Export download | Browser downloaded and read the Markdown contents; approved/review labels tested. |
+| Secrets | Environment/database/generated QA folders ignored; source and staged-artifact scans run before push without displaying keys. |
 
-Browser success screenshots deliberately contain **mocked** text and test model IDs. They demonstrate UI behavior, not real Gemini connectivity. The `live-*` screenshots show the actual local backend configuration without inference.
+The backend tests enforce all mandatory checks, strict booleans, complete unique IDs, source/evidence validity, the three-draft maximum, actual failed-check feedback, immutable attempts, NEEDS_REVIEW exhaustion, technical errors, restart interruption, unverified-feedback isolation, bounded comparison activation, persistent selected memory, and rollback. SDK transport tests verify the same-model JSON-format retry and the maximum two evaluator requests, without a network call.
 
-Screenshots are generated in the ignored `artifacts/` directory: `live-desktop.png`, `live-mobile.png`, `results-desktop.png`, `results-mobile.png`, `unavailable-desktop.png`, and `unavailable-mobile.png`.
+## Real application runs
 
-## Environment issues handled
+### Final normal run started through React
 
-- The workspace began empty with no applicable AGENTS.md files or existing Git repository. A local repository was initialized; no user files were replaced.
-- Python 3.12.6 still fails with missing `encodings`. The existing uv-managed Python **3.11.16** works and was used for `backend/.venv`. Global installations and variables were left alone.
-- C: had **zero free space**. Dependency cache and temporary files were redirected to ignored project-local folders on D:, which had ample space. No user files were deleted. pytest and Playwright are configured to keep their temporary artifacts on the project drive.
-- The interactive browser-control tool could not initialize because C: was full. Installed Microsoft Edge was successfully tested through Playwright instead; no browser download was needed.
+- ID: `a791fca8f9004ca1828c59ef1b63794e`.
+- Final status: **APPROVED**, one draft, **14/14 mandatory checks passed**.
+- Generator/evaluator model: gemini-3.5-flash-lite in separate calls.
+- Frozen source pack: rag-primary-v1.1. Frozen rubric: beginner-rag-v1.1. Evaluator prompt: evaluator-v3.
+- The worked example explicitly labels Asha College and its notice as invented teaching material.
+- Actual exports are in submission/final-lesson/. The clean HTML version is generated from this approved draft, not manually edited into a claimed approval.
+- The current evaluator-v4 evidence-selector protocol is tested separately below; this saved v3 run is not relabelled as a v4 run.
 
-## Resolved versions
+### Deliberate-error demonstration
 
-| Component | Version |
-| --- | --- |
-| Python | 3.11.16 |
-| Node.js / npm | 24.14.0 / 11.18.0 |
-| FastAPI / Uvicorn | 0.162.6 / 0.54.0 |
-| pydantic-settings | 2.16.3 |
-| google-genai | 2.34.0 |
-| LangGraph | 1.2.21 |
-| pytest / HTTPX | 9.2.0 / 0.28.1 |
-| React / React DOM | 19.3.1 / 19.3.1 |
-| Vite / TypeScript | 7.3.8 / 5.9.3 |
-| Tailwind CSS | 4.3.5 |
-| Playwright | 1.65.0 |
+- Saved live backup ID: `d7f428ad985b4aceba7b8a17610bfeef`.
+- Final status: **APPROVED**, two drafts.
+- Draft 1 was generated, the original preserved, then the false always-correct claim injected.
+- Actual rejected checks: SOURCES and HONEST_LIMITATIONS. The evaluator received no demo flag or desired verdict.
+- Draft 2 passed all fourteen checks. The audit contains both drafts, the original pre-mutation draft, actual evidence, requested changes, and events.
+- Exports are in submission/backup-demo/.
 
-Exact transitive dependencies are in the two backend requirements files and `frontend/package-lock.json`.
+Additional early live runs failed with provider request errors or invalid model evidence. They remain ERROR in local history; none was silently promoted. A real browser error run also recorded zero JavaScript page errors. Repeated application restarts preserved approved and failed history. Active-run interruption is exercised deterministically by tests rather than claimed as a surviving background job.
 
-## Current acceptance status
+## Live evaluator evidence
 
-The Gemini-only Sprint 1 foundation is complete: the frontend runs, backend health/configuration work, the real Gemini request succeeds, and credentials stay on the backend. Lesson generation and evaluation remain later-sprint work and will both use Gemini.
+| Report | Evaluated / authored | Technical errors | False overall approvals | Per-check false passes |
+| --- | --- | --- | --- | --- |
+| evaluator-v2-first-report.json | 5 / 10 | 5 | 1 | 6 |
+| evaluator-calibration.json, v3 | 7 / 10 | 3 | 0 | 6 |
+| evaluator-v4-calibration.json | 3 / 5 | 2 | 0 | 2 |
 
-The secondary SDK, client code, settings, environment template entries, dashboard card, and dependency pins have been removed. Its entries were also removed from the ignored local backend environment file, with Gemini settings preserved. Automated tests assert that the removed provider name is rejected and its card is absent.
+There were zero recorded false overall rejections on the completed labelled cases in these reports. That does not make the judge universally accurate. Unlabelled checks are not counted as correctly classified by default. Technical failures are not counted as successful judgments. The v4 technical failures include actual provider HTTP 503 service errors. A false per-check pass remains a defect even when another check prevents overall approval.
 
-After removal, one real Gemini request was made through the running backend endpoint, returning HTTP 200 and the actual text recorded above. Sanitized machine-readable results are saved locally in the ignored `artifacts/provider-checks.json` file. No automatic provider requests were added.
+The five calibration examples and five fixed holdout examples are manually authored/reviewed teaching fixtures, not independent population samples. Holdout is excluded from prompt-improvement comparisons. It was first run with v2; the v3 reused-set report explicitly records this history and is not presented as unseen validation. The v4 report is calibration-only. Earlier reports and labels are preserved rather than overwritten to hide disagreements.
+
+A disclosed trial of gemini-3.8-flash did not produce a usable evaluator response. Its minimal request ended HTTP 504 DEADLINE_EXCEEDED. The app was not silently switched to that unverified model; see submission/model-trial.json.
+
+## Memory and controlled improvement
+
+- HONEST_LIMITATIONS has supporting failed verdicts from two independent completed runs. Multiple attempts in one run count once. Those supporting runs came from deliberate-error demonstrations and are identified as such.
+- Completed live experiment: `360b5fbb9d7241208287721aa94a8835`, **NO_IMPROVEMENT**.
+- Both baseline and candidate were generated/evaluated on the same correct-lesson and perfect-guarantee calibration scenarios, with a fixed rubric. All four arms completed.
+- There were no per-check regressions, no newly fixed checks, and no targeted baseline failure fixed by the candidate. The candidate correctly remained inactive.
+- Earlier comparisons stopped on technical errors/invalid evidence and remained inactive. Their records are preserved.
+- **Zero active learned instructions. Live learned-memory activation/reuse is not demonstrated.** Deterministic mocked tests exercise an actual successful comparison gate, selection in a later run after repository reopening, and rollback. This must not be described as real-model improvement evidence.
+- Persistent observations/proposals/versions/outcomes are exported in submission/memory-evidence.json. The completed real comparison is submission/prompt-improvement-v4.json.
+
+## Submission artifacts and external steps
+
+- Actual approved Markdown, rejection log, audit, metadata: submission/final-lesson/.
+- Saved live deliberate-error backup: submission/backup-demo/.
+- Clean document: submission/lesson-for-google-docs.html. Its four A4 print pages were rendered and visually inspected. It still needs human import/copy and sharing if a Google Docs/Notion URL is required; no connected Word/document session was available.
+- Design: docs/DESIGN.md. Face-visible recording script: docs/VIDEO_WALKTHROUGH.md. Final checklist: docs/SUBMISSION_CHECKLIST.md.
+- Real repository: https://github.com/sriram-Kannan-45/LessonLoop. Push status is verified at task completion.
+- The human must record/upload the face-visible video and supply its real sharing link. No video, document sharing URL, or assessment submission is invented.
+
+## Completion boundary
+
+The workflow, API, UI, persistence, comparison gate, tests, and submission preparation are implemented. Normal generation and deliberate-error rejection/rewrite have real successful runs. The original requirement for observed live learned-memory benefit/reuse remains **unmet** because no candidate showed a qualifying benefit; the system correctly refused activation. Further model-quality evidence, a passing controlled improvement, and a later run selecting its instruction are needed before claiming that criterion complete. Model false passes and intermittent provider failures also limit reliability. Human document/video publishing remains pending.
+
+## Runtime notes
+
+Python 3.11.16, FastAPI 0.162.6, Uvicorn 0.54.0, google-genai 2.34.0, LangGraph 1.2.21, pydantic-settings 2.16.3, pytest 9.2.0, HTTPX 0.28.1, React 19.3.1, TypeScript 5.9.3, Tailwind 4.3.5, Playwright 1.65.0. Full dependency pins are in the backend requirements files and frontend lockfile. No new backend service was added. The broken global Python installation and global environment variables were not changed.

@@ -1,0 +1,22 @@
+{
+  "id": "a791fca8f9004ca1828c59ef1b63794e",
+  "topic": "Introduction to RAG",
+  "learner_profile": "india_beginner",
+  "status": "APPROVED",
+  "stage": "APPROVED",
+  "started_at": "2026-11-13T17:39:24.018242+00:00",
+  "finished_at": "2026-11-13T17:39:44.115471+00:00",
+  "source_pack_version": "rag-primary-v1.1",
+  "rubric_version": "beginner-rag-v1.1",
+  "generator_prompt_version": "generator-v1",
+  "evaluator_prompt_version": "evaluator-v3",
+  "generator_model": "gemini-3.5-flash-lite",
+  "evaluator_model": "gemini-3.5-flash-lite",
+  "provider": "gemini",
+  "retry_count": 0,
+  "demo_error": 0,
+  "selected_memory": [],
+  "error": null,
+  "feedback": [],
+  "attempt_count": 1
+}

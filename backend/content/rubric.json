@@ -1,0 +1,146 @@
+{
+  "version": "beginner-rag-v1.1",
+  "release_rule": "Every mandatory check must pass. No averaging, no approval on retry exhaustion.",
+  "checks": [
+    {
+      "id": "STRUCTURE",
+      "name": "Complete lesson structure",
+      "group": "general",
+      "pass": "All required lesson sections, a complete worked example, and exactly three questions with answers are present.",
+      "fail": "A required field is absent, empty, or malformed.",
+      "evidence": "Validated Pydantic lesson and question count.",
+      "evaluator": "code",
+      "mandatory": true
+    },
+    {
+      "id": "SOURCES",
+      "name": "Approved reference identifiers",
+      "group": "general",
+      "pass": "Every source reference and claim ID exists in this frozen pack and is linked to the cited source notes. The invented worked-example notice is explicitly labelled illustrative, fictional, or invented.",
+      "fail": "Unknown, mismatched, or absent source/claim identifiers. Or an invented notice is presented without an explicit illustrative label.",
+      "evidence": "Source IDs and claim IDs checked against pack.",
+      "evaluator": "code",
+      "mandatory": true
+    },
+    {
+      "id": "RAG_DEFINITION",
+      "name": "Correct RAG definition",
+      "group": "rag",
+      "pass": "Defines retrieval-augmented generation as finding outside information to help generate an answer.",
+      "fail": "Wrong expansion or definition, or defines it as training alone.",
+      "evidence": "Exact definition excerpt and C01.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "EXTERNAL_KNOWLEDGE",
+      "name": "Why outside information helps",
+      "group": "rag",
+      "pass": "Explains why a question can need facts in documents rather than only model knowledge.",
+      "fail": "Missing reason, or claims the model already knows every fact.",
+      "evidence": "Exact explanation and C02.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "RAG_MECHANISM",
+      "name": "Retrieve then add then generate",
+      "group": "rag",
+      "pass": "Clearly orders retrieval, adding relevant text to model input, and generating a supported answer.",
+      "fail": "Omits input augmentation, reverses stages, or says search itself generates the final answer.",
+      "evidence": "Exact process excerpt and C03.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "DOCUMENT_PREPARATION",
+      "name": "Preparing documents for search",
+      "group": "rag",
+      "pass": "Briefly explains collecting documents, useful pieces, and organizing them for search using beginner language.",
+      "fail": "No preparation explanation or unexplained dense implementation jargon.",
+      "evidence": "Exact preparation excerpt and C04.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "NOT_RETRAINING",
+      "name": "Retrieval differs from retraining",
+      "group": "rag",
+      "pass": "Explains looking up material at question time does not itself retrain the model; changing trained model behavior is distinct.",
+      "fail": "Says RAG necessarily retrains the model on every question or equates retrieval with fine-tuning.",
+      "evidence": "Exact comparison and C05.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "GROUNDED_CLAIMS",
+      "name": "Claims supported by references",
+      "group": "rag",
+      "pass": "Material claims agree with the approved notes; invented example facts are labelled illustrative and answers follow the passage.",
+      "fail": "Unsupported material facts, false claims, invented real notices, or scholarship eligibility beyond the supplied passage.",
+      "evidence": "Exact claim excerpts and relevant approved claim IDs.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "TERMS_EXPLAINED",
+      "name": "Technical terms explained on first use",
+      "group": "general",
+      "pass": "Essential terms such as AI, retrieval, generation, prompt, index, or embeddings are explained in plain words before or at first use. Optional jargon is omitted.",
+      "fail": "Uses unexplained essential technical terms or assumes later definitions are enough.",
+      "evidence": "Exact first-use excerpts; identify absent explanations without inventing quotes.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "NO_PREREQUISITES",
+      "name": "No hidden prerequisite knowledge",
+      "group": "general",
+      "pass": "A grade-12 learner with limited English and no AI or coding background can follow; respectful plain explanations build ideas step by step.",
+      "fail": "Assumes coding, database, vector, or machine-learning knowledge, or oversimplifies in a misleading way.",
+      "evidence": "Exact confusing or enabling excerpts; sentence length alone cannot decide.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "WORKED_EXAMPLE",
+      "name": "Worked example demonstrates the mechanism",
+      "group": "general",
+      "pass": "Illustrative familiar notice, question, relevant source passage, retrieved information added to input, and an answer actually supported by that passage.",
+      "fail": "Example is missing, does not show augmentation, or answer contradicts/exceeds its passage.",
+      "evidence": "Exact source passage, retrieval explanation, and supported answer; C03.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "HONEST_LIMITATIONS",
+      "name": "No guarantee of perfect correctness",
+      "group": "rag",
+      "pass": "Explicitly says RAG can still make mistakes and explains effects of irrelevant results or stale sources. No contradictory guarantee anywhere.",
+      "fail": "Claims RAG guarantees correct answers, or omits errors, retrieval quality, or freshness limitations.",
+      "evidence": "Exact limitation or contradictory claim; C06 C07 C08.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "MISSING_INFORMATION",
+      "name": "Honest absent-information response",
+      "group": "rag",
+      "pass": "A missing-information example explicitly refuses to invent absent facts and points to checking an official source.",
+      "fail": "Guesses an answer absent from the source or gives no missing-information behavior.",
+      "evidence": "Exact missing question and answer; P01.",
+      "evaluator": "model",
+      "mandatory": true
+    },
+    {
+      "id": "FLOW_AND_PRACTICE",
+      "name": "Coherent flow and correct practice",
+      "group": "general",
+      "pass": "Clear objectives, sensible progression, accurate recap, and three correct practice answers consistent with the lesson and sources.",
+      "fail": "Disjointed teaching, wrong recap, missing practice answers, or any incorrect practice answer.",
+      "evidence": "Relevant lesson excerpts and practice answer; applicable claim IDs.",
+      "evaluator": "model",
+      "mandatory": true
+    }
+  ]
+}

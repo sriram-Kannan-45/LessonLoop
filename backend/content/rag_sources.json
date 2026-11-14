@@ -1,0 +1,186 @@
+{
+  "id": "rag-primary-v1",
+  "version": "rag-primary-v1.1",
+  "topic": "Introduction to RAG",
+  "approved_topics": [
+    "introduction to rag",
+    "rag",
+    "retrieval augmented generation",
+    "retrieval-augmented generation",
+    "rag basics"
+  ],
+  "review_note": "Primary-source notes reviewed for this beginner lesson. Notes are paraphrases, not copied articles. The scholarship notice is invented teaching data, never real eligibility advice. No live research occurs during a run.",
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "url": "https://arxiv.org/abs/2005.11401v4",
+      "accessed_at": "2026-11-13",
+      "version": "arXiv 2005.11401v4, 2021-04-12",
+      "notes": [
+        {
+          "id": "N1",
+          "text": "RAG combines a language model with information retrieved from an external collection.",
+          "claim_ids": [
+            "C01",
+            "C02"
+          ]
+        },
+        {
+          "id": "N2",
+          "text": "The original work studied retrieval alongside model training. Using retrieved information at question time does not itself mean retraining the model.",
+          "claim_ids": [
+            "C05"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "title": "Retrieval-augmented generation in Azure AI Search",
+      "url": "https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview",
+      "accessed_at": "2026-11-13",
+      "version": "reviewed factual notes 2026-11-13; local note hash recorded by application",
+      "notes": [
+        {
+          "id": "N3",
+          "text": "Retrieval quality matters: search must find material relevant to the user's question, rather than sending an entire collection.",
+          "claim_ids": [
+            "C06"
+          ]
+        },
+        {
+          "id": "N4",
+          "text": "Search indexes can be updated as documents change. Old or poorly retrieved information can weaken an answer.",
+          "claim_ids": [
+            "C07",
+            "C08"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "title": "Classic RAG in Azure AI Search",
+      "url": "https://github.com/Azure-Samples/azure-search-classic-rag",
+      "accessed_at": "2026-11-13",
+      "version": "reviewed README and indexing description 2026-11-13; local note hash recorded by application",
+      "notes": [
+        {
+          "id": "N5",
+          "text": "A preparation pipeline loads documents, divides them into smaller pieces, and puts them into a searchable index. Some systems also create number-based representations for searching by meaning; these are not required knowledge for a first lesson.",
+          "claim_ids": [
+            "C04"
+          ]
+        },
+        {
+          "id": "N6",
+          "text": "Classic RAG searches first, then passes the search results to a language model to formulate an answer.",
+          "claim_ids": [
+            "C03"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "title": "Retrieve data and generate AI responses with Amazon Bedrock Knowledge Bases",
+      "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html",
+      "accessed_at": "2026-11-13",
+      "version": "reviewed factual notes 2026-11-13; local note hash recorded by application",
+      "notes": [
+        {
+          "id": "N7",
+          "text": "External data can help a model answer questions about information outside its general knowledge. Relevant retrieved text can be added to the prompt, meaning the input given to the model.",
+          "claim_ids": [
+            "C02",
+            "C03"
+          ]
+        },
+        {
+          "id": "N8",
+          "text": "Citations let a reader return to the original source and check accuracy. Retrieval helps responses but does not promise perfect correctness.",
+          "claim_ids": [
+            "C08"
+          ]
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "C01",
+      "statement": "RAG stands for retrieval-augmented generation and combines retrieval with text generation.",
+      "note_ids": [
+        "N1"
+      ]
+    },
+    {
+      "id": "C02",
+      "statement": "External material can help answer questions needing facts absent from a model's stored knowledge.",
+      "note_ids": [
+        "N1",
+        "N7"
+      ]
+    },
+    {
+      "id": "C03",
+      "statement": "Search for relevant text, add it to the input, then generate an answer using it.",
+      "note_ids": [
+        "N6",
+        "N7"
+      ]
+    },
+    {
+      "id": "C04",
+      "statement": "Documents are prepared, split into useful pieces, and organized for search.",
+      "note_ids": [
+        "N5"
+      ]
+    },
+    {
+      "id": "C05",
+      "statement": "Retrieval at question time is distinct from changing model weights through training or fine-tuning.",
+      "note_ids": [
+        "N2"
+      ]
+    },
+    {
+      "id": "C06",
+      "statement": "The relevance of retrieved material affects the quality of the answer.",
+      "note_ids": [
+        "N3"
+      ]
+    },
+    {
+      "id": "C07",
+      "statement": "Documents and searchable indexes need maintenance when facts change.",
+      "note_ids": [
+        "N4"
+      ]
+    },
+    {
+      "id": "C08",
+      "statement": "RAG can still return wrong or unsupported answers; check important claims against sources.",
+      "note_ids": [
+        "N4",
+        "N8"
+      ]
+    },
+    {
+      "id": "P01",
+      "statement": "Lesson policy: when the supplied notice lacks an answer, say the information is missing and suggest consulting an appropriate official source; never invent dates or eligibility.",
+      "note_ids": [
+        "N8"
+      ],
+      "kind": "reviewed teaching policy"
+    }
+  ],
+  "illustrative_teaching_notice": {
+    "context": "Illustrative Indian college example. Asha College and every detail in this notice are invented for learning; they are not real scholarship advice.",
+    "source_passage": "Illustrative Asha College notice: Book grant applications close on 15 July. Students must submit the application form at the college office. This notice does not state the grant amount or eligibility rules.",
+    "learner_question": "What is the last date to apply for the Asha College book grant?",
+    "missing_information_question": "How much money will I receive from this book grant?",
+    "policy": "This Asha College notice is invented teaching data. Prefer this reviewed example and explicitly label the example as illustrative. Do not present an invented notice as a real scholarship announcement."
+  }
+}

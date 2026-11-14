@@ -10,7 +10,7 @@ ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore",
-        env_ignore_empty=False,
+        env_ignore_empty=False, validate_assignment=True,
     )
 
     app_name: str = "LessonLoop"
@@ -20,14 +20,23 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:5173"
     gemini_api_key: SecretStr | None = None
     gemini_model: str | None = None
+    gemini_evaluator_model: str | None = None
     provider_timeout_seconds: float = Field(default=30, gt=0, le=120)
+    workflow_timeout_seconds: float = Field(default=90, gt=0, le=180)
+    technical_retries: int = Field(default=1, ge=0, le=1)
+    database_path: Path = ENV_FILE.parent / "data" / "lessonloop.sqlite3"
 
-    @field_validator("gemini_api_key", "gemini_model", mode="before")
+    @field_validator("gemini_api_key", "gemini_model", "gemini_evaluator_model", mode="before")
     @classmethod
     def empty_is_missing(cls, value):
         if isinstance(value, str):
             return value.strip() or None
         return value
+
+    @field_validator("database_path")
+    @classmethod
+    def resolve_database_path(cls, value):
+        return value if value.is_absolute() else ENV_FILE.parent / value
 
 
 @lru_cache

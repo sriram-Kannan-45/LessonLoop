@@ -46,9 +46,11 @@ async def request_gemini(key: str, model: str, timeout: float) -> str | None:
 
 
 def map_failure(exc: Exception) -> ProviderFailure:
-    if isinstance(exc, (TimeoutError, httpx.TimeoutException)):
+    if isinstance(exc, (TimeoutError, httpx.TimeoutException)) or type(exc).__name__ in {"ReadTimeout", "ConnectTimeout", "WriteTimeout", "PoolTimeout"}:
         return ProviderFailure("TIMEOUT", "The provider took too long. Try again in a moment.", 504)
     status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
+    if status in (408, 504) or getattr(exc, "status", None) == "DEADLINE_EXCEEDED":
+        return ProviderFailure("TIMEOUT", "The provider took too long. Try again in a moment.", 504)
     if status == 401:
         return ProviderFailure("INVALID_CREDENTIALS", "The API key was rejected. Update it in backend/.env and restart the backend.", 401)
     if status in (403, 404):
@@ -64,6 +66,7 @@ def map_failure(exc: Exception) -> ProviderFailure:
             isinstance(item, dict) and item.get("reason") == "API_KEY_INVALID" for item in details
         ):
             return ProviderFailure("INVALID_CREDENTIALS", "The API key was rejected. Update it in backend/.env and restart the backend.", 401)
+        return ProviderFailure("INVALID_REQUEST", "Gemini rejected the request format or arguments. Confirm model support and try again; no lesson was approved.", 502)
     return ProviderFailure("PROVIDER_FAILURE", "The provider request failed. Check your connection, model ID, and provider service, then retry.", 502)
 
 

@@ -1,0 +1,814 @@
+{
+  "dataset_version": "rag-evaluator-reviewed-v1",
+  "split": "calibration",
+  "started_at": "2026-11-13T17:30:29.844725+00:00",
+  "provider": "gemini",
+  "model": "gemini-3.5-flash-lite",
+  "rubric_version": "beginner-rag-v1.0",
+  "rubric_sha256": "43d69fb302c4574f801c1a1a7090604a1dfb6003a2b5d5c78675847020142073",
+  "evaluator_prompt_version": "evaluator-v3",
+  "source_pack_version": "rag-primary-v1.0",
+  "cases": [
+    {
+      "id": "simple-correct",
+      "split": "calibration",
+      "description": "A manually reviewed, simple, complete lesson. This fixture is not a system-approved submission.",
+      "content_sha256": "a4e52c0cd007dd24d74c383dd4ff851389447ecde28731c129b4feac971ec51e",
+      "expected": {
+        "RAG_DEFINITION": true,
+        "EXTERNAL_KNOWLEDGE": true,
+        "RAG_MECHANISM": true,
+        "DOCUMENT_PREPARATION": true,
+        "NOT_RETRAINING": true,
+        "GROUNDED_CLAIMS": true,
+        "TERMS_EXPLAINED": true,
+        "NO_PREREQUISITES": true,
+        "WORKED_EXAMPLE": true,
+        "HONEST_LIMITATIONS": true,
+        "MISSING_INFORMATION": true,
+        "FLOW_AND_PRACTICE": true
+      },
+      "technical_retries": [
+        {
+          "number": 1,
+          "code": "PROVIDER_FAILURE"
+        }
+      ],
+      "checks": [
+        {
+          "check_id": "RAG_DEFINITION",
+          "passed": true,
+          "evidence": "RAG means retrieval-augmented generation.",
+          "reason": "The lesson correctly defines RAG as retrieval-augmented generation and explains that it finds useful text from outside the language model and gives that text to the model with the question.",
+          "required_change": "",
+          "claim_ids": [
+            "C01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "EXTERNAL_KNOWLEDGE",
+          "passed": true,
+          "evidence": "A language model may not know the latest notice from your college.",
+          "reason": "The lesson clearly explains why outside information helps, noting that a model's general knowledge does not cover changing specific facts like a college's application date.",
+          "required_change": "",
+          "claim_ids": [
+            "C02"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "RAG_MECHANISM",
+          "passed": true,
+          "evidence": "Retrieve: read the learner's question and search the prepared material for relevant pieces.",
+          "reason": "The lesson correctly sequences retrieval, adding the passage to the prompt, and generating an answer supported by the passage.",
+          "required_change": "",
+          "claim_ids": [
+            "C03"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "DOCUMENT_PREPARATION",
+          "passed": true,
+          "evidence": "Divide long documents into small, useful pieces. Organise the pieces in an index, meaning a list arranged so a search system can find them.",
+          "reason": "The document preparation is explained in beginner-friendly terms involving collecting, splitting, and indexing.",
+          "required_change": "",
+          "claim_ids": [
+            "C04"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "NOT_RETRAINING",
+          "passed": true,
+          "evidence": "Looking up a document for a question does not itself retrain the language model.",
+          "reason": "The lesson correctly contrasts question-time retrieval with model retraining or fine-tuning.",
+          "required_change": "",
+          "claim_ids": [
+            "C05"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "GROUNDED_CLAIMS",
+          "passed": true,
+          "evidence": "Illustrative Asha College notice: Book grant applications close on 15 July.",
+          "reason": "Material claims match the approved notes and references, and the invented example is properly labeled as illustrative.",
+          "required_change": "",
+          "claim_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04",
+            "C05",
+            "C06",
+            "C07",
+            "C08",
+            "P01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "TERMS_EXPLAINED",
+          "passed": true,
+          "evidence": "Retrieval means finding useful information. Augmented means added to or helped by something. Generation means writing an answer.",
+          "reason": "Essential terms like retrieval, augmented, generation, index, and prompt are explained in plain words on first use.",
+          "required_change": "",
+          "claim_ids": [
+            "C01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "NO_PREREQUISITES",
+          "passed": true,
+          "evidence": "You do not need coding or earlier AI lessons.",
+          "reason": "The lesson is pitched appropriately for a beginner with no coding or AI background, explaining concepts step by step without dense jargon.",
+          "required_change": "",
+          "claim_ids": [],
+          "missing_content": false
+        },
+        {
+          "check_id": "WORKED_EXAMPLE",
+          "passed": true,
+          "evidence": "According to this illustrative notice, the last date is 15 July.",
+          "reason": "The worked example features an illustrative notice, a question, retrieved text added to the input, and a supported answer.",
+          "required_change": "",
+          "claim_ids": [
+            "C03"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "HONEST_LIMITATIONS",
+          "passed": true,
+          "evidence": "RAG can still make mistakes.",
+          "reason": "The lesson explicitly acknowledges that RAG can return unrelated notices, missed sources, or outdated dates, and does not guarantee truth.",
+          "required_change": "",
+          "claim_ids": [
+            "C06",
+            "C07",
+            "C08"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "MISSING_INFORMATION",
+          "passed": true,
+          "evidence": "The supplied notice does not give the grant amount, so I cannot tell you an amount from it.",
+          "reason": "The missing information section correctly refuses to guess and directs the learner to check the official notice or office.",
+          "required_change": "",
+          "claim_ids": [
+            "P01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "FLOW_AND_PRACTICE",
+          "passed": true,
+          "evidence": "Retrieve relevant text, add it to the model's input with the question, and generate an answer using it.",
+          "reason": "The flow is coherent, objectives are met, the recap is accurate, and the practice answers are correct and consistent.",
+          "required_change": "",
+          "claim_ids": [
+            "C03",
+            "C05",
+            "P01"
+          ],
+          "missing_content": false
+        }
+      ],
+      "usage": {
+        "candidates_token_count": 1344,
+        "prompt_token_count": 5124,
+        "prompt_tokens_details": [
+          {
+            "modality": "TEXT",
+            "token_count": 5124
+          }
+        ],
+        "total_token_count": 6468,
+        "attempt_usage": [
+          {
+            "candidates_token_count": 1344,
+            "prompt_token_count": 5124,
+            "prompt_tokens_details": [
+              {
+                "modality": "TEXT",
+                "token_count": 5124
+              }
+            ],
+            "total_token_count": 6468
+          }
+        ]
+      },
+      "disagreements": [],
+      "false_approval": false,
+      "false_rejection": false
+    },
+    {
+      "id": "wrong-definition",
+      "split": "calibration",
+      "description": "Defines RAG as training rather than retrieval and generation.",
+      "content_sha256": "2edd1786da169befcc9bc0a5b6f68081646adb9deca0a8b3efe0302307ff2388",
+      "expected": {
+        "RAG_DEFINITION": false,
+        "NOT_RETRAINING": false,
+        "GROUNDED_CLAIMS": false
+      },
+      "technical_retries": [
+        {
+          "number": 1,
+          "code": "PROVIDER_FAILURE"
+        }
+      ],
+      "checks": [
+        {
+          "check_id": "RAG_DEFINITION",
+          "passed": false,
+          "evidence": "RAG means Random Answer Generator. It trains a new AI model for every question, without using outside text.",
+          "reason": "The lesson gives a completely incorrect definition of RAG (\"Random Answer Generator\" instead of retrieval-augmented generation) and falsely states it trains a new model without outside text, contradicting C01.",
+          "required_change": "Change the definition to correctly state that RAG stands for Retrieval-Augmented Generation and combines outside retrieval with text generation.",
+          "claim_ids": [
+            "C01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "EXTERNAL_KNOWLEDGE",
+          "passed": true,
+          "evidence": "A language model may not know the latest notice from your college.",
+          "reason": "The lesson correctly explains that a language model may lack up-to-date specific facts and needs external notices to answer correctly, supporting C02.",
+          "required_change": "",
+          "claim_ids": [
+            "C02"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "RAG_MECHANISM",
+          "passed": true,
+          "evidence": "Retrieve: read the learner's question and search the prepared material for relevant pieces.",
+          "reason": "The lesson correctly sequences retrieval, adding the passage to the prompt, and generating an answer supported by the passage, matching C03.",
+          "required_change": "",
+          "claim_ids": [
+            "C03"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "DOCUMENT_PREPARATION",
+          "passed": true,
+          "evidence": "Divide long documents into small, useful pieces. Organise the pieces in an index, meaning a list arranged so a search system can find them.",
+          "reason": "The lesson explains document preparation and indexing in simple language suitable for beginners, matching C04.",
+          "required_change": "",
+          "claim_ids": [
+            "C04"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "NOT_RETRAINING",
+          "passed": true,
+          "evidence": "Looking up a document for a question does not itself retrain the language model.",
+          "reason": "The lesson explicitly states that retrieval at question time is distinct from retraining or fine-tuning the model, matching C05.",
+          "required_change": "",
+          "claim_ids": [
+            "C05"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "GROUNDED_CLAIMS",
+          "passed": false,
+          "evidence": "RAG means Random Answer Generator.",
+          "reason": "The definition of RAG is factually incorrect and contradicts approved claim C01.",
+          "required_change": "Correct the definition of RAG to Retrieval-Augmented Generation.",
+          "claim_ids": [
+            "C01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "TERMS_EXPLAINED",
+          "passed": true,
+          "evidence": "Input means the information we give the system.",
+          "reason": "Technical and essential terms like AI, input, index, and prompt are explained in plain language upon first use.",
+          "required_change": "",
+          "claim_ids": [],
+          "missing_content": false
+        },
+        {
+          "check_id": "NO_PREREQUISITES",
+          "passed": true,
+          "evidence": "You do not need coding or earlier AI lessons.",
+          "reason": "The tone and explanations are appropriate for a grade-12 learner with no coding or AI background.",
+          "required_change": "",
+          "claim_ids": [],
+          "missing_content": false
+        },
+        {
+          "check_id": "WORKED_EXAMPLE",
+          "passed": true,
+          "evidence": "Illustrative Asha College notice: Book grant applications close on 15 July.",
+          "reason": "The worked example includes an illustrative notice, a question, retrieved text added to the input, and an answer supported by the passage.",
+          "required_change": "",
+          "claim_ids": [
+            "C03"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "HONEST_LIMITATIONS",
+          "passed": true,
+          "evidence": "RAG can still make mistakes.",
+          "reason": "The lesson outlines limitations including irrelevant search results, stale sources, and potential model misunderstandings, aligning with C06, C07, and C08.",
+          "required_change": "",
+          "claim_ids": [
+            "C06",
+            "C07",
+            "C08"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "MISSING_INFORMATION",
+          "passed": true,
+          "evidence": "The supplied notice does not give the grant amount, so I cannot tell you an amount from it.",
+          "reason": "The missing-information section correctly refuses to invent missing details and directs the learner to the official notice, matching P01.",
+          "required_change": "",
+          "claim_ids": [
+            "P01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "FLOW_AND_PRACTICE",
+          "passed": false,
+          "evidence": "RAG means Random Answer Generator.",
+          "reason": "Because the definition of RAG is wrong in the lesson content, the overall flow contains a major foundational error despite correct practice questions.",
+          "required_change": "Fix the RAG definition in the 'what_it_is' section.",
+          "claim_ids": [
+            "C01"
+          ],
+          "missing_content": false
+        }
+      ],
+      "usage": {
+        "candidates_token_count": 1416,
+        "prompt_token_count": 5034,
+        "prompt_tokens_details": [
+          {
+            "modality": "TEXT",
+            "token_count": 5034
+          }
+        ],
+        "total_token_count": 6450,
+        "attempt_usage": [
+          {
+            "candidates_token_count": 1416,
+            "prompt_token_count": 5034,
+            "prompt_tokens_details": [
+              {
+                "modality": "TEXT",
+                "token_count": 5034
+              }
+            ],
+            "total_token_count": 6450
+          }
+        ]
+      },
+      "disagreements": [
+        {
+          "check_id": "NOT_RETRAINING",
+          "expected": false,
+          "actual": true,
+          "kind": "false_pass"
+        }
+      ],
+      "false_approval": false,
+      "false_rejection": false
+    },
+    {
+      "id": "perfect-guarantee",
+      "split": "calibration",
+      "description": "A false guarantee is injected in place of honest limitations.",
+      "content_sha256": "684dc3b1add3a27ecc585ed4b74dadd2e77191ed59e94f001133e570fe17d939",
+      "expected": {
+        "HONEST_LIMITATIONS": false,
+        "GROUNDED_CLAIMS": false
+      },
+      "technical_retries": [
+        {
+          "number": 1,
+          "code": "PROVIDER_FAILURE"
+        }
+      ],
+      "error": {
+        "code": "PROVIDER_FAILURE",
+        "message": "The provider request failed. Check your connection, model ID, and provider service, then retry."
+      }
+    },
+    {
+      "id": "unexplained-jargon",
+      "split": "calibration",
+      "description": "Undefined jargon appears before the ordinary lesson explanation.",
+      "content_sha256": "f99c592aa166edcc5f80f8de09fa5503c746b8bf93a39abb7dd25225fc602a85",
+      "expected": {
+        "TERMS_EXPLAINED": false,
+        "NO_PREREQUISITES": false
+      },
+      "technical_retries": [],
+      "checks": [
+        {
+          "check_id": "RAG_DEFINITION",
+          "passed": true,
+          "evidence": "RAG means retrieval-augmented generation.",
+          "reason": "The lesson correctly defines RAG as retrieval-augmented generation where useful outside text is found and provided to the model along with the question.",
+          "required_change": "",
+          "claim_ids": [
+            "C01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "EXTERNAL_KNOWLEDGE",
+          "passed": true,
+          "evidence": "A language model may not know the latest notice from your college.",
+          "reason": "It explains why outside information is necessary because a model's general stored knowledge may lack specific or updated facts.",
+          "required_change": "",
+          "claim_ids": [
+            "C02"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "RAG_MECHANISM",
+          "passed": true,
+          "evidence": "Retrieve: read the learner's question and search the prepared material for relevant pieces.",
+          "reason": "The lesson clearly breaks down the workflow into retrieval, adding the text to the prompt, and generating an answer.",
+          "required_change": "",
+          "claim_ids": [
+            "C03"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "DOCUMENT_PREPARATION",
+          "passed": true,
+          "evidence": "Divide long documents into small, useful pieces. Organise the pieces in an index, meaning a list arranged so a search system can find them.",
+          "reason": "The lesson explains document preparation, chunking, and indexing in simple beginner-friendly language.",
+          "required_change": "",
+          "claim_ids": [
+            "C04"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "NOT_RETRAINING",
+          "passed": true,
+          "evidence": "Looking up a document for a question does not itself retrain the language model.",
+          "reason": "It correctly notes that runtime retrieval is distinct from retraining or fine-tuning the model.",
+          "required_change": "",
+          "claim_ids": [
+            "C05"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "GROUNDED_CLAIMS",
+          "passed": true,
+          "evidence": "Illustrative Asha College notice: Book grant applications close on 15 July.",
+          "reason": "All claims align with the approved notes and the example is properly labelled as illustrative teaching data.",
+          "required_change": "",
+          "claim_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04",
+            "C05",
+            "C06",
+            "C07",
+            "C08",
+            "P01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "TERMS_EXPLAINED",
+          "passed": true,
+          "evidence": "Retrieval means finding useful information. Augmented means added to or helped by something. Generation means writing an answer.",
+          "reason": "Key terms are explained in plain words when first introduced.",
+          "required_change": "",
+          "claim_ids": [
+            "C01",
+            "C03"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "NO_PREREQUISITES",
+          "passed": false,
+          "evidence": "Start with dense embeddings, cosine similarity and ANN vector indexing. Configure semantic reranking before you read on.",
+          "reason": "The prerequisites section demands dense embeddings, cosine similarity, ANN vector indexing, and semantic reranking, which directly contradicts the target profile of a complete beginner with no AI/coding background.",
+          "required_change": "Remove the technical prerequisites demanding dense embeddings, cosine similarity, and ANN indexing, replacing them with beginner-friendly introductory text suitable for a grade 12 graduate.",
+          "claim_ids": [
+            "C04"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "WORKED_EXAMPLE",
+          "passed": true,
+          "evidence": "It retrieves the sentence about applications closing on 15 July. It adds this passage to the language model's input together with the learner's deadline question.",
+          "reason": "The worked example clearly walks through the context, question, source passage, addition to input, and supported answer.",
+          "required_change": "",
+          "claim_ids": [
+            "C03"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "HONEST_LIMITATIONS",
+          "passed": true,
+          "evidence": "RAG can still make mistakes. The search may return an unrelated notice or miss the right one.",
+          "reason": "The lesson explicitly acknowledges RAG's limitations regarding retrieval errors, stale sources, and potential hallucinations without giving a false guarantee.",
+          "required_change": "",
+          "claim_ids": [
+            "C06",
+            "C07",
+            "C08"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "MISSING_INFORMATION",
+          "passed": true,
+          "evidence": "The supplied notice does not give the grant amount, so I cannot tell you an amount from it. Check the official grant notice or ask the college office.",
+          "reason": "The missing information section handles absent facts responsibly by refusing to guess and pointing to official sources.",
+          "required_change": "",
+          "claim_ids": [
+            "P01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "FLOW_AND_PRACTICE",
+          "passed": true,
+          "evidence": "What three actions make up the simple RAG process?",
+          "reason": "The lesson flows logically with clear learning objectives, structured sections, a relevant recap, and three correct practice answers.",
+          "required_change": "",
+          "claim_ids": [
+            "C01",
+            "C03",
+            "C05",
+            "P01"
+          ],
+          "missing_content": false
+        }
+      ],
+      "usage": {
+        "candidates_token_count": 1412,
+        "prompt_token_count": 5006,
+        "prompt_tokens_details": [
+          {
+            "modality": "TEXT",
+            "token_count": 5006
+          }
+        ],
+        "total_token_count": 6418,
+        "attempt_usage": [
+          {
+            "candidates_token_count": 1412,
+            "prompt_token_count": 5006,
+            "prompt_tokens_details": [
+              {
+                "modality": "TEXT",
+                "token_count": 5006
+              }
+            ],
+            "total_token_count": 6418
+          }
+        ]
+      },
+      "disagreements": [
+        {
+          "check_id": "TERMS_EXPLAINED",
+          "expected": false,
+          "actual": true,
+          "kind": "false_pass"
+        }
+      ],
+      "false_approval": false,
+      "false_rejection": false
+    },
+    {
+      "id": "unsupported-scholarship",
+      "split": "calibration",
+      "description": "The answer invents an amount absent from the illustrative notice.",
+      "content_sha256": "72ab217adf2b20783e24d8dd84d9ac12bbdab9e11e32d11e161986d3be8e765d",
+      "expected": {
+        "GROUNDED_CLAIMS": false,
+        "WORKED_EXAMPLE": false,
+        "MISSING_INFORMATION": false
+      },
+      "technical_retries": [],
+      "checks": [
+        {
+          "check_id": "RAG_DEFINITION",
+          "passed": true,
+          "evidence": "RAG means retrieval-augmented generation.",
+          "reason": "The lesson correctly defines RAG as retrieval-augmented generation, covering its core components.",
+          "required_change": "",
+          "claim_ids": [
+            "C01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "EXTERNAL_KNOWLEDGE",
+          "passed": true,
+          "evidence": "A language model may not know the latest notice from your college.",
+          "reason": "The lesson explains that external documents help when facts are absent from the model's stored knowledge.",
+          "required_change": "",
+          "claim_ids": [
+            "C02"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "RAG_MECHANISM",
+          "passed": true,
+          "evidence": "Retrieve: read the learner's question and search the prepared material for relevant pieces.",
+          "reason": "The lesson clearly outlines the retrieval, adding, and generation steps in order.",
+          "required_change": "",
+          "claim_ids": [
+            "C03"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "DOCUMENT_PREPARATION",
+          "passed": true,
+          "evidence": "Divide long documents into small, useful pieces. Organise the pieces in an index",
+          "reason": "The lesson explains document preparation, chunking, and indexing in simple language suitable for beginners.",
+          "required_change": "",
+          "claim_ids": [
+            "C04"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "NOT_RETRAINING",
+          "passed": true,
+          "evidence": "Looking up a document for a question does not itself retrain the language model.",
+          "reason": "The lesson explicitly clarifies that retrieval at question time is distinct from model training or fine-tuning.",
+          "required_change": "",
+          "claim_ids": [
+            "C05"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "GROUNDED_CLAIMS",
+          "passed": true,
+          "evidence": "In RAG, a system finds useful text from outside the language model and gives that text to the model with the question.",
+          "reason": "All material claims match the approved notes and example caveats are clearly labelled.",
+          "required_change": "",
+          "claim_ids": [
+            "C01",
+            "C02",
+            "C03",
+            "C04",
+            "C05",
+            "C06",
+            "C07",
+            "C08",
+            "P01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "TERMS_EXPLAINED",
+          "passed": true,
+          "evidence": "Input means the information we give the system.",
+          "reason": "Technical terms like AI, input, prompt, and index are explained clearly upon first use.",
+          "required_change": "",
+          "claim_ids": [
+            "C03",
+            "C04"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "NO_PREREQUISITES",
+          "passed": true,
+          "evidence": "You do not need coding or earlier AI lessons.",
+          "reason": "The lesson is designed for beginners with no coding or AI background, building concepts step by step.",
+          "required_change": "",
+          "claim_ids": [],
+          "missing_content": false
+        },
+        {
+          "check_id": "WORKED_EXAMPLE",
+          "passed": false,
+          "evidence": "You will receive 50000 rupees and are certainly eligible, even though the notice does not say so.",
+          "reason": "The worked example supported_answer explicitly violates the policy against inventing eligibility and unsupported facts, contradicting the missing information principle.",
+          "required_change": "Change the supported answer in the worked example to state that the amount and eligibility are missing from the notice, rather than inventing 50000 rupees.",
+          "claim_ids": [
+            "C03",
+            "P01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "HONEST_LIMITATIONS",
+          "passed": true,
+          "evidence": "RAG can still make mistakes. The search may return an unrelated notice or miss the right one.",
+          "reason": "The lesson honestly covers limitations including search errors, stale sources, and model misunderstandings.",
+          "required_change": "",
+          "claim_ids": [
+            "C06",
+            "C07",
+            "C08"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "MISSING_INFORMATION",
+          "passed": true,
+          "evidence": "How much money will I receive from this book grant?",
+          "reason": "The lesson includes a dedicated missing information question and example answer addressing absent facts.",
+          "required_change": "",
+          "claim_ids": [
+            "P01"
+          ],
+          "missing_content": false
+        },
+        {
+          "check_id": "FLOW_AND_PRACTICE",
+          "passed": true,
+          "evidence": "What three actions make up the simple RAG process?",
+          "reason": "The lesson follows a coherent structure with clear objectives, a helpful recap, and accurate practice answers.",
+          "required_change": "",
+          "claim_ids": [
+            "C03",
+            "C05"
+          ],
+          "missing_content": false
+        }
+      ],
+      "usage": {
+        "candidates_token_count": 1394,
+        "prompt_token_count": 5041,
+        "prompt_tokens_details": [
+          {
+            "modality": "TEXT",
+            "token_count": 5041
+          }
+        ],
+        "total_token_count": 6435,
+        "attempt_usage": [
+          {
+            "candidates_token_count": 1394,
+            "prompt_token_count": 5041,
+            "prompt_tokens_details": [
+              {
+                "modality": "TEXT",
+                "token_count": 5041
+              }
+            ],
+            "total_token_count": 6435
+          }
+        ]
+      },
+      "disagreements": [
+        {
+          "check_id": "GROUNDED_CLAIMS",
+          "expected": false,
+          "actual": true,
+          "kind": "false_pass"
+        },
+        {
+          "check_id": "MISSING_INFORMATION",
+          "expected": false,
+          "actual": true,
+          "kind": "false_pass"
+        }
+      ],
+      "false_approval": false,
+      "false_rejection": false
+    }
+  ],
+  "note": "Small authored dataset. Holdout is excluded from prompt comparisons. Report actual disagreements; do not treat format validation as correctness.",
+  "finished_at": "2026-11-13T17:30:55.735399+00:00",
+  "summary": {
+    "cases": 5,
+    "evaluated": 4,
+    "technical_errors": 1,
+    "false_approvals": 0,
+    "false_rejections": 0,
+    "per_check_false_passes": 4,
+    "per_check_false_rejections": 0
+  }
+}

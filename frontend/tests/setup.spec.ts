@@ -19,7 +19,7 @@ test('loads safely, never calls paid checks automatically, and fits the viewport
   let paidCalls = 0
   await page.route('**/api/providers/*/check', route => { paidCalls++; return route.abort() })
   await mockSetup(page, { slow: true })
-  await page.goto('/')
+  await page.goto('/?view=connections')
   await expect(page.getByRole('status').filter({ hasText: 'Checking' })).toBeVisible()
   await expect(page.getByRole('status').filter({ hasText: 'Connected' })).toBeVisible()
   await expect(page.getByText('Not configured', { exact: true })).toHaveCount(1)
@@ -32,7 +32,7 @@ test('loads safely, never calls paid checks automatically, and fits the viewport
 
 test('backend outage is actionable and can be retried', async ({ page }, testInfo) => {
   await page.route('**/api/**', route => route.abort())
-  await page.goto('/')
+  await page.goto('/?view=connections')
   await expect(page.getByText('Unavailable', { exact: true })).toBeVisible()
   await expect(page.getByRole('alert')).toContainText('Start it in a separate terminal')
   await expect(page.getByRole('button', { name: 'Test Gemini connection' })).toBeDisabled()
@@ -52,7 +52,7 @@ test('configured and verified are separate; manual checks show real response fie
     await new Promise(resolve => setTimeout(resolve, 350))
     await route.fulfill({ json: { provider, status: 'success', model: `${provider}-test-model`, message: `${provider} mocked connection OK.`, latency_ms: 250, checked_at: '2026-11-13T10:00:00Z' } })
   })
-  await page.goto('/')
+  await page.goto('/?view=connections')
   await expect(page.getByText('Ready to test', { exact: true })).toHaveCount(1)
   expect(calls).toBe(0)
   const geminiButton = page.getByRole('button', { name: 'Test Gemini connection' })
@@ -70,7 +70,7 @@ test('a failed provider check shows the backend message and allows retry', async
   await page.route('**/api/providers/gemini/check', route => route.fulfill({ status: 429, json: {
     provider: 'gemini', status: 'error', error_code: 'RATE_LIMIT_OR_QUOTA', message: 'Check your API quota and billing before retrying.',
   } }))
-  await page.goto('/')
+  await page.goto('/?view=connections')
   const button = page.getByRole('button', { name: 'Test Gemini connection' })
   await button.click()
   await expect(page.getByText('Check failed', { exact: true })).toBeVisible()
@@ -87,7 +87,7 @@ test('the real local backend serves health and configuration without inference',
   expect(Object.keys(await status.json())).toEqual(['gemini'])
   const failures: string[] = []
   page.on('pageerror', error => failures.push(error.message))
-  await page.goto('/')
+  await page.goto('/?view=connections')
   await expect(page.getByRole('status').filter({ hasText: 'Connected' })).toBeVisible()
   expect(failures).toEqual([])
   await page.screenshot({ path: `../artifacts/live-${testInfo.project.name}.png`, fullPage: true })
@@ -98,7 +98,7 @@ test('changing provider configuration clears the old verification', async ({ pag
   await page.route('**/api/providers/gemini/check', route => route.fulfill({ json: {
     provider: 'gemini', status: 'success', model: 'gemini-test-model', message: 'Verified old model.', latency_ms: 150, checked_at: '2026-11-13T10:00:00Z',
   } }))
-  await page.goto('/')
+  await page.goto('/?view=connections')
   await page.getByRole('button', { name: 'Test Gemini connection' }).click()
   await expect(page.getByText('Verified old model.')).toBeVisible()
   await page.route('**/api/providers/status', route => route.fulfill({ json: {

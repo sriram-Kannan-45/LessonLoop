@@ -1,84 +1,131 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ArrowRight, ArrowUpRight, Check, Code2, FileText, Info, Layers3, LoaderCircle, LockKeyhole, RefreshCw, Server, Terminal, Workflow } from 'lucide-react'
-import { GeminiCard } from './components/GeminiCard'
-import { api, ApiError, API_BASE_URL, type Health, type ProvidersStatus } from './lib/api'
+import { ArrowRight, BookOpen, BrainCircuit, Check, ChevronLeft, ChevronRight, Clock3, Download, FileCheck2, FlaskConical, History, Layers3, LoaderCircle, MessageSquareText, RefreshCw, Send, Settings2, ShieldCheck, Sparkles, Workflow } from 'lucide-react'
+import Setup from './Setup'
+import { LessonReader } from './components/LessonReader'
+import { QualityReport } from './components/QualityReport'
+import { AttemptHistory } from './components/AttemptHistory'
+import { MemoryPanel } from './components/MemoryPanel'
+import { workspaceApi, type Event, type FrozenRun, type Memory, type Run, type RunSummary, type Workspace } from './lib/workspace'
+import './workspace.css'
+
+type View = 'studio' | 'history' | 'memory'
+type ReaderTab = 'lesson' | 'quality' | 'attempts' | 'feedback'
+const stageNames: Record<string, string> = { QUEUED: 'Getting ready', LOADING_CONTEXT: 'Loading references', GENERATING: 'Creating your lesson', VALIDATING: 'Checking the structure', EVALUATING: 'Reviewing every checkpoint', REWRITING: 'Improving the draft', VERDICT: 'Recording the verdict', DEMO_MUTATION: 'Inserting the demonstration error', TECHNICAL_RETRY: 'Retrying a technical request', APPROVED: 'Lesson approved', NEEDS_REVIEW: 'Human review needed', ERROR: 'Run stopped', INTERRUPTED: 'Run interrupted' }
 
 export default function App() {
-  const [health, setHealth] = useState<Health | null>(null)
-  const [providers, setProviders] = useState<ProvidersStatus>()
-  const [checking, setChecking] = useState(true)
-  const [backendError, setBackendError] = useState<string | null>(null)
-  const [verified, setVerified] = useState(false)
-  const checkingRef = useRef(false)
-
-  const checkBackend = useCallback(async () => {
-    if (checkingRef.current) return
-    checkingRef.current = true
-    setChecking(true)
-    setBackendError(null)
-    try {
-      const [healthResponse, statusResponse] = await Promise.all([api.health(), api.status()])
-      setHealth(healthResponse)
-      setProviders(statusResponse)
-    } catch (error) {
-      setHealth(null)
-      setProviders(undefined)
-      setBackendError(error instanceof ApiError ? error.message : 'Unable to check the backend.')
-    } finally {
-      checkingRef.current = false
-      setChecking(false)
-    }
-  }, [])
-
-  useEffect(() => { void checkBackend() }, [checkBackend])
-  const onVerified = useCallback((value: boolean) => {
-    setVerified(value)
-  }, [])
-  const completed = Number(Boolean(health)) + Number(verified)
-
-  return (
-    <div className="app-shell">
-      <header className="site-header">
-        <div className="header-inner">
-          <a className="brand" href="/" aria-label="LessonLoop home"><span className="brand-mark"><Workflow size={23} strokeWidth={2.2} /></span><span>LessonLoop<span className="brand-dot">.</span></span></a>
-          <div className="header-right"><span className="local-badge"><span className="status-dot green" />Local development</span><span className="version">v0.1.0</span></div>
-        </div>
-      </header>
-
-      <main>
-        <div className="page-intro">
-          <div><div className="sprint-label"><span />Sprint 1 · Connection setup</div><h1>A good lesson starts<br className="mobile-break" /> with a connection<span>.</span></h1><p className="intro-copy">Generate. Evaluate. Improve.<br className="mobile-break" /> Let’s connect Gemini to power your next lesson.</p></div>
-          <div className="intro-decoration" aria-hidden="true"><div className="orbit-ring" /><div className="orbit-center"><Layers3 size={30} strokeWidth={1.5} /></div><span className="orbit-small one"><Sparkle /></span><span className="orbit-small two"><Check size={17} /></span><span className="orbit-dot" /></div>
-        </div>
-
-        <div className="workspace-grid">
-          <div className="connections-column">
-            <section className="backend-card panel" aria-labelledby="backend-heading">
-              <div className="backend-top"><div className="backend-title"><span className="server-icon"><Server size={21} /></span><div><h2 id="backend-heading">Your backend</h2><p>The foundation for everything that follows.</p></div></div><span className={`badge ${checking ? 'neutral' : health ? 'connected' : 'failed'}`} role="status">{checking ? <LoaderCircle size={13} className="spin" /> : health ? <span className="status-dot green" /> : <span className="status-dot red" />}{checking ? 'Checking' : health ? 'Connected' : 'Unavailable'}</span></div>
-              <div className="backend-bottom"><div className="endpoint"><code>{API_BASE_URL}</code><span className="endpoint-tag">FastAPI</span></div><button className="quiet-button" disabled={checking} onClick={checkBackend}><RefreshCw size={14} className={checking ? 'spin' : ''} />Check backend</button></div>
-              {backendError && <p className="backend-error" role="alert">{backendError}</p>}
-            </section>
-
-            <div className="section-heading"><div><h2>Connect your AI provider</h2><p>Gemini powers your continuous learning loop.</p></div><span className="section-count">{Number(verified)} / 1 verified</span></div>
-            <div className="providers-grid">
-              <GeminiCard configuration={providers?.gemini} backendConnected={Boolean(health)} onVerified={onVerified} />
-            </div>
-            <div className="privacy-note"><LockKeyhole size={15} /><p>Your Gemini key stays on the backend. It’s never sent to this browser.</p></div>
-          </div>
-
-          <aside className="setup-sidebar">
-            <section className="progress-card panel" aria-labelledby="setup-heading"><div className="sidebar-eyebrow">YOUR WORKSPACE</div><div className="progress-title"><h2 id="setup-heading">Setup checklist</h2><span>{completed}<span> / 2</span></span></div><div className="progress-track" role="progressbar" aria-label="Setup progress" aria-valuemin={0} aria-valuemax={2} aria-valuenow={completed}><span style={{ width: `${completed / 2 * 100}%` }} /></div><ol className="checklist">{[['Backend is running', Boolean(health)], ['Gemini connection verified', verified]].map(([label, done], index) => <li key={String(label)} className={done ? 'done' : ''}><span className="checklist-number">{done ? <Check size={13} strokeWidth={2.5} /> : `0${index + 1}`}</span><span>{label}</span></li>)}</ol><p className="checklist-note">{completed === 2 ? 'All connections verified. Your foundation is ready.' : 'Small steps toward better lessons.'}</p></section>
-
-            <section className="quickstart-card" aria-labelledby="quickstart-heading"><span className="quickstart-icon"><Terminal size={19} /></span><h2 id="quickstart-heading">First time here?</h2><p>Add your Gemini API key to the backend environment file.</p><div className="file-path"><FileText size={14} /><code>backend/.env</code></div><p className="quickstart-detail">Save the file, restart the backend, then test the connection.</p><a href={`${API_BASE_URL}/docs`} target="_blank" rel="noreferrer" className="docs-link">Explore the API<ArrowUpRight size={15} /></a></section>
-            <div className="manual-note"><Info size={15} /><p>The Gemini test runs only when you click. Configuration alone doesn’t verify access.</p></div>
-          </aside>
-        </div>
-
-        <section className="milestone" aria-labelledby="milestone-heading"><div className="milestone-icon"><Workflow size={22} /></div><div className="milestone-copy"><span className="eyebrow">THE NEXT CHAPTER</span><h2 id="milestone-heading">From connection to creation</h2><p>Next: use Gemini to generate a beginner RAG lesson and evaluate it against a pass/fail rubric.</p></div><span className="up-next">Sprint 2<ArrowRight size={15} /></span></section>
-        <footer><p>LessonLoop <span>·</span> Built for learning, designed to improve.</p><span className="footer-meta"><Code2 size={14} />Development workspace</span></footer>
-      </main>
-    </div>
-  )
+  return new URLSearchParams(window.location.search).get('view') === 'connections' ? <Setup /> : <Studio />
 }
 
-function Sparkle() { return <span style={{ fontSize: 23 }}>✦</span> }
+function Studio() {
+  const [view, setView] = useState<View>('studio')
+  const [workspace, setWorkspace] = useState<Workspace | null>(null)
+  const [memory, setMemory] = useState<Memory | null>(null)
+  const [history, setHistory] = useState<RunSummary[]>([])
+  const [total, setTotal] = useState(0)
+  const [offset, setOffset] = useState(0)
+  const [runId, setRunId] = useState<string | null>(new URLSearchParams(window.location.search).get('run'))
+  const [run, setRun] = useState<FrozenRun | null>(null)
+  const [events, setEvents] = useState<Event[]>([])
+  const [topic, setTopic] = useState('Introduction to RAG')
+  const [demo, setDemo] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [readerTab, setReaderTab] = useState<ReaderTab>('lesson')
+  const [draftNumber, setDraftNumber] = useState<number | null>(null)
+  const [pollKey, setPollKey] = useState(0)
+  const submitGuard = useRef(false)
+
+  const refresh = useCallback(async () => {
+    try {
+      const [info, rows, evidence] = await Promise.all([workspaceApi.workspace(), workspaceApi.history(offset), workspaceApi.memory()])
+      setWorkspace(info); setHistory(rows.items); setTotal(rows.total); setMemory(evidence); setError('')
+    } catch (err) { setError(err instanceof Error ? err.message : 'Could not load the workspace.') }
+    finally { setLoading(false) }
+  }, [offset])
+  useEffect(() => { void refresh() }, [refresh])
+  useEffect(() => {
+    if (!runId) return
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout>
+    let cursor = 0
+    const collected: Event[] = []
+    setEvents([]); setDraftNumber(null)
+    async function poll() {
+      try {
+        const [current, updates] = await Promise.all([workspaceApi.run(runId!), workspaceApi.events(runId!, cursor)])
+        if (cancelled) return
+        cursor = updates.next_cursor; collected.push(...updates.events)
+        setRun(current); setEvents([...collected]); setError('')
+        if (current.status === 'RUNNING') timer = setTimeout(poll, 1500)
+        else await refresh()
+      } catch (err) { if (!cancelled) setError(err instanceof Error ? err.message : 'Could not retrieve this run. Refresh to retry.') }
+    }
+    void poll()
+    return () => { cancelled = true; clearTimeout(timer) }
+  }, [runId, pollKey, refresh])
+
+  function openRun(id: string) {
+    setRun(null); setRunId(id); setView('studio'); setReaderTab('lesson')
+    window.history.replaceState(null, '', `/?run=${id}`)
+  }
+  async function generate(event: React.FormEvent) {
+    event.preventDefault()
+    if (submitGuard.current) return
+    submitGuard.current = true; setSubmitting(true); setError('')
+    try { const created = await workspaceApi.create(topic, demo); openRun(created.id); setWorkspace(current => current ? { ...current, busy: true } : current) }
+    catch (err) { setError(err instanceof Error ? err.message : 'Could not start the lesson.') }
+    finally { submitGuard.current = false; setSubmitting(false) }
+  }
+  const attempt = run?.attempts.find(item => item.number === draftNumber) || run?.attempts.at(-1)
+  const active = run?.status === 'RUNNING'
+  const busy = submitting || active || workspace?.busy
+  const passed = attempt?.evaluation?.filter(check => check.passed).length || 0
+  const draftLabel = run?.attempt_count ? `Draft ${run.attempt_count} of 3` : active ? 'Preparing draft 1 of 3' : 'No saved draft'
+
+  return <div className="product-shell">
+    <header className="product-header"><div className="product-header-inner"><a className="brand" href="/"><span className="brand-mark"><Workflow size={23} /></span><span>LessonLoop<span className="brand-dot">.</span></span></a><nav aria-label="Workspace navigation">{([{ id: 'studio', label: 'Lesson studio', icon: Sparkles }, { id: 'history', label: 'Run history', icon: History }, { id: 'memory', label: 'Memory & learning', icon: BrainCircuit }] as const).map(item => <button key={item.id} className={view === item.id ? 'selected' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => setView(item.id)}><item.icon size={15} />{item.label}</button>)}</nav><a className="connections-link" href="/?view=connections"><Settings2 size={16} /><span>Connections</span></a></div></header>
+    <main className="product-main">
+      {error && <div className="error-banner" role="alert"><span>{error}</span><button onClick={() => { void refresh(); setPollKey(key => key + 1) }}><RefreshCw size={14} />Retry</button></div>}
+      {view === 'studio' && <><div className="view-heading studio-intro"><div><span className="reader-kicker"><span className="small-square" />YOUR SELF-EVALUATING LESSON WORKSPACE</span><h1>Made to teach.<br className="mobile-break" /> Checked to make sense<span>.</span></h1><p>From a first draft to a lesson a beginner can follow. Every checkpoint matters.</p></div><span className="workspace-badge"><span className={`status-dot ${workspace ? 'green' : 'gray'}`} />{loading ? 'Connecting' : workspace ? 'Local workspace' : 'Backend unavailable'}</span></div>
+      <div className="studio-layout"><aside className="create-column"><form className="panel create-panel" onSubmit={generate}><div className="panel-heading"><span className="tiny-icon"><Sparkles size={18} /></span><h2>Create a lesson</h2></div><label htmlFor="topic">What would you like to learn?</label><input id="topic" value={topic} onChange={event => setTopic(event.target.value)} minLength={3} maxLength={160} required disabled={Boolean(busy)} /><p className="field-help">RAG is the prepared submission topic. Other topics need a reviewed source pack.</p><label htmlFor="learner">Who is it for?</label><select id="learner" defaultValue="india_beginner"><option value="india_beginner">India · Grade 12 · First AI lesson</option></select><div className="learner-note"><BookOpen size={16} /><p>Simple English. No coding or AI knowledge assumed. Respectful, step-by-step learning.</p></div><label htmlFor="reference-pack">Reviewed reference pack</label><select id="reference-pack" defaultValue="rag-primary-v1"><option value="rag-primary-v1">RAG · Primary sources v1</option></select><div className="model-labels"><div><span>GENERATOR</span><code>{workspace?.generator_model || 'Loading model'}</code></div><div><span>EVALUATOR · SEPARATE CALL</span><code>{workspace?.evaluator_model || 'Loading model'}</code></div></div><p className="provider-caveat">Both calls use Gemini. Separate calls can still share mistakes.</p>{workspace?.demo_enabled && <label className="demo-option"><input type="checkbox" checked={demo} onChange={event => setDemo(event.target.checked)} disabled={Boolean(busy)} /><span>Inject a factual error into the first draft<small>Development demonstration · real evaluator verdict</small></span></label>}<button className="primary-button generate-button" type="submit" disabled={Boolean(busy) || !workspace?.configured}>{busy ? <LoaderCircle size={17} className="spin" /> : <Sparkles size={17} />}{submitting ? 'Starting…' : active ? 'Lesson in progress' : 'Generate lesson'}{!busy && <ArrowRight size={16} />}</button><p className="cost-note">Uses paid Gemini calls · up to 3 content drafts</p>{workspace && !workspace.configured && <a href="/?view=connections" className="configure-notice">Add your Gemini key in Connections to begin.</a>}</form>
+      <div className="guardrail-note"><ShieldCheck size={17} /><p><strong>A firm release rule</strong>Every mandatory check must pass. After two rewrites, unresolved lessons stay in review.</p></div><div className="recent-mini"><div><h3>Recent runs</h3><button onClick={() => setView('history')}>View all<ArrowRight size={12} /></button></div>{history.length ? history.slice(0, 3).map(item => <button key={item.id} onClick={() => openRun(item.id)}><span>{item.topic}<small>{new Date(item.started_at).toLocaleString()}</small></span><span className={`mini-dot ${item.status.toLowerCase()}`} /></button>) : <p>Your lesson history will appear here.</p>}</div></aside>
+      <div className="run-column">{!runId ? <div className="panel welcome-panel"><div className="welcome-illustration"><span><Layers3 size={42} strokeWidth={1.3} /></span><i><ShieldCheck size={21} /></i></div><span className="reader-kicker">A LITTLE CARE GOES A LONG WAY</span><h2>A lesson worth understanding.</h2><p>Choose a topic and start the loop.<br />We’ll create, check, and improve it before release.</p><div className="loop-explainer"><div><span>01</span><strong>Create</strong><small>Grounded in reviewed sources</small></div><ArrowRight size={17} /><div><span>02</span><strong>Evaluate</strong><small>Every mandatory checkpoint</small></div><ArrowRight size={17} /><div><span>03</span><strong>Improve</strong><small>Specific feedback, up to 2 retries</small></div></div><div className="welcome-bottom"><Check size={14} />Your drafts, verdicts, and corrections are saved locally.</div></div> : !run ? <div className="panel loading-panel" role="status"><LoaderCircle className="spin" />Loading your run…</div> : <>
+        <section className="panel run-progress" aria-live="polite"><div className="run-progress-top"><div><span className="reader-kicker">{run.demo_error ? 'DELIBERATE-ERROR DEMONSTRATION' : 'YOUR LESSON RUN'}</span><h2>{stageNames[run.stage] || run.stage.replaceAll('_', ' ')}</h2></div><span className={`status-pill ${run.status.toLowerCase()}`}>{active && <LoaderCircle size={12} className="spin" />}{run.status.replaceAll('_', ' ')}</span></div><div className="run-facts"><span><Clock3 size={13} />{new Date(run.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span><span>{draftLabel}</span><span>{run.selected_memory.length} memory {run.selected_memory.length === 1 ? 'instruction' : 'instructions'} used</span><code>{run.id.slice(0, 8)}</code></div>{run.error && <div className="inline-error">{run.error.message}</div>}{run.status === 'NEEDS_REVIEW' && <div className="review-warning">No lesson was released. Unresolved checks remain after the maximum two rewrites.</div>}<details className="event-log"><summary>Live workflow events <span>{events.length} recorded</span></summary><ol>{events.map(item => <li key={item.sequence}><time>{new Date(item.created_at).toLocaleTimeString()}</time><span>{item.message}</span></li>)}</ol></details></section>
+        {attempt && <section className="panel reader-panel"><div className="reader-toolbar"><div role="tablist" aria-label="Run details">{([{ id: 'lesson', text: 'Lesson', icon: BookOpen }, { id: 'quality', text: 'Quality report', icon: FileCheck2 }, { id: 'attempts', text: 'Attempts', icon: History }, { id: 'feedback', text: 'Feedback', icon: MessageSquareText }] as const).map(tab => <button key={tab.id} role="tab" aria-selected={readerTab === tab.id} onClick={() => setReaderTab(tab.id)}><tab.icon size={14} />{tab.text}</button>)}</div><label className="draft-select">Draft<select aria-label="Select draft" value={attempt.number} onChange={event => setDraftNumber(Number(event.target.value))}>{run.attempts.map(item => <option key={item.id} value={item.number}>{item.number}</option>)}</select></label></div>
+          {readerTab === 'lesson' && <LessonReader lesson={attempt.draft} sources={run.source_snapshot?.sources || workspace?.source_pack.sources || []} approved={run.status === 'APPROVED' && attempt.status === 'APPROVED'} />}
+          {readerTab === 'quality' && <QualityReport attempt={attempt} rubric={run.rubric_snapshot?.checks || workspace?.rubric.checks || []} sources={run.source_snapshot?.sources || workspace?.source_pack.sources || []} />}
+          {readerTab === 'attempts' && <AttemptHistory run={run} onSelect={number => { setDraftNumber(number); setReaderTab('lesson') }} />}
+          {readerTab === 'feedback' && <FeedbackPanel run={run} refresh={() => setPollKey(key => key + 1)} />}
+          <div className="reader-footer"><span><ShieldCheck size={14} />{passed} / {workspace?.rubric.checks.length || 14} checks passed on this draft</span><div><a href={workspaceApi.exportUrl(run.id, 'markdown')}><Download size={13} />{run.status === 'APPROVED' ? 'Approved lesson' : 'Review draft'}</a><a href={workspaceApi.exportUrl(run.id, 'json')}><Download size={13} />Audit JSON</a></div></div></section>}
+        {!attempt && active && <div className="panel working-panel"><LoaderCircle className="spin" size={25} /><h3>Building your first draft</h3><p>The model is working from the approved reference pack. Progress above comes from real backend events.</p></div>}
+        {!attempt && !active && <div className="panel working-panel"><h3>No draft was released</h3><p>The run stopped before a usable draft was saved. Its events and error remain in history.</p><a className="secondary-button" href={workspaceApi.exportUrl(run.id, 'json')}><Download size={13} />Download audit JSON</a></div>}
+        <div className="run-metadata"><span>References: {run.source_pack_version}</span><span>Rubric: {run.rubric_version}</span><span>Prompt: {run.generator_prompt_version}</span>{run.selected_memory.map(item => <span key={item.id}>Memory: {item.id.slice(0, 8)} · {item.category}</span>)}</div>
+      </>}</div></div></>}
+      {view === 'history' && <div className="history-page"><div className="view-heading"><span className="reader-kicker">EVERY ATTEMPT COUNTS</span><h1>Your lesson history<span>.</span></h1><p>Completed lessons and unfinished drafts survive server restarts.</p></div><section className="panel workspace-panel"><div className="panel-heading"><h2>Saved runs</h2><span className="version-tag">{total} total</span></div>{!history.length ? <div className="empty-state"><History size={30} /><h3>A fresh start</h3><p>Create your first lesson in the studio. Its full history will be saved here.</p><button className="secondary-button" onClick={() => setView('studio')}>Open lesson studio</button></div> : <div className="history-table"><div className="history-row history-labels"><span>LESSON</span><span>STATUS</span><span>DRAFTS</span><span>STARTED</span></div>{history.map(item => <button className="history-row" key={item.id} onClick={() => openRun(item.id)}><span><strong>{item.topic}</strong><small>{item.id.slice(0, 8)}</small></span><span className={`status-pill ${item.status.toLowerCase()}`}>{item.status.replaceAll('_', ' ')}</span><span>{item.attempt_count} / 3</span><span>{new Date(item.started_at).toLocaleString()}</span></button>)}</div>}<div className="pagination"><span>{total ? offset + 1 : 0}–{Math.min(offset + 10, total)} of {total}</span><button aria-label="Previous history page" disabled={offset === 0} onClick={() => setOffset(value => Math.max(0, value - 10))}><ChevronLeft size={17} /></button><button aria-label="Next history page" disabled={offset + 10 >= total} onClick={() => setOffset(value => value + 10)}><ChevronRight size={17} /></button></div></section></div>}
+      {view === 'memory' && <MemoryPanel memory={memory} workspace={workspace} refresh={refresh} />}
+      <footer className="product-footer"><p>LessonLoop · Generate. Evaluate. Improve.</p><span>Gemini only · Local SQLite history · All-checks release rule</span></footer>
+    </main>
+  </div>
+}
+
+function FeedbackPanel({ run, refresh }: { run: Run; refresh: () => void }) {
+  const [category, setCategory] = useState('confusing_language')
+  const [message, setMessage] = useState('')
+  const [note, setNote] = useState('')
+  const [status, setStatus] = useState('')
+  const [busy, setBusy] = useState(false)
+  async function submit(event: React.FormEvent) {
+    event.preventDefault(); setBusy(true); setStatus('')
+    try { const result = await workspaceApi.feedback(run.id, category, message); setStatus(result.message); setMessage(''); refresh() }
+    catch (err) { setStatus(err instanceof Error ? err.message : 'Feedback could not be saved.') }
+    finally { setBusy(false) }
+  }
+  async function review(id: string, action: string) {
+    setBusy(true)
+    try { await workspaceApi.reviewFeedback(id, action, note); setStatus('Review saved. Only a vetted instruction that passes a comparison can become active memory.'); setNote(''); refresh() }
+    catch (err) { setStatus(err instanceof Error ? err.message : 'Review could not be saved.') }
+    finally { setBusy(false) }
+  }
+  return <div className="feedback-panel"><h2>Help the next lesson</h2><p className="muted">Feedback is saved as an unverified observation. It never changes active prompts automatically.</p><form onSubmit={submit}><label htmlFor="feedback-category">What should we look at?</label><select id="feedback-category" value={category} onChange={event => setCategory(event.target.value)}><option value="confusing_language">Confusing language</option><option value="factual_issue">A factual issue</option><option value="missing_example">A missing example</option><option value="correction">A correction</option></select><label htmlFor="feedback-message">Your feedback</label><textarea id="feedback-message" minLength={5} maxLength={2000} required value={message} onChange={event => setMessage(event.target.value)} placeholder="Tell us which part needs attention and why." /><button className="primary-button" disabled={busy}><Send size={14} />Save feedback</button></form>{status && <p role="status" className="inline-notice">{status}</p>}{run.feedback.map(item => <article className="feedback-item" key={item.id}><div><strong>{item.category.replaceAll('_', ' ')}</strong><span className="status-pill">{item.status}</span></div><p>{item.message}</p>{item.review_note && <p>Review: {item.review_note}</p>}{item.status === 'unverified' && <div><label htmlFor={`review-${item.id}`}>Human review note (at least 10 characters)</label><input id={`review-${item.id}`} value={note} onChange={event => setNote(event.target.value)} maxLength={1000} /><div className="review-actions"><button className="secondary-button" disabled={busy || note.trim().length < 10} onClick={() => review(item.id, 'verified')}>Verified observation</button><button className="secondary-button" disabled={busy || note.trim().length < 10} onClick={() => review(item.id, 'dismissed')}>Dismiss</button></div></div>}</article>)}</div>
+}

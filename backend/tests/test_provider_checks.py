@@ -48,6 +48,7 @@ def test_success_maps_actual_text_and_metadata(client, configured, monkeypatch):
 @pytest.mark.parametrize("exception,status,code", [
     (TimeoutError("secret-provider-diagnostic"), 504, "TIMEOUT"),
     (httpx.ReadTimeout("secret-provider-diagnostic"), 504, "TIMEOUT"),
+    (errors.ServerError(504, {"message": "secret-provider-diagnostic", "status": "DEADLINE_EXCEEDED"}), 504, "TIMEOUT"),
     (errors.ClientError(401, {"message": "secret-provider-diagnostic"}), 401, "INVALID_CREDENTIALS"),
     (errors.ClientError(400, {"error": {"message": "secret-provider-diagnostic", "details": [{"reason": "API_KEY_INVALID"}]}}), 401, "INVALID_CREDENTIALS"),
     (errors.ClientError(403, {"message": "secret-provider-diagnostic"}), 403, "MODEL_UNAVAILABLE"),

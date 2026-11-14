@@ -24,18 +24,18 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, method = 'GET'): Promise<T> {
+export async function request<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
   const controller = new AbortController()
   const timer = window.setTimeout(() => controller.abort(), method === 'POST' ? 125_000 : 8_000)
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, { method, signal: controller.signal })
+    const response = await fetch(`${API_BASE_URL}${path}`, { method, signal: controller.signal, ...(body !== undefined ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } } : {}) })
     const data: unknown = await response.json()
     if (!response.ok) {
       if (typeof data === 'object' && data !== null && 'status' in data && data.status === 'error' && 'message' in data) {
         const error = data as CheckError
         throw new ApiError(error.message, error.error_code)
       }
-      throw new ApiError('The backend could not complete this request. Try again.', 'REQUEST_FAILED')
+      throw new ApiError(response.status === 422 ? 'Check the input lengths and supported options, then try again.' : 'The backend could not complete this request. Try again.', 'REQUEST_FAILED')
     }
     return data as T
   } catch (error) {
