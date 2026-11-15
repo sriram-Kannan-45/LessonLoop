@@ -1,6 +1,6 @@
 # LessonLoop
 
-**Documentation:** [Overall guide](docs/OVERALL_GUIDE.md) · [Assessment audit](docs/ASSESSMENT_AUDIT.md) · [Native languages](docs/LANGUAGES.md)
+**Documentation:** [Overall guide](docs/OVERALL_GUIDE.md) · [Project explanation and recording guide](docs/PROJECT_DOCUMENTATION.md) · [Assessment audit](docs/ASSESSMENT_AUDIT.md) · [Native languages](docs/LANGUAGES.md)
 
 LessonLoop creates and evaluates beginner lessons about the topic you enter: science, programming, history, mathematics and other subjects with usable public references. The learner is an Indian grade-12 graduate with limited English vocabulary and no assumed specialist background. New runs collect topic references automatically; there is no RAG-only subject whitelist.
 
