@@ -79,3 +79,6 @@
 .run-activity button { margin-top: 10px; }
 
 .reader-footer > div { flex-wrap: wrap; }
+
+.draft-preview > summary { cursor:pointer; padding:22px; font-weight:600; }
+.draft-preview > p { padding:0 22px; font-size:12px; }

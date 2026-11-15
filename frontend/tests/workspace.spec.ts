@@ -71,6 +71,8 @@ test('needs-review drafts are clearly labelled and cannot download as approved',
   await mocks(page, makeRun('NEEDS_REVIEW', 3))
   await page.goto('/?run=browser-test-run')
   await expect(page.getByText('No lesson was released.', { exact: false })).toBeVisible()
+  await expect(page.getByText('REVIEW DRAFT · This draft has not passed every mandatory check.')).not.toBeVisible()
+  await page.getByText('Inspect unapproved draft',{exact:true}).click()
   await expect(page.getByText('REVIEW DRAFT · This draft has not passed every mandatory check.')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Approved lesson', exact: true })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Review draft', exact: true })).toBeVisible()
@@ -217,6 +219,7 @@ test('keeps API wait, draft status and demonstration warning visible until the r
   await expect(timer).toContainText('Next request in about')
   const first = await timer.textContent()
   await expect.poll(() => timer.textContent()).not.toBe(first)
+  await page.getByText('Inspect unapproved draft',{exact:true}).click()
   await page.locator('.lesson-reader').scrollIntoViewIfNeeded()
   await expect(activity).toBeInViewport()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -273,4 +276,14 @@ test('offers PDF TXT and editable Word downloads for a review draft', async ({ p
     expect(readFileSync((await download.path())!, 'utf8')).toContain('NOT APPROVED')
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
+
+test('sends the chosen native teaching language with the lesson request', async ({page}) => {
+  await mocks(page)
+  await page.goto('/')
+  await page.getByLabel('Lesson language',{exact:true}).selectOption('ta')
+  const posted = page.waitForRequest(r => r.method()==='POST' && r.url().endsWith('/api/runs'))
+  await page.getByRole('button',{name:'Generate lesson',exact:true}).click()
+  expect((await posted).postDataJSON().language).toBe('ta')
 })

@@ -16,7 +16,7 @@ export type Usage = { provider?: string; model?: string; fallback?: boolean; gro
 export type Attempt = { id: number; number: number; created_at: string; draft: Lesson; original_draft: Lesson | null; evaluation: Check[] | null; status: string; diagnostics: { word_count: number; sentences_over_25_words: number; note: string }; generation_usage: Usage; evaluator_usage: Usage }
 export type MemoryInstruction = { id: string; topic: string; learner_profile: string; category: string; instruction: string; status: string; supporting_runs: string[]; origin: string; prompt_version: string }
 export type Feedback = { id: string; category: string; message: string; status: string; review_note: string | null }
-export type Run = { id: string; topic: string; learner_profile: string; status: Status; stage: string; started_at: string; finished_at: string | null; attempts: Attempt[]; attempt_count: number; final_lesson: Lesson | null; review_draft: Lesson | null; selected_memory: MemoryInstruction[]; retry_count: number; demo_error: number; generator_model: string; evaluator_model: string; generator_prompt_version: string; source_pack_version: string; rubric_version: string; error: { code: string; message: string; diagnostics?: { provider?: string; provider_http_status?: number; retry_after_seconds?: number } } | null; feedback: Feedback[] }
+export type Run = { language?: string; id: string; topic: string; learner_profile: string; status: Status; stage: string; started_at: string; finished_at: string | null; attempts: Attempt[]; attempt_count: number; final_lesson: Lesson | null; review_draft: Lesson | null; selected_memory: MemoryInstruction[]; retry_count: number; demo_error: number; generator_model: string; evaluator_model: string; generator_prompt_version: string; source_pack_version: string; rubric_version: string; error: { code: string; message: string; diagnostics?: { provider?: string; provider_http_status?: number; retry_after_seconds?: number } } | null; feedback: Feedback[] }
 export type RunSummary = Pick<Run, 'id' | 'topic' | 'status' | 'stage' | 'started_at' | 'attempt_count'>
 export type Event = { sequence: number; stage: string; message: string; created_at: string; details: Record<string, unknown> }
 export type Source = { id: string; title: string; url: string; accessed_at: string; version?: string; license?: string; license_url?: string; notes: { id: string; text: string; claim_ids: string[] }[] }
@@ -30,7 +30,7 @@ export type FrozenRun = Run & { source_snapshot?: { sources: Source[] }; rubric_
 
 export const workspaceApi = {
   workspace: () => request<Workspace>('/workspace'),
-  create: (topic: string, demo_error: boolean) => request<{ id: string; status: Status }>('/runs', 'POST', { topic, learner_profile: 'india_beginner', reference_pack_id: 'auto', demo_error }),
+  create: (topic: string, demo_error: boolean, language = 'en') => request<{ id: string; status: Status }>('/runs', 'POST', { topic, learner_profile: 'india_beginner', reference_pack_id: /^(introduction to rag|rag|rag \(retrieval-augmented generation\))$/i.test(topic.trim()) ? 'rag-primary-v1' : 'auto', language, demo_error }),
   cancel: (id: string) => request<FrozenRun>(`/runs/${id}/cancel`, 'POST'),
   run: (id: string) => request<FrozenRun>(`/runs/${id}`),
   history: (offset = 0) => request<{ items: RunSummary[]; total: number; limit: number; offset: number }>(`/runs?limit=10&offset=${offset}`),

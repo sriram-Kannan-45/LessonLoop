@@ -6,7 +6,7 @@ from langgraph.graph import END, START, StateGraph
 from app.content import SOURCE_PACK
 from app.lesson_schemas import MAX_RETRIES
 from app.quality import diagnostics, releasable, structure_checks, validate_evaluation
-from app.services.lesson_ai import WorkflowError
+from app.services.lesson_ai import WorkflowError, evaluation_groups
 from app.topics import collect_topic_references
 
 
@@ -60,7 +60,7 @@ def build_graph(repository, ai):
                 "source_pack_version": run["source_pack_version"], "rubric_version": run["rubric_version"],
                 "generator_prompt_version": run["generator_prompt_version"], "evaluator_prompt_version": run["evaluator_prompt_version"],
                 "selected_memory_ids": [memory["id"] for memory in run["selected_memory"]],
-                "context": {"topic": run["topic"], "source_pack": run["source_snapshot"], "rubric": run["rubric_snapshot"], "instructions": prompt["instructions"], "memory": run["selected_memory"], "demo_error": bool(run["demo_error"])},
+                "context": {"language": run["language"], "topic": run["topic"], "source_pack": run["source_snapshot"], "rubric": run["rubric_snapshot"], "instructions": prompt["instructions"], "memory": run["selected_memory"], "demo_error": bool(run["demo_error"])},
                 "retry_count": 0, "attempts": [], "failure_feedback": [], "status": "RUNNING", "error": None}
 
     async def generate_lesson(state):
@@ -87,7 +87,7 @@ def build_graph(repository, ai):
     async def evaluate_lesson(state):
         checks = list(state["structure"])
         if checks[0]["passed"]:
-            repository.event(state["run_id"], "EVALUATING", "Checking the frozen rubric in three focused passes, separate from generation.", {"attempt": len(state["attempts"]), "evaluation_groups": 3})
+            repository.event(state["run_id"], "EVALUATING", "Checking the frozen rubric in focused passes, separate from generation.", {"attempt": len(state["attempts"]), "evaluation_groups": len(evaluation_groups(state["context"]["rubric"]))})
             raw, usage = await ai.evaluate(state["current_lesson"], state["context"]["source_pack"], state["context"]["rubric"], retry_event(state["run_id"], "evaluation"), on_provider_event=provider_events(state["run_id"]))
             try:
                 checks.extend(validate_evaluation(raw, state["current_lesson"], expected_ids=[item["id"] for item in state["context"]["rubric"]["checks"] if item["evaluator"] == "model"], source_pack=state["context"]["source_pack"]))

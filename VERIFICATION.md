@@ -6,9 +6,9 @@ Audited 14 November 2026 on Windows. The user originally chose Gemini only and l
 
 | Check | Observed result |
 | --- | --- |
-| Backend pytest | 118 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
+| Backend pytest | 133 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
 | TypeScript and production build | Passed. |
-| Desktop/mobile Playwright | 42 passed, installed Edge; inference mocked, real local health/configuration checked. |
+| Desktop/mobile Playwright | 44 passed, installed Edge; inference mocked, real local health/configuration checked. |
 | Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
 | Persistence | Actual server restart preserved approved runs, failure observations, inactive proposals and generator-v1. No active job was abandoned during the final restart. |
 
@@ -118,3 +118,13 @@ The backend suite now has 106 passing tests, including full mocked workflow reco
 The export route supports pdf, txt and docx in addition to existing markdown/json. Binary rendering runs in the thread pool. PDF uses ReportLab with an embedded TrueType font (Windows Arial when installed, bundled Vera otherwise); DOCX uses python-docx with explicit Letter page size, readable paragraph styles and no inherited title borders. Plain text contains readable sections without Markdown syntax. Every format includes status/run identity, the unapproved warning when applicable, practice answers and the frozen source URLs/CC attribution. Empty runs cannot create a lesson document; audit JSON remains available. This does not change approval or generate new inference.
 
 The backend suite has 118 passing tests; the 12 download cases parse actual PDF/DOCX payloads and verify approved/review/cancelled content and absent-draft rejection. After a document styling adjustment those 12 cases passed again. All 42 browser tests and the production build pass, including desktop/mobile format links and browser downloads. The supplied review run b93969496cd04e949bf1caa3a36c7736 was exported without inference for local visual QA. Its four-page PDF and three-page Word rendering were inspected as page images, including references and status. The packaged DOCX renderer could not find LibreOffice on this Windows machine, so installed Microsoft Word rendered the DOCX to PDF for visual inspection instead; its COM process had already exited when cleanup was requested. Generated sample files and page images remain ignored and are not committed. Existing history is unchanged.
+
+## Assessment audit and native teaching languages — 15 November 2026
+
+The current assessment matrix is docs/ASSESSMENT_AUDIT.md and overall usage/architecture documentation is docs/OVERALL_GUIDE.md. The inspected live database had zero active learned instructions, four ERROR comparisons and one NO_IMPROVEMENT comparison. Qualifying live learning/reuse, current calibration and public document/video deliverables remain pending. No new form submission, public document, recording or successful learning activation is claimed.
+
+Language selection supports en/ta/hi/te/kn/ml/mr/bn/gu/pa. SQLite adds a default-en language column without altering old attempt/snapshot content. Native generation prompts and evaluator versions are language-specific, and native rubrics add mandatory LANGUAGE (15 checks); English preserves 14. English learned instructions are excluded from native runs; calibration support is limited to English reviewed-RAG references. Canonical RAG topics now automatically select the reviewed pack, including CLI/API clients. Draft previews are collapsed by default behind an explicit inspection action; approved content displays normally.
+
+133 backend tests pass and 44 desktop/mobile browser tests pass; the production build passes. Tests cover language persistence, actual migration of an existing table, prompt/evaluator data, wrong-language rejection through three drafts, cross-language memory isolation and UI submission. Following a native Word font adjustment, all 27 language/download tests passed again. Authored Tamil PDF and DOCX font samples were rendered and inspected; PDF uses Nirmala UI/HarfBuzz shaping, and Word receives explicit complex-script fonts. These are font samples, not real-model quality evidence. Native-script PDF export fails clearly if a suitable font is unavailable; UTF-8 TXT and Unicode Word remain alternatives.
+
+Real Tamil RAG diagnostic 26451d5369994d329a56673c714d041f used an isolated ignored database with controlled Gemini/Groq failures to select FreeLLM. It ended ERROR before generation because the local router was unreachable (ConnectError). A successful live Tamil generation/evaluation and quality review for the other languages remain pending. Historical English runs were checked after migration and retained their status and English assignment.

@@ -185,6 +185,8 @@ typing-inspection==0.4.5
     #   fastapi
     #   pydantic
     #   pydantic-settings
+uharfbuzz==0.57.0
+    # via -r backend/requirements.in
 urllib3==2.8.0
     # via requests
 uuid-utils==0.19.0

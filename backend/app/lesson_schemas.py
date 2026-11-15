@@ -75,6 +75,7 @@ class RunRequest(StrictModel):
     topic: str = Field(default="Introduction to RAG", min_length=3, max_length=160)
     learner_profile: Literal["india_beginner"] = PRESET
     reference_pack_id: Literal["auto", "rag-primary-v1"] = "auto"
+    language: Literal["en", "ta", "hi", "te", "kn", "ml", "mr", "bn", "gu", "pa"] = "en"
     demo_error: bool = False
 
     @field_validator("topic")

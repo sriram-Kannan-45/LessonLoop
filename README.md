@@ -1,5 +1,7 @@
 # LessonLoop
 
+**Documentation:** [Overall guide](docs/OVERALL_GUIDE.md) · [Assessment audit](docs/ASSESSMENT_AUDIT.md) · [Native languages](docs/LANGUAGES.md)
+
 LessonLoop creates and evaluates beginner lessons about the topic you enter: science, programming, history, mathematics and other subjects with usable public references. The learner is an Indian grade-12 graduate with limited English vocabulary and no assumed specialist background. New runs collect topic references automatically; there is no RAG-only subject whitelist.
 
 Gemini is the primary generator and evaluator. On a Gemini quota/rate-limit response, the affected call automatically switches to configured Groq backup. Separate evaluation calls judge twelve rubric checks, and Python enforces two structure/reference checks. **Every mandatory check must pass** before release. Actual failures drive at most two rewrites; unresolved drafts end **NEEDS_REVIEW**.
@@ -269,3 +271,9 @@ LessonLoop uses the router's chat-completions endpoint directly through HTTPX. F
 FREELLM_MAX_OUTPUT_TOKENS defaults to 8192 to leave room for reasoning models to finish their JSON. It can be configured between 512 and 32768. Truncated local-router output remains an error; a larger key pool cannot remove every model or output limit.
 
 Lesson downloads now include **PDF**, **TXT**, and editable **Word (.docx)** alongside Markdown and audit JSON. Use the download links below the lesson. Each document includes the actual run status, review warning when unapproved, practice answers and source attribution. Exporting a review draft does not approve it. No new model request is made to download a saved lesson.
+
+## Native teaching languages
+
+Choose Lesson language before generating. English is the default; Tamil, Hindi, Telugu, Kannada, Malayalam, Marathi, Bengali, Gujarati and Punjabi are available. The choice is saved with the run and applies to generation, evaluation and rewrites. Native runs add a mandatory LANGUAGE checkpoint (15 total); English retains 14. English learned instructions are excluded from native runs. Source quotations/IDs may remain English while explanations and practice use the selected language. The interface and technical reports remain English. See docs/LANGUAGES.md for font requirements and live-validation limits.
+
+For the submission enter Introduction to RAG in English; canonical RAG topics automatically use the reviewed source pack. Unapproved drafts are collapsed by default and must be explicitly opened for inspection. The full assessment is not yet submission-complete: qualifying live prompt improvement/reuse, current calibration and public document/video links remain pending. See docs/ASSESSMENT_AUDIT.md.

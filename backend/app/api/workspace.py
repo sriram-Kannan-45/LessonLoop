@@ -4,7 +4,7 @@ import sqlite3
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import Response
 from starlette.concurrency import run_in_threadpool
-from app.download_documents import text_lesson, pdf_lesson, docx_lesson
+from app.download_documents import text_lesson, pdf_lesson, docx_lesson, DocumentExportUnavailable
 
 from app.content import PROMPTS, RUBRIC, SOURCE_PACK, supports_topic
 from app.exports import audit_report, markdown_lesson
@@ -12,6 +12,7 @@ from app.improvements import INSTRUCTIONS
 from app.dataset import DATASET_VERSION
 from app.lesson_schemas import FeedbackRequest, FeedbackReview, ImprovementRequest, LEARNER, RollbackRequest, RunRequest
 from app.topics import topic_rubric
+from app.languages import LANGUAGES
 
 router = APIRouter(prefix="/api")
 
@@ -47,7 +48,7 @@ def find_run(current, run_id):
 @router.get("/workspace")
 async def workspace(request: Request):
     current = runtime(request)
-    return {"source_pack": {"id": "auto", "version": "resolved-per-run", "sources": [],
+    return {"languages": LANGUAGES, "source_pack": {"id": "auto", "version": "resolved-per-run", "sources": [],
                             "review_note": "References are collected for the entered topic when a run starts. They are not human-reviewed."},
             "rubric": topic_rubric("the selected topic"), "learner_profile": LEARNER,
             "learner_preset": "india_beginner", "generator_model": current.ai.generator_model,
@@ -200,6 +201,9 @@ async def export(run_id: str, request: Request, format: str = Query("markdown", 
                      "pdf": (pdf_lesson, "pdf", "application/pdf"),
                      "docx": (docx_lesson, "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")}
         renderer, extension, media_type = renderers[format]
-        content = await run_in_threadpool(renderer, lesson, run["status"], run_id, sources)
+        try:
+            content = await run_in_threadpool(renderer, lesson, run["status"], run_id, sources)
+        except DocumentExportUnavailable as exc:
+            raise ApiProblem(409, "EXPORT_FONT_UNAVAILABLE", str(exc)) from None
     label = "approved" if run["status"] == "APPROVED" else "review-not-approved"
     return Response(content, media_type=media_type, headers={"Content-Disposition": f'attachment; filename="lessonloop-{label}-{run_id}.{extension}"'})

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from app.languages import language_instruction, language_rubric
 from app.content import PROMPTS, RUBRIC, SOURCE_PACK, canonical_hash, supports_topic
 
 
@@ -89,6 +90,8 @@ class Repository:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.connection() as conn:
             conn.executescript(SCHEMA)
+            if "language" not in {row["name"] for row in conn.execute("PRAGMA table_info(runs)")}:
+                conn.execute("ALTER TABLE runs ADD COLUMN language TEXT NOT NULL DEFAULT 'en'")
             conn.execute("INSERT OR IGNORE INTO reference_packs VALUES(?,?)", (SOURCE_PACK["version"], encode(SOURCE_PACK)))
             conn.execute("INSERT OR IGNORE INTO prompt_versions(version,instructions,active,created_at) VALUES(?,?,?,?)",
                          (PROMPTS["generator_version"], PROMPTS["generator"], 1 if not conn.execute("SELECT 1 FROM prompt_versions WHERE active=1").fetchone() else 0, now()))
@@ -132,26 +135,30 @@ class Repository:
     def create_run(self, request, generator_model, evaluator_model):
         from app.topics import pending_pack, topic_rubric
 
-        legacy = request.reference_pack_id == SOURCE_PACK["id"] and supports_topic(request.topic, SOURCE_PACK["id"])
+        legacy = request.reference_pack_id in {"auto", SOURCE_PACK["id"]} and supports_topic(request.topic, SOURCE_PACK["id"])
         active = self.active_prompt()
         memory_topic = "Introduction to RAG" if supports_topic(request.topic, SOURCE_PACK["id"]) else request.topic
-        memory = self.selected_memory(active, memory_topic, request.learner_profile)
+        memory = self.selected_memory(active, memory_topic, request.learner_profile) if request.language == "en" else []
         source_pack, rubric = (SOURCE_PACK, RUBRIC) if legacy else (pending_pack(request.topic), topic_rubric(request.topic))
         prompt = active if legacy else self.prompt(PROMPTS["topic_generator_version"])
         if not legacy and memory:
             instructions = prompt["instructions"] + "".join("\nAdditional teaching instruction: " + item["instruction"] for item in memory)
             prompt = {"version": PROMPTS["topic_generator_version"] + "-" + canonical_hash([item["id"] for item in memory])[:12],
                       "instructions": instructions, "memory_ids": [item["id"] for item in memory]}
+        rubric = language_rubric(rubric, request.language)
+        if request.language != "en":
+            base = self.prompt(PROMPTS["generator_version"] if legacy else PROMPTS["topic_generator_version"])
+            prompt = {"version": base["version"] + "-" + request.language + "-v1", "instructions": base["instructions"] + language_instruction(request.language), "memory_ids": []}
         run_id = identifier()
         with self.connection() as conn:
             conn.execute("INSERT OR IGNORE INTO reference_packs VALUES(?,?)", (source_pack["version"], encode(source_pack)))
-            if not legacy:
+            if not legacy or request.language != "en":
                 conn.execute("INSERT OR IGNORE INTO prompt_versions VALUES(?,?,?,0,?,?)", (prompt["version"], prompt["instructions"], PROMPTS["topic_generator_version"] if memory else None, encode(prompt["memory_ids"]), now()))
             conn.execute("""INSERT INTO runs(id,topic,learner_profile,status,stage,started_at,
              source_pack_version,source_snapshot_json,rubric_version,rubric_snapshot_json,
              generator_prompt_version,evaluator_prompt_version,generator_model,evaluator_model,
-             selected_memory_json,demo_error) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                         (run_id, request.topic, request.learner_profile, "RUNNING", "QUEUED", now(), source_pack["version"], encode(source_pack), rubric["version"], encode(rubric), prompt["version"], PROMPTS["evaluator_version"] if legacy else PROMPTS["topic_evaluator_version"], generator_model, evaluator_model, encode(memory), int(request.demo_error)))
+             selected_memory_json,demo_error,language) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                         (run_id, request.topic, request.learner_profile, "RUNNING", "QUEUED", now(), source_pack["version"], encode(source_pack), rubric["version"], encode(rubric), prompt["version"], (PROMPTS["evaluator_version"] if legacy else PROMPTS["topic_evaluator_version"]) + ("-" + request.language + "-v1" if request.language != "en" else ""), generator_model, evaluator_model, encode(memory), int(request.demo_error), request.language))
         self.event(run_id, "QUEUED", "Run accepted. Up to three drafts; every mandatory check must pass.")
         return run_id
 
@@ -246,7 +253,7 @@ class Repository:
         placeholders = ",".join("?" for _ in topics)
         with self.connection() as conn:
             instructions = [decode_row(row) for row in conn.execute("SELECT * FROM memory_instructions ORDER BY created_at DESC")]
-            failures = [dict(row) for row in conn.execute(f"SELECT f.category,COUNT(DISTINCT f.run_id) AS independent_runs FROM failure_observations f JOIN runs r ON r.id=f.run_id WHERE r.status!='RUNNING' AND lower(trim(r.topic)) IN ({placeholders}) GROUP BY f.category ORDER BY independent_runs DESC", topics)]
+            failures = [dict(row) for row in conn.execute(f"SELECT f.category,COUNT(DISTINCT f.run_id) AS independent_runs FROM failure_observations f JOIN runs r ON r.id=f.run_id WHERE r.status!='RUNNING' AND r.language='en' AND json_extract(r.source_snapshot_json,'$.id')='rag-primary-v1' AND lower(trim(r.topic)) IN ({placeholders}) GROUP BY f.category ORDER BY independent_runs DESC", topics)]
             versions = [decode_row(row) for row in conn.execute("SELECT * FROM prompt_versions ORDER BY created_at DESC")]
             experiments = [decode_row(row) for row in conn.execute("SELECT * FROM improvement_experiments ORDER BY created_at DESC LIMIT 20")]
         return {"instructions": instructions, "failure_categories": failures, "prompt_versions": versions, "experiments": experiments, "active_prompt_version": self.active_prompt()["version"]}
@@ -255,7 +262,7 @@ class Repository:
         topics = SOURCE_PACK["approved_topics"]
         placeholders = ",".join("?" for _ in topics)
         with self.connection() as conn:
-            return [row[0] for row in conn.execute(f"SELECT DISTINCT f.run_id FROM failure_observations f JOIN runs r ON r.id=f.run_id WHERE f.category=? AND r.status!='RUNNING' AND lower(trim(r.topic)) IN ({placeholders}) ORDER BY f.run_id", (category, *topics))]
+            return [row[0] for row in conn.execute(f"SELECT DISTINCT f.run_id FROM failure_observations f JOIN runs r ON r.id=f.run_id WHERE f.category=? AND r.status!='RUNNING' AND r.language='en' AND json_extract(r.source_snapshot_json,'$.id')='rag-primary-v1' AND lower(trim(r.topic)) IN ({placeholders}) ORDER BY f.run_id", (category, *topics))]
 
     def create_experiment(self, category, instruction, supports, dataset_version):
         baseline = self.active_prompt()

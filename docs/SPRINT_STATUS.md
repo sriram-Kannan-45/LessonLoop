@@ -10,7 +10,7 @@ Audited 14 November 2026 against the implementation brief. Gemini Flash-Lite/Fla
 | 4 — Persistence | Complete | SQLite immutable attempts, checks/events, snapshots, history, feedback, prompt versions; restart tests. |
 | 5 — Cross-run learning | Live acceptance pending | Two natural independent terminology failures; last comparison stopped on the earlier key’s daily 20-request quota; the user chose to leave live acceptance pending. New paired-normal-and-targeted-v2 protocol awaits live verification before any activation. Prompt content and selected memory are both capped at four learned instructions. |
 | 6 — API and React | Complete | Create/progress/reader/reports/attempts/history/memory/feedback/rollback/exports; normal workflow exercised through React. |
-| 7 — Verification | Automated checks complete; current live dataset report pending | 118 backend tests, TypeScript/build, 42 desktop/mobile browser tests; historical live disagreements preserved; current-model dataset rerun remains pending as requested. |
+| 7 — Verification | Automated checks complete; current live dataset report pending | 133 backend tests, TypeScript/build, 44 desktop/mobile browser tests; historical live disagreements preserved; current-model dataset rerun remains pending as requested. |
 | 8 — Deliverables | Complete | Approved lesson/audit/rejection log, clean HTML, README, design, verification and checklist. |
 | 9 — Demonstration | Recording materials complete | 15–20-minute script, exact app actions, privacy checklist and saved real deliberate-error backup. Human face-visible recording/upload remains external. |
 
@@ -38,3 +38,7 @@ Final real dynamic-topic run 1788f8f75349482599aac245224ac0ba completed all thre
 ## FreeLLM update — 15 November 2026
 
 The user-authorized local router is configured as an optional third provider. Groq quota, output truncation and transient service failures can continue through FreeLLM, with per-response provenance and all release checks intact. An isolated diagnostic with controlled primary/Groq failures and real FreeLLM inference approved Performance testing at 14/14 on draft one. The current default local output budget is 8,192. Original learning/calibration acceptance boundaries remain unchanged; one router integration example is not broad judge accuracy evidence.
+
+## Current audit and language update — 15 November 2026
+
+See ASSESSMENT_AUDIT.md for the latest requirement-by-requirement decision and OVERALL_GUIDE.md for full instructions. Native languages are implemented with a separate language release check and language-scoped memory. Tamil font rendering was inspected, but live Tamil inference remains pending because the local router was unreachable during the diagnostic. Self-evolution live acceptance and public document/video links remain incomplete.

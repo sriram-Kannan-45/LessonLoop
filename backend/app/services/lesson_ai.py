@@ -8,6 +8,7 @@ from collections.abc import Callable
 from google import genai
 from google.genai import types
 
+from app.languages import LANGUAGES, language_instruction
 from app.config import Settings
 from app.content import PROMPTS
 from app.lesson_schemas import Evaluation, LEARNER, Lesson
@@ -23,7 +24,7 @@ TRANSIENT_FAILURES = {"TIMEOUT", "SERVICE_UNAVAILABLE", "PROVIDER_SERVER_ERROR",
 
 def evaluation_groups(rubric):
     if rubric.get("kind") != "general":
-        return EVALUATION_GROUPS
+        return (*EVALUATION_GROUPS, ("LANGUAGE",)) if rubric.get("language", "en") != "en" else EVALUATION_GROUPS
     ids = [check["id"] for check in rubric["checks"] if check["evaluator"] == "model"]
     return tuple(tuple(ids[index:index + 4]) for index in range(0, len(ids), 4))
 
@@ -233,7 +234,7 @@ class LessonAI:
         from app.quality import source_claim_mappings
 
         data = {
-            "topic": context["topic"], "learner_profile": LEARNER, "language": "simple English",
+            "topic": context["topic"], "learner_profile": LEARNER, "language": LANGUAGES[context.get("language", "en")],
             "approved_reference_pack": context["source_pack"],
             "required_structure": Lesson.model_json_schema(), "validated_memory": context.get("memory", []),
             "approved_source_claim_mappings": {key: sorted(claims) for key, claims in source_claim_mappings(context["source_pack"]).items()},
@@ -267,10 +268,11 @@ class LessonAI:
 
         data = {"lesson": lesson, "topic": source_pack["topic"], "learner_profile": LEARNER, "approved_reference_pack": source_pack,
                 "rubric": [check for check in rubric["checks"] if check["id"] in group],
-                "expected_check_ids": list(group), "allowed_evidence_paths": list(evidence_fields(lesson))}
+                "teaching_language": LANGUAGES[rubric.get("language", "en")], "expected_check_ids": list(group), "allowed_evidence_paths": list(evidence_fields(lesson))}
         if rubric.get("kind") == "general":
             data["evidence_mode"] = "field_selection"
         instructions = PROMPTS["topic_evaluator"] if rubric.get("kind") == "general" else PROMPTS["evaluator"]
+        instructions += language_instruction(rubric.get("language", "en"))
         instructions += " This request evaluates ONLY the expected_check_ids supplied in its input. Read the whole lesson for each of these checks, including every practice answer. Return exactly these IDs; later independent requests cover the remaining checks."
         if "TERMS_EXPLAINED" in group and rubric.get("kind") != "general":
             # Attention aids only: the model still decides whether each term needs/is given an explanation.
