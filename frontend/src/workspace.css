@@ -77,3 +77,5 @@
 
 .status-pill.cancelled { background: #f0edf5; color: #62566f; }
 .run-activity button { margin-top: 10px; }
+
+.reader-footer > div { flex-wrap: wrap; }

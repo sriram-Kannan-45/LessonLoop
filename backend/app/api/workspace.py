@@ -3,6 +3,8 @@ import sqlite3
 
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import Response
+from starlette.concurrency import run_in_threadpool
+from app.download_documents import text_lesson, pdf_lesson, docx_lesson
 
 from app.content import PROMPTS, RUBRIC, SOURCE_PACK, supports_topic
 from app.exports import audit_report, markdown_lesson
@@ -183,7 +185,7 @@ async def rollback(body: RollbackRequest, request: Request):
 
 
 @router.get("/runs/{run_id}/export")
-async def export(run_id: str, request: Request, format: str = Query("markdown", pattern="^(markdown|json)$")):
+async def export(run_id: str, request: Request, format: str = Query("markdown", pattern="^(markdown|json|txt|pdf|docx)$")):
     current = runtime(request)
     run = find_run(current, run_id)
     if format == "json":
@@ -193,7 +195,11 @@ async def export(run_id: str, request: Request, format: str = Query("markdown", 
         lesson = run["final_lesson"] or run["review_draft"]
         if not lesson:
             raise ApiProblem(409, "NO_DRAFT", "This run has no saved draft to export yet.")
-        content = markdown_lesson(lesson, run["status"], run_id, run["source_snapshot"]["sources"])
-        extension, media_type = "md", "text/markdown"
+        sources = run["source_snapshot"]["sources"]
+        renderers = {"markdown": (markdown_lesson, "md", "text/markdown"), "txt": (text_lesson, "txt", "text/plain"),
+                     "pdf": (pdf_lesson, "pdf", "application/pdf"),
+                     "docx": (docx_lesson, "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")}
+        renderer, extension, media_type = renderers[format]
+        content = await run_in_threadpool(renderer, lesson, run["status"], run_id, sources)
     label = "approved" if run["status"] == "APPROVED" else "review-not-approved"
     return Response(content, media_type=media_type, headers={"Content-Disposition": f'attachment; filename="lessonloop-{label}-{run_id}.{extension}"'})

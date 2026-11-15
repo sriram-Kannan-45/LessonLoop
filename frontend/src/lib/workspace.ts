@@ -41,5 +41,5 @@ export const workspaceApi = {
   improve: (category: string) => request<{ id: string; status: string }>('/improvements', 'POST', { category }),
   experiment: (id: string) => request<Experiment>(`/improvements/${id}`),
   rollback: (prompt_version: string) => request('/prompts/rollback', 'POST', { prompt_version }),
-  exportUrl: (id: string, format: 'json' | 'markdown') => `${API_BASE_URL}/api/runs/${id}/export?format=${format}`,
+  exportUrl: (id: string, format: 'json' | 'markdown' | 'pdf' | 'txt' | 'docx') => `${API_BASE_URL}/api/runs/${id}/export?format=${format}`,
 }

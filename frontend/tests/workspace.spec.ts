@@ -259,3 +259,18 @@ test('shows the local FreeLLM fallback and router-reported model', async ({ page
   await expect(page.getByText('freellm · reported/router-model',{exact:true})).toBeVisible()
   await expect(page.getByText('freellm · reported/router-judge',{exact:true})).toBeVisible()
 })
+
+
+test('offers PDF TXT and editable Word downloads for a review draft', async ({ page }) => {
+  await mocks(page, makeRun('NEEDS_REVIEW'))
+  await page.goto('/?run=browser-test-run')
+  for (const [label, format] of [['PDF','pdf'],['TXT','txt'],['Word (.docx)','docx']]) {
+    const link = page.getByRole('link', {name:'Download '+label,exact:true})
+    await expect(link).toHaveAttribute('href', new RegExp('format='+format+'$'))
+    const pending = page.waitForEvent('download')
+    await link.click()
+    const download = await pending
+    expect(readFileSync((await download.path())!, 'utf8')).toContain('NOT APPROVED')
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})

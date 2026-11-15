@@ -6,9 +6,9 @@ Audited 14 November 2026 on Windows. The user originally chose Gemini only and l
 
 | Check | Observed result |
 | --- | --- |
-| Backend pytest | 106 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
+| Backend pytest | 118 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
 | TypeScript and production build | Passed. |
-| Desktop/mobile Playwright | 40 passed, installed Edge; inference mocked, real local health/configuration checked. |
+| Desktop/mobile Playwright | 42 passed, installed Edge; inference mocked, real local health/configuration checked. |
 | Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
 | Persistence | Actual server restart preserved approved runs, failure observations, inactive proposals and generator-v1. No active job was abandoned during the final restart. |
 
@@ -112,3 +112,9 @@ An isolated real-inference diagnostic used controlled Gemini quota and Groq outp
 Run 5aafa205a4524c14b2ff56c2717793f6 stopped on draft three when Groq returned HTTP 400 with provider_error_code=json_validate_failed for the final four-check group. This was a missing fallback category, not a quota failure. That specific provider error now selects configured FreeLLM and uses the existing cooldown. Unrelated invalid requests and authentication errors still fail explicitly. Local schema, evidence, strict verdict and fourteen-check release validation are unchanged.
 
 The backend suite now has 106 passing tests, including full mocked workflow recovery for this exact metadata and rejection of unrelated invalid requests. A real FreeLLM diagnostic evaluated the failed group's actual third-draft input and returned four locally validated check results (reported model openai/gpt-oss-120b). Earlier-provider errors were controlled in this diagnostic to reproduce the saved failure; the real router handled evaluation. No overall approval or modification of the original run is claimed. Frontend code was unchanged; the prior forty browser tests and production build remain applicable.
+
+## PDF TXT and Word lesson downloads — 15 November 2026
+
+The export route supports pdf, txt and docx in addition to existing markdown/json. Binary rendering runs in the thread pool. PDF uses ReportLab with an embedded TrueType font (Windows Arial when installed, bundled Vera otherwise); DOCX uses python-docx with explicit Letter page size, readable paragraph styles and no inherited title borders. Plain text contains readable sections without Markdown syntax. Every format includes status/run identity, the unapproved warning when applicable, practice answers and the frozen source URLs/CC attribution. Empty runs cannot create a lesson document; audit JSON remains available. This does not change approval or generate new inference.
+
+The backend suite has 118 passing tests; the 12 download cases parse actual PDF/DOCX payloads and verify approved/review/cancelled content and absent-draft rejection. After a document styling adjustment those 12 cases passed again. All 42 browser tests and the production build pass, including desktop/mobile format links and browser downloads. The supplied review run b93969496cd04e949bf1caa3a36c7736 was exported without inference for local visual QA. Its four-page PDF and three-page Word rendering were inspected as page images, including references and status. The packaged DOCX renderer could not find LibreOffice on this Windows machine, so installed Microsoft Word rendered the DOCX to PDF for visual inspection instead; its COM process had already exited when cleanup was requested. Generated sample files and page images remain ignored and are not committed. Existing history is unchanged.
