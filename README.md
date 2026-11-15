@@ -281,3 +281,5 @@ For the submission enter Introduction to RAG in English; canonical RAG topics au
 ## Presentation and recording
 
 [Timed Tanglish presentation and product-demo script](docs/DEMO_PRESENTATION_SCRIPT.md) covers a 15-minute recording: about 9 minutes 25 seconds of slides, a product demo and a one-minute closing. The revised 25-slide deck covers sprint planning, Agile-inspired iteration, the stack, LangChain/LangGraph/LangSmith roles, the actual LangGraph integration, compile/run code, fine-tuning trade-offs, quality checks, provider fallback and prompt memory. [Technical interview explanations](docs/PRESENTATION_TECHNICAL_QA.md) provide longer answers and official references. Editable content and the builder are in docs/presentation/. Optional appendices cover application commits through 1df29aa and future storage/training decisions. Exported PPTX/PDF and screenshots remain ignored local artifacts rather than repository files.
+
+[Simple English slide-by-slide script](docs/SLIDE_BY_SLIDE_SIMPLE_ENGLISH.txt) matches all 25 slides, with speaking text, reasons for each decision, screen actions and a timed product demo. Optional appendix slides are clearly marked.

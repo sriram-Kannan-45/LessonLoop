@@ -1,0 +1,513 @@
+LESSONLOOP: SIMPLE ENGLISH VIDEO SCRIPT
+Matched to: LessonLoop-Video-Final.pptx (25 slides)
+
+HOW TO USE THIS FILE
+Read the SAY THIS section while presenting each slide. Speak slowly and
+naturally. The WHY I DID THIS line is a short answer for your understanding
+or for questions. You do not need to read it again if you already explained it.
+ACTION tells you what to point to or show on the screen.
+
+15-MINUTE RECORDING ROUTE
+Slides 1-20: about 9 minutes 25 seconds.
+Product demo: about 4 minutes 35 seconds.
+Return to slide 21: about 1 minute for the closing.
+Slides 22-25: optional extra explanations. Skip these in the main recording.
+The assessment asks for a 15-20-minute video with your face visible.
+Rehearse once. If you add optional explanations, allow more time.
+
+Accuracy note: test counts and pending items below describe the evidence
+shown in this presentation, from the audit dated 15 November 2026. They are
+not a new live test result. Update these statements if later evidence changes.
+
+======================================================================
+PAGE 1 - LESSONLOOP
+======================================================================
+SAY THIS:
+Hello, my project is called LessonLoop. Its goal is to create lessons that
+are accurate and easy for beginners to understand. A user enters a topic.
+The system writes a lesson, checks it, and improves it when checks fail.
+It approves the lesson only when every required check passes.
+
+WHY I DID THIS:
+AI can produce mistakes and difficult explanations. I wanted a system that
+checks its own output before approving it for a learner.
+
+ACTION: Point to the project name. Introduce the problem before the tools.
+
+======================================================================
+PAGE 2 - THE SPRINT PLAN
+======================================================================
+SAY THIS:
+I divided the project into nine small milestones called sprints. The first
+three built the basic quality loop. The next three added storage, learning
+controls, and the user interface. The final three focused on testing,
+documents, and demonstration evidence. This helped me build and check one
+part at a time.
+
+WHY I DID THIS:
+Small milestones made the work easier to understand, test, and review.
+These are project milestones, not evidence of fixed two-week Scrum sprints.
+
+ACTION: Point to Foundation, Product, and Evidence in that order.
+
+======================================================================
+PAGE 3 - SPRINTS 1 TO 3 BUILT THE QUALITY LOOP
+======================================================================
+SAY THIS:
+First, I set up the Python backend and model settings. I kept API keys
+outside Git. Next, I added reviewed RAG references and a rubric. A rubric
+is a checklist used to judge the lesson. Then I built the generate, check,
+and rewrite process, with one first draft and at most two rewrites.
+
+WHY I DID THIS:
+The system needed clear quality rules and a stopping limit before I built
+the user interface.
+
+ACTION: Explain Setup, Sources and rubric, then Workflow.
+
+======================================================================
+PAGE 4 - SPRINTS 4 TO 6 MADE THE APP USABLE
+======================================================================
+SAY THIS:
+I added SQLite to save lessons, attempts, feedback, and events. This keeps
+the history after a server restart. I also added controls to compare
+possible prompt improvements. Finally, I connected the backend to a React
+interface, so users can create lessons and inspect the quality reports.
+Successful live learning and later reuse still need acceptance evidence.
+
+WHY I DID THIS:
+Users need saved results and a clear screen. A suggested improvement also
+needs testing before the system reuses it.
+
+ACTION: Point to Persistence, Learning controls, and API and React.
+
+======================================================================
+PAGE 5 - SPRINTS 7 TO 9 PREPARED THE EVIDENCE
+======================================================================
+SAY THIS:
+I tested normal runs and failure cases, including bad responses, provider
+errors, and cancellation. I prepared an approved RAG lesson, reports, and
+setup instructions. I also saved a real demonstration where a deliberate
+factual error was caught. These records help someone review what the
+system actually did.
+
+WHY I DID THIS:
+A successful example alone cannot show how the app handles failures.
+Preparing a recording script does not mean the final video is submitted.
+
+ACTION: Point to Verification, Deliverables, and Demonstration.
+
+======================================================================
+PAGE 6 - HOW WE USED AGILE IDEAS
+======================================================================
+SAY THIS:
+I followed an Agile-inspired approach. I built small working features,
+tested them, and used feedback to choose the next change. For example,
+provider limits led to fallback support. Confusing progress led to better
+status messages. I checked each completed update, committed it, and pushed
+it to GitHub. I did not run a formal Scrum process.
+
+WHY I DID THIS:
+User feedback showed practical problems that were not clear at the start.
+
+ACTION: Use one concrete example, such as adding the Cancel button.
+
+======================================================================
+PAGE 7 - THE TECHNOLOGY STACK
+======================================================================
+SAY THIS:
+React and TypeScript build the user interface. Python and FastAPI handle
+backend requests. LangGraph controls the workflow. Pydantic checks the
+response structure, and SQLite saves the records. Gemini is the primary
+provider, with Groq and FreeLLM fallback routes. I use pytest for backend
+tests and Playwright for browser tests.
+
+WHY I DID THIS:
+Each tool has a clear job. Keeping these jobs separate makes the system
+easier to test and change.
+
+ACTION: Point to each tool while saying its main job. Avoid reading versions.
+
+======================================================================
+PAGE 8 - LANGCHAIN, LANGGRAPH AND LANGSMITH
+======================================================================
+SAY THIS:
+These three tools have different jobs. LangChain provides building blocks
+for agents and model integrations. LangGraph controls workflow steps,
+shared data, and decisions. LangSmith helps developers inspect traces and
+evaluate applications. They can work together. In this project, I directly
+use LangGraph because I need clear control over evaluation and rewriting.
+
+WHY I DID THIS:
+I selected the tool that fits the workflow. Using one tool does not mean
+every other product in the same ecosystem is also configured.
+
+ACTION: Point to Build, Route, and Observe.
+
+======================================================================
+PAGE 9 - WHAT THIS PROJECT ACTUALLY USES
+======================================================================
+SAY THIS:
+The application directly uses LangGraph. Model requests use the Google SDK
+and HTTPX. The app stores its own events and reports in SQLite.
+LangChain core and the LangSmith SDK are installed as dependencies of
+other packages. I have not configured LangChain's agent API or LangSmith
+tracing in this project.
+
+WHY I DID THIS:
+Direct provider calls were enough for the current model requests. I wanted
+to explain the implemented system accurately.
+
+ACTION: If asked for proof, open D:\LessonLoop\backend\app\workflow.py.
+The LangGraph import is at line 4. Graph construction starts at line 113
+in the source snapshot used for this presentation.
+
+======================================================================
+PAGE 10 - WHY LANGGRAPH FITS THIS WORKFLOW
+======================================================================
+SAY THIS:
+The next step depends on the result. A passing lesson can finish. A failed
+lesson may return for a rewrite. LangGraph makes these routes clear and
+shares the lesson and feedback between steps. A normal Python loop could
+also do this. I chose a graph because its separate steps and decisions
+are easy to explain and test.
+
+WHY I DID THIS:
+The main requirement is a controlled loop with clear reasons for each route.
+
+ACTION: Explain one branch: failed check plus remaining drafts means rewrite.
+
+======================================================================
+PAGE 11 - FIVE LANGGRAPH TERMS IN PLAIN WORDS
+======================================================================
+SAY THIS:
+A node is one task, such as writing a lesson. An edge is the route to the
+next task. State is the shared notebook containing the topic, lesson,
+feedback, and retry count. Compile prepares the connected workflow to run.
+Ainvoke starts the workflow asynchronously. Compile does not train a model
+or approve a lesson.
+
+WHY I DID THIS:
+These concepts let each task receive the information it needs and pass
+its result to the next task.
+
+ACTION: Point to each term. Say ainvoke as "A invoke" if that is easier.
+
+======================================================================
+PAGE 12 - THE LESSON WORKFLOW
+======================================================================
+SAY THIS:
+First, load_context loads the references and rules. Generate_lesson writes
+the draft. Validate_structure checks required fields and source mappings.
+Evaluate_lesson checks the teaching quality. If a check fails and drafts
+remain, the workflow returns to generation with feedback. Otherwise, it
+saves the final status. Unresolved failures after draft three are marked
+NEEDS_REVIEW, rather than approved.
+
+WHY I DID THIS:
+The system must explain its decision and always stop within a clear limit.
+
+ACTION: Follow the diagram from left to right, then point to the return arrow.
+
+======================================================================
+PAGE 13 - COMPILE AND RUN IN OUR CODE
+======================================================================
+SAY THIS:
+Here is the workflow code. Add_node registers a task function. Add_edge
+connects two tasks. Add_conditional_edges chooses the next task using the
+evaluation result. Compile returns a runnable graph. Ainvoke executes it
+with a run ID. The recursion limit is an extra guard. The separate content
+rule allows only three drafts in total.
+
+WHY I DID THIS:
+This shows how the diagram connects to real application code.
+
+ACTION: You can open D:\LessonLoop\backend\app\workflow.py.
+In the presentation snapshot, lines 113-122 build and compile the graph.
+Line 127 runs it. Line numbers may move after future code changes.
+
+======================================================================
+PAGE 14 - PROMPTS, REFERENCES AND FINE-TUNING
+======================================================================
+SAY THIS:
+A prompt gives the model instructions. References provide facts for the
+current request, like an open book. Fine-tuning changes model behaviour
+through training on examples. This application uses instructions and
+reference context. It does not train or update model weights. These
+methods can work together when the project needs them.
+
+WHY I DID THIS:
+Instructions guide the teaching style, while references support the facts.
+They solve different parts of the problem.
+
+ACTION: Use this simple example: instructions say "teach simply" and the
+reference material explains what RAG means.
+
+======================================================================
+PAGE 15 - WHY FINE-TUNING IS NOT THE FIRST STEP
+======================================================================
+SAY THIS:
+The first goal was to build and check the full content-quality loop.
+We do not yet have a reviewed lesson-training dataset or evidence that
+fine-tuning would improve the result. Prompts and saved references let us
+inspect and improve the baseline first. Fine-tuning may help later, after
+we collect good examples and can measure its benefit.
+
+WHY I DID THIS:
+Training adds work and cost. I wanted evidence of a specific problem and
+a reliable way to measure improvement before starting it.
+
+ACTION: Explain the project decision without claiming fine-tuning is bad.
+
+======================================================================
+PAGE 16 - HOW THE RELEASE GATE WORKS
+======================================================================
+SAY THIS:
+The release gate is the final approval rule. Python checks the required
+structure, source mappings, and evidence. The model checks accuracy,
+language, examples, and teaching flow. Every required check must pass.
+There are fourteen checks for English and fifteen for native-language
+lessons. Model judges can still make mistakes, so testing and evidence
+remain important.
+
+WHY I DID THIS:
+A well-formatted response can still contain a poor explanation. We need
+both code checks and content checks.
+
+ACTION: Explain that fourteen out of fourteen is a requirement, not an average.
+
+======================================================================
+PAGE 17 - PROVIDER FALLBACK AND STOPPING RULES
+======================================================================
+SAY THIS:
+Gemini is the primary provider. When it reaches quota, the affected call
+can switch to Groq. Eligible Groq failures can use the configured FreeLLM
+router. The system records provider and model usage. If the final route
+fails, the run stops with an error. A partial response cannot approve a
+lesson, and fallback does not mean unlimited availability.
+
+WHY I DID THIS:
+Fallback helps with provider limits, while stopping rules prevent endless
+requests and misleading success messages.
+
+ACTION: Distinguish a technical retry from rewriting a lesson that failed checks.
+
+======================================================================
+PAGE 18 - HISTORY, MEMORY AND MODEL TRAINING
+======================================================================
+SAY THIS:
+History records what happened during a run. Validated memory contains
+selected teaching instructions that may help future runs. A candidate
+instruction must show improvement without making other results worse
+before activation. This changes prompts, not model weights. The latest
+audit used for this deck had zero active learned instructions. Successful
+live learning and reuse remain pending.
+
+WHY I DID THIS:
+Saving feedback alone does not prove that the system learned something useful.
+
+ACTION: Be clear about the implemented controls and the missing live evidence.
+
+======================================================================
+PAGE 19 - COMMITS SHOW THE PRODUCT GROWING
+======================================================================
+SAY THIS:
+These commits show how the product developed. The core workflow came first.
+Later changes added Groq fallback, dynamic topics, FreeLLM recovery,
+document downloads, and native languages. Many changes came from real
+user problems. Commits record implementation changes. Tests and saved
+run results provide separate evidence of behaviour and quality.
+
+WHY I DID THIS:
+Small recorded changes make the development history easier to review.
+There is no one-to-one mapping between sprints and commits.
+
+ACTION: Point to two or three examples. Do not read every commit ID aloud.
+
+======================================================================
+PAGE 20 - PRODUCT WALKTHROUGH
+======================================================================
+SAY THIS:
+Now I will show the application. I will start with the topic and language,
+then show the workflow status, quality report, and attempts. I will also
+show a saved example where the evaluator caught a deliberate error,
+followed by history, downloads, and memory.
+
+WHY I DID THIS:
+The product demonstration connects the architecture to visible behaviour.
+
+ACTION: Switch to the app. Follow the demo script after page 25 below.
+After the demo, return to page 21 for your closing.
+
+======================================================================
+PAGE 21 - WHAT WORKS AND WHAT REMAINS
+======================================================================
+SAY THIS:
+The tested project snapshot had 133 passing backend tests and 44 passing
+browser tests. The app generates lessons, checks them, rewrites failed
+drafts, and saves reports. It also provides language selection and downloads.
+
+Some acceptance work remains. We still need a successful live learning
+comparison and later reuse, further evaluator checks, and live Tamil
+validation. Passing automated tests does not prove every generated lesson
+is correct. The submission also needs a public final-document link and
+a face-visible video link.
+
+My main result is a controlled and inspectable lesson-quality loop.
+Thank you.
+
+WHY I DID THIS:
+The closing should explain both the working features and the remaining
+evidence, without claiming that every acceptance item is complete.
+
+ACTION: Stop the main recording here. If the submission links or live
+acceptance results have since been completed, update the closing accordingly.
+
+======================================================================
+PAGE 22 - APPENDIX: COMMIT HISTORY 1
+OPTIONAL: SKIP IN THE MAIN 15-MINUTE RECORDING
+======================================================================
+SAY THIS:
+This slide gives more detail about the early development history.
+The first commits set up the project and Gemini configuration. Later
+commits added the lesson workflow, stored records, stronger checks, and
+provider recovery. A saved live result also demonstrated evaluation
+fallback to Groq. Dynamic-topic support followed.
+
+WHY I DID THIS:
+The appendix gives reviewers implementation history without slowing down
+the main explanation.
+
+ACTION: Open a specific commit only if someone asks for that change.
+
+======================================================================
+PAGE 23 - APPENDIX: COMMIT HISTORY 2
+OPTIONAL: SKIP IN THE MAIN 15-MINUTE RECORDING
+======================================================================
+SAY THIS:
+These later commits improved the user experience and reliability.
+I added progress status, a request-wait countdown, an editable topic field,
+and cancellation. I also added FreeLLM fallback, recovery for a specific
+Groq JSON error, PDF and Word downloads, and native-language lessons.
+These changes came from feedback while using the app.
+
+WHY I DID THIS:
+Users need to understand what is happening and recover when something fails.
+
+ACTION: Use the Cancel button or status display as a concrete feedback example.
+
+======================================================================
+PAGE 24 - APPENDIX: STORAGE AND RETRIEVAL CHOICES
+OPTIONAL: SKIP IN THE MAIN 15-MINUTE RECORDING
+======================================================================
+SAY THIS:
+I chose SQLite for the local app because it keeps setup simple and saves
+structured records. A larger multi-user deployment would need more work
+on concurrency and background jobs. PostgreSQL could be an option.
+
+The current app uses reviewed RAG notes or bounded Wikipedia excerpts as
+references. It has no embedding index or vector database. Teaching a lesson
+about RAG does not mean that we built a full vector-search application.
+
+WHY I DID THIS:
+I implemented the components needed for this lesson-generation assessment.
+A future document-search feature would need its own retrieval design and tests.
+
+ACTION: Distinguish the history database from a document-retrieval system.
+
+======================================================================
+PAGE 25 - APPENDIX: WHEN FINE-TUNING MAKES SENSE
+OPTIONAL: SKIP IN THE MAIN 15-MINUTE RECORDING
+======================================================================
+SAY THIS:
+Fine-tuning could help later if we identify a repeated behaviour problem
+that prompt and reference changes do not solve well enough. We would need
+reviewed examples and separate test data to compare a tuned model with
+the current system. We would also check model support, cost, and measured
+benefit. A tuned model would still need references and quality checks.
+
+WHY I DID THIS:
+Future training should solve a measured problem and demonstrate improvement.
+
+ACTION: Give a possible example, such as a recurring teaching-style problem.
+Describe it as a future possibility, not a completed feature.
+
+======================================================================
+PRODUCT DEMO SCRIPT - USE AFTER PAGE 20
+======================================================================
+The times below are guides. They depend on provider availability.
+Keep your face visible and keep credentials off screen.
+
+09:25-10:10 - TOPIC, LANGUAGE AND RUN STATUS
+ACTION: Open Lesson studio. Use Introduction to RAG and English for the
+assessment example. Keep deliberate-error mode OFF for a normal run.
+
+SAY THIS:
+Here I enter the topic and choose the language. Generate starts one run.
+The same run can contain several drafts. The status shows the current
+stage. A request countdown shows the wait before the next request,
+not a promised completion time. Cancel can stop an active local workflow.
+
+ACTION: Start at most one live run if the service is available. If it is
+slow or unavailable, explain that and move to clearly labelled saved evidence.
+
+10:10-11:15 - APPROVED LESSON AND QUALITY REPORT
+ACTION: Open a genuine saved approved RAG run and say that it is saved.
+Show the definition, process, example, and quality report.
+
+SAY THIS:
+This is a saved approved run. The lesson explains what RAG is, why it
+matters, and how it works. The quality report shows the required checks
+and supporting evidence. Approval requires all fourteen checks to pass.
+The report makes the decision easier to inspect, but a model judge can err.
+
+11:15-12:35 - DELIBERATE ERROR AND CORRECTION
+ACTION: Open the saved historical deliberate-error example. Show the
+altered draft, the actual failed verdict, and the next draft's correction.
+Only describe results that are visible in the saved record.
+
+SAY THIS:
+This is a saved historical demonstration. The first draft was deliberately
+changed to include a false claim that RAG always guarantees a correct
+answer. The evaluator received the changed lesson without a demo flag.
+Here is its actual failed check. Here is how the next draft changed.
+The result was recorded; the demo did not hardcode a failed verdict.
+
+12:35-13:15 - HISTORY AND DOWNLOADS
+ACTION: Show Run history and download one PDF or Word file.
+
+SAY THIS:
+History keeps the run and its attempts for later review. Users can download
+the lesson. An unapproved review draft keeps its warning when exported.
+Saving or downloading a draft does not change its approval status.
+
+13:15-14:00 - MEMORY AND LEARNING
+ACTION: Show the actual observations, comparison outcomes, and active count.
+Do not start a costly comparison just to fill recording time.
+
+SAY THIS:
+This section records repeated problems and possible instruction changes.
+An instruction must pass a controlled comparison before activation.
+The audit used for this presentation had zero active learned instructions.
+The controls exist, but successful live improvement and later reuse still
+need evidence. Prompt memory does not train the model.
+
+14:00-15:00 - RETURN TO PAGE 21
+ACTION: Return to the closing slide and use its SAY THIS section.
+
+======================================================================
+QUICK WORD MEANINGS FOR PRACTICE
+======================================================================
+Rubric: the checklist used to judge a lesson.
+Grounding: giving the model reference material to support its answer.
+Evaluation: checking the output against the rules.
+Regeneration: writing a revised draft using failure feedback.
+Persistence: saving records so they remain after a restart.
+Fallback: trying a configured backup provider after an eligible failure.
+Audit: a saved record that helps someone inspect what happened.
+Calibration: testing whether the evaluator's decisions match reviewed examples.
+Dependency: a package another package needs in order to work.
+Fine-tuning: additional model training using example data.
+
+Practice tip: understand the meaning first. You do not need to memorise
+every sentence. Use your own simple words while keeping the facts accurate.
