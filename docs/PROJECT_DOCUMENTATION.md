@@ -2,7 +2,11 @@
 
 LessonLoop creates beginner lessons, evaluates them against mandatory checks, and revises failed drafts before release. This document explains the project, the saved Introduction to RAG lesson, and the demonstration to record for the assessment. The intended reader is the assignment reviewer; the speaking notes can also guide the presenter.
 
-Repository: https://github.com/sriram-Kannan-45/LessonLoop
+Repository: [LessonLoop on GitHub](https://github.com/sriram-Kannan-45/LessonLoop)
+
+Final lesson: [Introduction to RAG in Google Docs](https://docs.google.com/document/d/1vqeoeXSbl528_docxgoOnrb-bH9iX53mdWm55m5W3gA/edit?usp=drivesdk)
+
+Video: [Loom workflow recording](https://www.loom.com/share/15677d43e06540a29ead22df2c266097)
 
 ## Problem and intended learner
 
@@ -66,7 +70,7 @@ The first draft failed TERMS_EXPLAINED and NO_PREREQUISITES because it used conc
 
 The lesson includes an explicitly invented Asha College book-grant notice. It demonstrates retrieving the application deadline and saying that the grant amount is missing from the passage. The invented notice is a teaching example, not real scholarship guidance.
 
-The approved lesson, rejection log, audit JSON, and run metadata are preserved in submission/final-lesson/. The companion final-lesson Word document reproduces that saved lesson, with formatting changes only. Its approval is the application's historical verdict, not a guarantee of factual perfection or a new evaluation.
+The approved lesson, rejection log, audit JSON, and run metadata are preserved in submission/final-lesson/. The companion final-lesson Word document preserves the saved lesson body and appends a separate project links section. Its approval is the application's historical verdict, not a guarantee of factual perfection or a new evaluation.
 
 ## Memory and current limitations
 
@@ -140,9 +144,9 @@ Open the approved lesson document, repository README, and audit export. Explain 
 
 ## Submission documents and links
 
-The assessment's Document link should open the final lesson content in Google Docs or Notion. This project explanation supports the walkthrough and can be shared separately. Upload the companion final-lesson Word document into Google Docs, or copy its content into Notion, then check the resulting document and its sharing access.
+The assessment's Document link should open the final Introduction to RAG lesson in Google Docs, linked at the start of this document. This project explanation supports the walkthrough and can be shared separately. The repository also contains final Word copies under docs/submission/ and a link index in docs/SUBMISSION_LINKS.md.
 
-Submit the actual repository link, accessible final-lesson document link, and uploaded fifteen to twenty minute face-visible Loom link. A local Word file does not create a hosted document URL. Public document publication, video recording, and assessment-form submission remain separate completion steps.
+The Loom recording link was supplied by the user. Its duration, face visibility, playback access, and demonstration content have not been independently verified. The Google Docs currently have restricted sharing; confirm reviewer access before submitting the repository, final lesson, and recording links. No assessment-form submission is claimed.
 
 ## Project evidence
 

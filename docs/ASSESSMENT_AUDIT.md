@@ -32,6 +32,8 @@ Audited 15 November 2026 against the assessment text supplied by the user. **The
 
 ## Work remaining before claiming the full assessment is complete
 
+Later submission-link update: the connected account now contains the [final lesson](https://docs.google.com/document/d/1vqeoeXSbl528_docxgoOnrb-bH9iX53mdWm55m5W3gA/edit?usp=drivesdk) and [project documentation](https://docs.google.com/document/d/1tv5o62u8IJGClQYiLw922xzgVXsnO9TKpyFwFGLmAss/edit?usp=drivesdk) Google Docs, and the user supplied a [Loom recording](https://www.loom.com/share/15677d43e06540a29ead22df2c266097). These links supersede the earlier absence of document/video URLs. Restricted document sharing and recording compliance still require verification; the original product-learning and calibration findings remain unchanged. See docs/SUBMISSION_LINKS.md.
+
 1. With sufficient provider capacity, complete the reviewed English RAG comparison protocol. Activate only on the actual improvement/no-regression rules, then demonstrate a later run selecting that instruction. A NO_IMPROVEMENT outcome must stay inactive.
 2. Complete the current evaluator dataset run and inspect disagreements; obtain language-specific review before making broad native-language quality claims.
 3. Publish the final approved English Introduction to RAG lesson as a Google Doc or Notion page and verify its sharing link.

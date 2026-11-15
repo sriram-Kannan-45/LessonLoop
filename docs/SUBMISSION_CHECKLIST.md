@@ -36,11 +36,11 @@ This is an honest limitation, not permission to bypass the activation gate. Two 
 
 ## Human document publishing step
 
-No connected document session was available. The clean HTML and Markdown are ready locally. Open the HTML in a browser, copy its rendered content into a Google Doc or Notion page, check the headings and reference links, and choose the required sharing access. Verify the resulting link before adding it to the assessment. No published document URL is claimed yet.
+The connected account now contains the [final lesson Google Doc](https://docs.google.com/document/d/1vqeoeXSbl528_docxgoOnrb-bH9iX53mdWm55m5W3gA/edit?usp=drivesdk) and [project documentation Google Doc](https://docs.google.com/document/d/1tv5o62u8IJGClQYiLw922xzgVXsnO9TKpyFwFGLmAss/edit?usp=drivesdk). Sharing is currently restricted; verify reviewer access before submitting. Final Word copies are in docs/submission/. See docs/SUBMISSION_LINKS.md for the current link index.
 
 ## Human video step
 
-Use docs/VIDEO_WALKTHROUGH.md to record a face-visible 15–20-minute walkthrough. Hide the environment file and account details. Include actual live results and the recorded evaluator/memory limitations. Upload the recording, test its sharing link while signed out, and add the real video URL. No recording/upload is claimed in this repository.
+The user supplied this [Loom recording](https://www.loom.com/share/15677d43e06540a29ead22df2c266097). Its duration, face visibility, playback access, and contents have not been independently verified. Check it against docs/VIDEO_WALKTHROUGH.md and the assessment's 15–20-minute requirement, including the end-to-end run, deliberate-error rejection, and face-visible explanation.
 
 ## Before submitting
 

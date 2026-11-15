@@ -1,7 +1,8 @@
 """Build the project explanation and saved lesson as editable Word documents.
 
 Run with the bundled document-authoring Python runtime (python-docx required).
-Outputs and render evidence belong under ignored artifacts/, never in Git.
+Final Word deliverables are tracked under docs/submission at the user's request.
+Render evidence and other generated artifacts remain under ignored artifacts/.
 """
 
 from pathlib import Path
@@ -14,7 +15,7 @@ from docx.shared import Inches, Pt, RGBColor
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "artifacts" / "submission-documents"
+OUTPUT = ROOT / "docs" / "submission"
 
 
 def inline(paragraph, text):
@@ -53,16 +54,20 @@ def build(source, destination, lesson=False):
     document = Document()
     section = document.sections[0]
     section.page_width, section.page_height = Inches(8.27), Inches(11.69)
-    section.top_margin = section.bottom_margin = Inches(0.72)
+    section.top_margin = section.bottom_margin = Inches(0.72 if lesson else 0.6)
     section.left_margin = section.right_margin = Inches(0.8)
     for name in ("Normal", "Title", "Subtitle", "Heading 1", "Heading 2", "Heading 3"):
         style = document.styles[name]
         style.font.name = "Calibri"
         style.font.color.rgb = RGBColor(0, 0, 0)
+        properties = style.element.find(qn("w:pPr"))
+        if properties is not None:
+            for border in list(properties.findall(qn("w:pBdr"))):
+                properties.remove(border)
     normal = document.styles["Normal"]
     normal.font.size = Pt(11 if lesson else 10.5)
-    normal.paragraph_format.space_after = Pt(7 if lesson else 6)
-    normal.paragraph_format.line_spacing = 1.12 if lesson else 1.08
+    normal.paragraph_format.space_after = Pt(7 if lesson else 5)
+    normal.paragraph_format.line_spacing = 1.12 if lesson else 1.06
     document.styles["Title"].font.size = Pt(25)
     document.styles["Title"].paragraph_format.space_after = Pt(14)
     for name, size in (("Heading 1", 15), ("Heading 2", 12), ("Heading 3", 11)):
@@ -118,6 +123,14 @@ def build(source, destination, lesson=False):
             inline(paragraph, line)
         else:
             inline(document.add_paragraph(), line)
+    if lesson:
+        # Keep the historical approved lesson body and audit untouched.
+        # Append current project links as a separately labelled section.
+        document.add_paragraph("Project links", "Heading 1")
+        links = (ROOT / "docs" / "SUBMISSION_LINKS.md").read_text(encoding="utf-8")
+        for line in links.split("## Assignment deliverables\n", 1)[1].split("\n## Word copies", 1)[0].splitlines():
+            if line.startswith("- "):
+                inline(document.add_paragraph(style="List Bullet"), line[2:])
     destination.parent.mkdir(parents=True, exist_ok=True)
     document.save(destination)
     print(destination)

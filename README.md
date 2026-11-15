@@ -2,6 +2,8 @@
 
 **Documentation:** [Overall guide](docs/OVERALL_GUIDE.md) · [Project explanation and recording guide](docs/PROJECT_DOCUMENTATION.md) · [Assessment audit](docs/ASSESSMENT_AUDIT.md) · [Native languages](docs/LANGUAGES.md)
 
+**Submission:** [Final lesson in Google Docs](https://docs.google.com/document/d/1vqeoeXSbl528_docxgoOnrb-bH9iX53mdWm55m5W3gA/edit?usp=drivesdk) · [Loom recording](https://www.loom.com/share/15677d43e06540a29ead22df2c266097) · [All links and Word documents](docs/SUBMISSION_LINKS.md). Google Docs reviewer access and the recording requirements still need verification.
+
 LessonLoop creates and evaluates beginner lessons about the topic you enter: science, programming, history, mathematics and other subjects with usable public references. The learner is an Indian grade-12 graduate with limited English vocabulary and no assumed specialist background. New runs collect topic references automatically; there is no RAG-only subject whitelist.
 
 Gemini is the primary generator and evaluator. On a Gemini quota/rate-limit response, the affected call automatically switches to configured Groq backup. Separate evaluation calls judge twelve rubric checks, and Python enforces two structure/reference checks. **Every mandatory check must pass** before release. Actual failures drive at most two rewrites; unresolved drafts end **NEEDS_REVIEW**.
@@ -221,7 +223,7 @@ This is **local development software**. It binds to loopback by default. Writes 
 
 Every generation, evaluation, connection, comparison, and calibration call consumes provider quota and can incur charges under the account plan. No inference or reference research runs on page load. Content retries are at most two; technical retries are separate and at most two per generation or focused evaluation request. Evaluation uses three focused requests per draft, each with at most two retries; a partial result cannot approve.
 
-A human must record/upload the face-visible video and import/publish the document if a sharing link is required. No recording URL, document sharing URL, or assessment submission is invented.
+The user supplied a Loom recording URL, and the connected account contains the lesson and project Google Docs. See [submission links](docs/SUBMISSION_LINKS.md). Reviewer access and recording compliance are not yet verified. No assessment submission is claimed.
 
 Primary reference links/access dates are in the source pack. No third-party application code was copied; dependencies retain their licenses. SDK syntax follows the [Google SDK](https://github.com/googleapis/python-genai), [structured-output docs](https://ai.google.dev/gemini-api/docs/structured-output), and [LangGraph Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api).
 
@@ -276,7 +278,7 @@ Lesson downloads now include **PDF**, **TXT**, and editable **Word (.docx)** alo
 
 Choose Lesson language before generating. English is the default; Tamil, Hindi, Telugu, Kannada, Malayalam, Marathi, Bengali, Gujarati and Punjabi are available. The choice is saved with the run and applies to generation, evaluation and rewrites. Native runs add a mandatory LANGUAGE checkpoint (15 total); English retains 14. English learned instructions are excluded from native runs. Source quotations/IDs may remain English while explanations and practice use the selected language. The interface and technical reports remain English. See docs/LANGUAGES.md for font requirements and live-validation limits.
 
-For the submission enter Introduction to RAG in English; canonical RAG topics automatically use the reviewed source pack. Unapproved drafts are collapsed by default and must be explicitly opened for inspection. The full assessment is not yet submission-complete: qualifying live prompt improvement/reuse, current calibration and public document/video links remain pending. See docs/ASSESSMENT_AUDIT.md.
+For the submission enter Introduction to RAG in English; canonical RAG topics automatically use the reviewed source pack. Unapproved drafts are collapsed by default and must be explicitly opened for inspection. The full assessment is not yet submission-complete: qualifying live prompt improvement/reuse, current calibration, reviewer access to Google Docs and recording verification remain pending. See docs/ASSESSMENT_AUDIT.md and docs/SUBMISSION_LINKS.md.
 
 ## Presentation and recording
 
