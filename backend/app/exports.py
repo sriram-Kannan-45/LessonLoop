@@ -39,5 +39,5 @@ def markdown_lesson(lesson, status, run_id, sources=None):
 
 def audit_report(repository, run_id):
     run = repository.get_run(run_id)
-    return {"audit_version": "lessonloop-audit-v2", "provider_note": "Run model fields describe the configured Gemini primary. Usage records and provider events identify actual Gemini/Groq calls. Quota fallback does not establish evaluator accuracy or independence.",
+    return {"audit_version": "lessonloop-audit-v2", "provider_note": "Run model fields describe the configured Gemini primary. Usage records and provider events identify actual Gemini/Groq/FreeLLM calls. Quota fallback does not establish evaluator accuracy or independence.",
             "run": run, "events": repository.events(run_id, 0, 1000)}

@@ -35,7 +35,7 @@ def build_graph(repository, ai):
     def provider_events(run_id):
         def record(event):
             if event["type"] == "PROVIDER_FALLBACK":
-                message = f"Gemini quota reached. Switching {event['role']} to Groq ({event['model']})."
+                message = f"{event.get('from_provider', 'gemini')} request could not finish ({event['reason']}). Switching {event['role']} to {event['provider']} ({event['model']})."
             elif event["type"] == "PROVIDER_WAIT":
                 message = f"Waiting {event['wait_seconds']} seconds before the next Groq request to respect its token allowance."
             else:

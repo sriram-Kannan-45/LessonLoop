@@ -6,9 +6,9 @@ Audited 14 November 2026 on Windows. The user originally chose Gemini only and l
 
 | Check | Observed result |
 | --- | --- |
-| Backend pytest | 93 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
+| Backend pytest | 104 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
 | TypeScript and production build | Passed. |
-| Desktop/mobile Playwright | 38 passed, installed Edge; inference mocked, real local health/configuration checked. |
+| Desktop/mobile Playwright | 40 passed, installed Edge; inference mocked, real local health/configuration checked. |
 | Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
 | Persistence | Actual server restart preserved approved runs, failure observations, inactive proposals and generator-v1. No active job was abandoned during the final restart. |
 
@@ -96,3 +96,13 @@ A sticky status panel now shows the current stage, draft number, elapsed time an
 ## User cancellation
 
 Active lesson runs expose Cancel generation in the sticky status panel. POST /api/runs/{id}/cancel cancels and awaits the matching asyncio workflow, stops further local requests/rewrites, records CANCELLED, preserves existing drafts and frees the task slot. A completed run is returned unchanged; cancellation cannot approve a draft or cancel a different comparison. In-flight provider requests may already consume quota. Backend tests cancel both generation and evaluation, verify persistence/idempotence/origin restrictions and start another run. Desktop/mobile tests verify the button, terminal message, review-only export and re-enabled Generate control. No new real inference was started to test cancellation. The backend was restarted after the user's Performance testing run finished APPROVED, and a completed-run cancellation request preserved its entire record unchanged.
+
+## Local FreeLLM router — 15 November 2026
+
+The supplied loopback chat-completions router at http://127.0.0.1:31415/v1 answered authenticated model discovery and a real JSON completion. Only its key was stored in ignored backend/.env; no key is included here. FreeLLM auto routing is configured for both roles. The browser receives readiness/model metadata, and actual router-reported model IDs are saved in usage.
+
+The earlier user error was OUTPUT_TRUNCATED from Groq, not evidence of daily quota exhaustion. Both quota and output truncation now trigger the configured local fallback after Gemini -> Groq; transient Groq failures are also eligible. Groq authentication/semantic errors are not silently routed around, and a final FreeLLM failure remains unapproved. A five-minute Groq cooldown prevents repeated failed backup requests during a lesson.
+
+An isolated real-inference diagnostic used controlled Gemini quota and Groq output-truncation exceptions, then real topic-reference retrieval, FreeLLM generation and evaluation. Its initial 2,048-token evaluation budget caused one local-model truncation after a completed first-draft evaluation; no partial result was approved. The budget is now configurable (FREELLM_MAX_OUTPUT_TOKENS), default 8,192, to accommodate reasoning plus final JSON. The repeated Performance testing diagnostic (27cfdce81f5b41bab70e7fbcd5a72c35, ignored temporary database) finished APPROVED on draft one with all fourteen checks. Router-reported models were gemini-3-flash-preview and openai/gpt-oss-120b. These identifiers are the router's report, not independently verified upstream identities. This proves the local route and full validation path on one example; it does not prove general accuracy, natural quota timing, unlimited capacity or learning activation. Actual app history was not rewritten.
+
+104 backend tests pass, including local HTTP transport, cooldown routing, strict release, three-key redaction, final-router errors and URL validation. Forty browser tests pass, including FreeLLM readiness and provider attribution. One earlier browser health check coincided with backend restart and got connection refused; the full rerun passed after startup. The production build passed. Real desktop/mobile inspection showed configured FreeLLM, no JavaScript errors and no horizontal overflow. The backend was restarted only while idle; its current configuration uses the 8,192-token router budget. Secrets and diagnostic databases/artifacts remain ignored.

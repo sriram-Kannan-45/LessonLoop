@@ -10,7 +10,7 @@ Audited 14 November 2026 against the implementation brief. Gemini Flash-Lite/Fla
 | 4 — Persistence | Complete | SQLite immutable attempts, checks/events, snapshots, history, feedback, prompt versions; restart tests. |
 | 5 — Cross-run learning | Live acceptance pending | Two natural independent terminology failures; last comparison stopped on the earlier key’s daily 20-request quota; the user chose to leave live acceptance pending. New paired-normal-and-targeted-v2 protocol awaits live verification before any activation. Prompt content and selected memory are both capped at four learned instructions. |
 | 6 — API and React | Complete | Create/progress/reader/reports/attempts/history/memory/feedback/rollback/exports; normal workflow exercised through React. |
-| 7 — Verification | Automated checks complete; current live dataset report pending | 93 backend tests, TypeScript/build, 38 desktop/mobile browser tests; historical live disagreements preserved; current-model dataset rerun remains pending as requested. |
+| 7 — Verification | Automated checks complete; current live dataset report pending | 104 backend tests, TypeScript/build, 40 desktop/mobile browser tests; historical live disagreements preserved; current-model dataset rerun remains pending as requested. |
 | 8 — Deliverables | Complete | Approved lesson/audit/rejection log, clean HTML, README, design, verification and checklist. |
 | 9 — Demonstration | Recording materials complete | 15–20-minute script, exact app actions, privacy checklist and saved real deliberate-error backup. Human face-visible recording/upload remains external. |
 
@@ -34,3 +34,7 @@ Automatic quota-only fallback is implemented and transport/browser-tested. Add G
 The default studio assignment is now any entered subject, with references collected at run time. There is no RAG topic whitelist. A retrieval failure produces an actionable unapproved error. New generic teaching prompts and rubric checks assess the requested subject. Prior RAG calibration and cross-run learning acceptance remain limited to RAG; they are not proof of general subject accuracy. Actual new-topic inference results are recorded separately in submission/topics-live-verification.json.
 
 Final real dynamic-topic run 1788f8f75349482599aac245224ac0ba completed all three drafts and nine Groq evaluation groups without technical retries. Photosynthesis remained NEEDS_REVIEW at 12/14 due to grounding and terminology failures. Dynamic operation is verified; a successful new-topic approval and general subject accuracy are not claimed.
+
+## FreeLLM update — 15 November 2026
+
+The user-authorized local router is configured as an optional third provider. Groq quota, output truncation and transient service failures can continue through FreeLLM, with per-response provenance and all release checks intact. An isolated diagnostic with controlled primary/Groq failures and real FreeLLM inference approved Performance testing at 14/14 on draft one. The current default local output budget is 8,192. Original learning/calibration acceptance boundaries remain unchanged; one router integration example is not broad judge accuracy evidence.

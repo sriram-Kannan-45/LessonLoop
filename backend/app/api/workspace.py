@@ -50,7 +50,7 @@ async def workspace(request: Request):
             "rubric": topic_rubric("the selected topic"), "learner_profile": LEARNER,
             "learner_preset": "india_beginner", "generator_model": current.ai.generator_model,
             "evaluator_model": current.ai.evaluator_model, "provider": "gemini", "max_retries": 2,
-            "provider_note": "Gemini is primary. Groq is used only when Gemini reports a quota/rate limit. Actual providers are recorded per response; judges can still share mistakes.",
+            "provider_note": "Gemini is primary. Groq is used only when Gemini reports a quota/rate limit. FreeLLM can continue after Groq quota, truncated output or temporary service failures. Actual providers are recorded per response; judges can still share mistakes.",
             "evaluation_groups": 3,
             "technical_retries": current.settings.technical_retries,
             "fallback": {"provider": "groq", "enabled": current.settings.groq_fallback_enabled,
@@ -58,6 +58,7 @@ async def workspace(request: Request):
                          "generator_model": current.settings.groq_model,
                          "evaluator_model": current.settings.groq_evaluator_model or current.settings.groq_model,
                          "min_interval_seconds": current.settings.groq_min_interval_seconds},
+            "freellm": {"configured": bool(current.settings.freellm_fallback_enabled and current.settings.freellm_api_key and current.settings.freellm_model), "model": current.settings.freellm_model, "provider": "freellm"},
             "configured": bool(current.settings.gemini_api_key and current.ai.generator_model and current.ai.evaluator_model),
             "busy": current.busy, "active_prompt_version": PROMPTS["topic_generator_version"],
             "topic_mode": "dynamic", "reference_mode": "Public Wikipedia excerpts collected and frozen per topic; not human-reviewed.",
@@ -69,7 +70,7 @@ async def create_run(body: RunRequest, request: Request):
     local_only(request)
     current = runtime(request)
     not_busy(current)
-    for secret in (current.settings.gemini_api_key, current.settings.groq_api_key):
+    for secret in (current.settings.gemini_api_key, current.settings.groq_api_key, current.settings.freellm_api_key):
         if secret:
             body.topic = body.topic.replace(secret.get_secret_value(), "[redacted]")
     if body.reference_pack_id != "auto" and not supports_topic(body.topic, body.reference_pack_id):
@@ -118,7 +119,7 @@ async def feedback(run_id: str, body: FeedbackRequest, request: Request):
     current = runtime(request)
     find_run(current, run_id)
     message = body.message
-    for secret in (current.settings.gemini_api_key, current.settings.groq_api_key):
+    for secret in (current.settings.gemini_api_key, current.settings.groq_api_key, current.settings.freellm_api_key):
         if secret:
             message = message.replace(secret.get_secret_value(), "[redacted]")
     return current.repository.feedback(run_id, body.category, message)
@@ -129,7 +130,7 @@ async def review_feedback(feedback_id: str, body: FeedbackReview, request: Reque
     local_only(request)
     current = runtime(request)
     note = body.review_note
-    for secret in (current.settings.gemini_api_key, current.settings.groq_api_key):
+    for secret in (current.settings.gemini_api_key, current.settings.groq_api_key, current.settings.freellm_api_key):
         if secret:
             note = note.replace(secret.get_secret_value(), "[redacted]")
     result = current.repository.review_feedback(feedback_id, body.action, note)

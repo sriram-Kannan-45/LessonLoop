@@ -246,3 +246,16 @@ test('cancels generation, shows saved review drafts and enables a new lesson', a
   await expect(page.getByRole('link', { name: 'Review draft', exact: true })).toBeVisible()
   expect(cancellations).toBe(1)
 })
+
+
+test('shows the local FreeLLM fallback and router-reported model', async ({ page }) => {
+  const run = makeRun()
+  Object.assign(run.attempts[0], { generation_usage: {provider:'freellm',model:'reported/router-model',fallback:true}, evaluator_usage:{group_usage:[{provider:'freellm',model:'reported/router-judge',fallback:true}]} })
+  await mocks(page, run)
+  await page.route('**/api/workspace', route => route.fulfill({json:{...workspace,freellm:{configured:true,model:'auto',provider:'freellm'}}}))
+  await page.goto('/?run=browser-test-run')
+  await expect(page.getByText('FreeLLM local fallback',{exact:true})).toBeVisible()
+  await expect(page.getByText('FreeLLM fallback used',{exact:true})).toBeVisible()
+  await expect(page.getByText('freellm · reported/router-model',{exact:true})).toBeVisible()
+  await expect(page.getByText('freellm · reported/router-judge',{exact:true})).toBeVisible()
+})

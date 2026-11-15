@@ -38,18 +38,19 @@ class WorkflowError(Exception):
 
 
 class LessonAI:
-    """Separate role calls, Gemini primary and quota-only Groq fallback."""
+    """Separate role calls with Gemini, Groq and optional local-router fallback."""
     def __init__(self, settings: Settings):
         self.settings = settings
         self.generator_model = settings.gemini_model or ""
         self.evaluator_model = settings.gemini_evaluator_model or settings.gemini_model or ""
         self._quota = {}
         self._groq_last_request = {}
+        self._groq_unavailable = {}
         self._groq_lock = asyncio.Lock()
 
     def redact(self, value):
         text = json.dumps(value, ensure_ascii=False)
-        for secret in (self.settings.gemini_api_key, self.settings.groq_api_key):
+        for secret in (self.settings.gemini_api_key, self.settings.groq_api_key, self.settings.freellm_api_key):
             if secret:
                 text = text.replace(secret.get_secret_value(), "[redacted]")
         return json.loads(text)
@@ -80,9 +81,43 @@ class LessonAI:
             on_provider_event({"type": "PROVIDER_USED", "provider": "gemini", "model": model, "role": role})
         return value, usage
 
+    @property
+    def freellm_configured(self):
+        return bool(self.settings.freellm_fallback_enabled and self.settings.freellm_api_key and self.settings.freellm_model)
+
+    async def _call_freellm(self, primary_model, instructions, data, schema, reason, from_provider, on_retry, retry_limit, on_provider_event):
+        from app.services.freellm import request_freellm
+        role = "generation" if schema is Lesson else "evaluation"
+        model = (self.settings.freellm_evaluator_model or self.settings.freellm_model) if role == "evaluation" else self.settings.freellm_model
+        if on_provider_event:
+            on_provider_event({"type": "PROVIDER_FALLBACK", "from_provider": from_provider, "provider": "freellm", "model": model, "role": role, "reason": reason})
+        limit = self.settings.technical_retries if retry_limit is None else retry_limit
+        for attempt in range(limit + 1):
+            try:
+                async with asyncio.timeout(self.settings.workflow_timeout_seconds):
+                    value, usage = await request_freellm(self.settings, model, instructions, data, schema)
+                usage.update(role=role, fallback=True, primary_provider="gemini", primary_model=primary_model, fallback_reason=reason)
+                if on_provider_event:
+                    on_provider_event({"type": "PROVIDER_USED", "provider": "freellm", "model": usage["model"], "role": role})
+                return self.redact(value), self.redact(usage)
+            except WorkflowError as exc:
+                error = exc
+            except Exception as exc:
+                failure = map_failure(exc)
+                error = WorkflowError(failure.code, "The local FreeLLM request failed. Check that the router is running; no lesson was approved.", {"provider": "freellm", "exception_type": type(exc).__name__})
+            delay = retry_delay(attempt + 1, error.diagnostics or {})
+            if error.code in TRANSIENT_FAILURES and attempt < limit and delay is not None:
+                if on_retry: on_retry(attempt + 1, error.code)
+                await asyncio.sleep(delay)
+                continue
+            raise WorkflowError(error.code, self.redact(error.message), self.redact(error.diagnostics or {})) from None
+
     async def _fallback(self, primary_model, instructions, data, schema, quota, on_retry, retry_limit, json_mode, on_provider_event):
         role = "generation" if schema is Lesson else "evaluation"
         model = (self.settings.groq_evaluator_model or self.settings.groq_model) if role == "evaluation" else self.settings.groq_model
+        cooldown = self._groq_unavailable.get(model)
+        if self.freellm_configured and (not self.fallback_configured or cooldown and cooldown["until"] > time.time()):
+            return await self._call_freellm(primary_model, instructions, data, schema, cooldown["reason"] if cooldown else "RATE_LIMIT_OR_QUOTA", "groq" if cooldown else "gemini", on_retry, retry_limit, on_provider_event)
         if not self.fallback_configured or not model:
             message = quota["message"]
             if self.settings.groq_fallback_enabled:
@@ -92,7 +127,13 @@ class LessonAI:
                  "provider": "groq", "model": model, "role": role, "reason": "RATE_LIMIT_OR_QUOTA", "gemini_retry_at": quota["until"]}
         if on_provider_event:
             on_provider_event(event)
-        value, usage = await self._call_groq(model, instructions, data, schema, on_retry, retry_limit, json_mode, on_provider_event)
+        try:
+            value, usage = await self._call_groq(model, instructions, data, schema, on_retry, retry_limit, json_mode, on_provider_event)
+        except WorkflowError as exc:
+            if not self.freellm_configured or exc.code not in {"RATE_LIMIT_OR_QUOTA", "OUTPUT_TRUNCATED", *TRANSIENT_FAILURES}:
+                raise
+            self._groq_unavailable[model] = {"until": time.time() + 300, "reason": exc.code}
+            return await self._call_freellm(primary_model, instructions, data, schema, exc.code, "groq", on_retry, retry_limit, on_provider_event)
         usage.update(role=role, fallback=True, primary_provider="gemini", primary_model=primary_model,
                      fallback_reason="RATE_LIMIT_OR_QUOTA", gemini_retry_at=quota["until"])
         if on_provider_event:

@@ -4,7 +4,7 @@ LessonLoop creates and evaluates beginner lessons about the topic you enter: sci
 
 Gemini is the primary generator and evaluator. On a Gemini quota/rate-limit response, the affected call automatically switches to configured Groq backup. Separate evaluation calls judge twelve rubric checks, and Python enforces two structure/reference checks. **Every mandatory check must pass** before release. Actual failures drive at most two rewrites; unresolved drafts end **NEEDS_REVIEW**.
 
-The user originally chose Gemini only and later explicitly requested **Groq quota fallback**. No OpenAI service or SDK is used; Groq is called directly over HTTPS with a Qwen model by default. Separate calls and provider fallback do not guarantee accurate or independent judgments. [VERIFICATION.md](VERIFICATION.md) separates actual live results from mocked tests. [Sprint acceptance status](docs/SPRINT_STATUS.md) maps every sprint to its evidence and remaining human steps.
+The user originally chose Gemini only and later explicitly requested **Groq quota fallback**. Groq is called directly over HTTPS with a Qwen model by default; no OpenAI SDK is used. An optional FreeLLM router controls its own upstream providers. Separate calls and provider fallback do not guarantee accurate or independent judgments. [VERIFICATION.md](VERIFICATION.md) separates actual live results from mocked tests. [Sprint acceptance status](docs/SPRINT_STATUS.md) maps every sprint to its evidence and remaining human steps.
 
 ## Implemented system
 
@@ -257,3 +257,13 @@ Reference API documentation: [Wikipedia search](https://www.mediawiki.org/wiki/A
 Groq accounts can enforce a separate output-token allowance. Evaluation responses are kept concise with a 900-token cap. A full lesson still needs a larger generation budget; a provider allowance that cannot accommodate it produces an explicit unapproved error.
 
 During an active lesson, click **Cancel generation** in the status panel to stop further work. The run becomes **CANCELLED**, saved drafts remain unapproved in history, and a new lesson can be started. Requests already sent to a provider may still consume quota.
+
+## Optional local FreeLLM router
+
+The configured fallback chain is Gemini -> Groq -> FreeLLM. A Gemini quota response selects Groq; Groq quota, truncated output or a temporary transport/service failure can then select FreeLLM. Invalid credentials are reported rather than routed around. If Groq is disabled, a configured FreeLLM router can handle the Gemini quota fallback directly. A five-minute Groq cooldown avoids repeating the same failed call for every evaluation group. Healthy Gemini calls still use Gemini.
+
+In ignored backend/.env, configure FREELLM_BASE_URL=http://127.0.0.1:31415/v1, FREELLM_API_KEY, FREELLM_MODEL=auto, FREELLM_EVALUATOR_MODEL=auto and FREELLM_FALLBACK_ENABLED=true. Use an ordinary URL without backslash escapes. Keep the local router running and restart the backend after editing settings. HTTPS remote routers or HTTP loopback addresses are supported; embedded URL credentials, query strings, fragments and plaintext remote URLs are rejected.
+
+LessonLoop uses the router's chat-completions endpoint directly through HTTPX. FreeLLM controls its own upstream providers and key pool. Its reported model ID and actual response usage are preserved; auto routing does not establish independent evaluation or unlimited quota. Structured lessons, exact evidence, strict check IDs, cancellation, the three-draft limit and the all-check release gate remain enforced. A failed final router call still produces an honest unapproved error. The original failed run remains unchanged; start a new run to use the new configuration.
+
+FREELLM_MAX_OUTPUT_TOKENS defaults to 8192 to leave room for reasoning models to finish their JSON. It can be configured between 512 and 32768. Truncated local-router output remains an error; a larger key pool cannot remove every model or output limit.
