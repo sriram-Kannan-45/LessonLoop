@@ -1,8 +1,8 @@
 # Presentation source
 
-This source builds an editable 16-slide PowerPoint for the LessonLoop recording. Slides 1–13 support about seven minutes of explanation, slide 14 closes after the product demo, and slides 15–16 hold the full implementation commit history as optional reference.
+This source builds the revised editable 25-slide PowerPoint. Slides 1–20 support about nine minutes 25 seconds of explanation, the product demo runs until minute fourteen, and slide 21 closes by minute fifteen. Slides 22–25 are optional commit-history and technical-question appendices.
 
-`deck-content.mjs` contains the slide copy, timing, source references and Tanglish speaker notes. `build-deck.mjs` lays out native editable text and the requested workflow diagram using the bundled Codex Artifact Tool. The application itself does not depend on the presentation runtime.
+`deck-content.mjs` preserves the original slide content. `revision-content.mjs` adds the framework comparison, actual dependency usage, fine-tuning decisions and other engineering explanations with updated timing and Tanglish speaker notes. `build-deck.mjs` lays out native editable text and the requested workflow diagram using the bundled Codex Artifact Tool. The application itself does not depend on the presentation runtime.
 
 The generated PPTX/PDF, application screenshot and render evidence live in ignored `artifacts/presentation/` and `.cache/presentation-build/`. The repository workflow excludes generated artifacts from Git. The companion recording script is tracked at `docs/DEMO_PRESENTATION_SCRIPT.md`.
 

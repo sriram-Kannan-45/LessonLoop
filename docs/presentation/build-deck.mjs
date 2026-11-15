@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
-import { slides, demoScript } from './deck-content.mjs';
+import { slides, demoScript } from './revision-content.mjs';
 
 const workspaceDir = process.env.LESSONLOOP_WORKSPACE || 'D:/LessonLoop';
 const runtime = process.env.RUNTIME_NODE_MODULES;
@@ -46,7 +46,7 @@ for (const [i,d] of slides.entries()) {
   } else if (d.kind==='rows') {
     d.rows.forEach(([n,label,detail],j)=>{
       const y=205+j*132;
-      text(s,n,64,y,130,65,46,colors.teal,true);
+      text(s,n,64,y,130,65,/^[\d–-]+$/.test(String(n))?46:28,colors.teal,true);
       text(s,label,220,y,340,65,30,colors.ink,true);
       text(s,detail,590,y+2,610,90,27,colors.muted);
     });
