@@ -25,7 +25,7 @@ def setup(settings, monkeypatch, code="RATE_LIMIT_OR_QUOTA"):
     settings.freellm_api_key = "fake-local-router-key"
     settings.technical_retries = 0
     monkeypatch.setattr(LessonAI, "_call_gemini", AsyncMock(side_effect=WorkflowError("RATE_LIMIT_OR_QUOTA", "Mocked quota")))
-    backup = AsyncMock(side_effect=WorkflowError(code, "Mocked Groq failure"))
+    backup = AsyncMock(side_effect=WorkflowError(code, "Mocked Groq failure", {"provider_error_code": "json_validate_failed"} if code == "INVALID_REQUEST" else None))
     monkeypatch.setattr(LessonAI, "_call_groq", backup)
     monkeypatch.setattr(freellm, "request_freellm", REAL_REQUEST)
     return backup
@@ -35,7 +35,7 @@ def wire(monkeypatch, handler):
     monkeypatch.setattr(freellm.httpx, "AsyncClient", lambda **kwargs: REAL_CLIENT(**kwargs, transport=httpx.MockTransport(handler)))
 
 
-@pytest.mark.parametrize("code", ["RATE_LIMIT_OR_QUOTA", "OUTPUT_TRUNCATED", "CONNECTION_ERROR"])
+@pytest.mark.parametrize("code", ["RATE_LIMIT_OR_QUOTA", "OUTPUT_TRUNCATED", "CONNECTION_ERROR", "INVALID_REQUEST"])
 def test_local_router_completes_workflow_after_groq_failure_without_repeating_groq(settings, monkeypatch, code):
     groq = setup(settings, monkeypatch, code)
     monkeypatch.setattr(LessonAI, "generate", REAL_GENERATE)
@@ -93,3 +93,12 @@ def test_groq_auth_failure_does_not_route_around_invalid_credentials(settings, m
 def test_router_base_url_rejects_plaintext_remote_and_embedded_credentials(settings, url):
     with pytest.raises(ValueError):
         settings.freellm_base_url = url
+
+
+def test_other_groq_invalid_requests_are_not_misclassified_as_json_failures(settings, monkeypatch):
+    setup(settings, monkeypatch)
+    monkeypatch.setattr(LessonAI, '_call_groq', AsyncMock(side_effect=WorkflowError('INVALID_REQUEST', 'Other invalid request', {'provider_error_code':'invalid_api_key'})))
+    wire(monkeypatch, lambda request: pytest.fail('Unexpected local-router request'))
+    with pytest.raises(WorkflowError) as exc:
+        asyncio.run(LessonAI(settings).call('mocked-primary', 'Return JSON', {}, Lesson))
+    assert exc.value.code == 'INVALID_REQUEST'

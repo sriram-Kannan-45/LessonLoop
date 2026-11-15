@@ -260,7 +260,7 @@ During an active lesson, click **Cancel generation** in the status panel to stop
 
 ## Optional local FreeLLM router
 
-The configured fallback chain is Gemini -> Groq -> FreeLLM. A Gemini quota response selects Groq; Groq quota, truncated output or a temporary transport/service failure can then select FreeLLM. Invalid credentials are reported rather than routed around. If Groq is disabled, a configured FreeLLM router can handle the Gemini quota fallback directly. A five-minute Groq cooldown avoids repeating the same failed call for every evaluation group. Healthy Gemini calls still use Gemini.
+The configured fallback chain is Gemini -> Groq -> FreeLLM. A Gemini quota response selects Groq; Groq quota, truncated output, its explicit json_validate_failed response, or a temporary transport/service failure can then select FreeLLM. Invalid credentials are reported rather than routed around. If Groq is disabled, a configured FreeLLM router can handle the Gemini quota fallback directly. A five-minute Groq cooldown avoids repeating the same failed call for every evaluation group. Healthy Gemini calls still use Gemini.
 
 In ignored backend/.env, configure FREELLM_BASE_URL=http://127.0.0.1:31415/v1, FREELLM_API_KEY, FREELLM_MODEL=auto, FREELLM_EVALUATOR_MODEL=auto and FREELLM_FALLBACK_ENABLED=true. Use an ordinary URL without backslash escapes. Keep the local router running and restart the backend after editing settings. HTTPS remote routers or HTTP loopback addresses are supported; embedded URL credentials, query strings, fragments and plaintext remote URLs are rejected.
 

@@ -6,7 +6,7 @@ Audited 14 November 2026 on Windows. The user originally chose Gemini only and l
 
 | Check | Observed result |
 | --- | --- |
-| Backend pytest | 104 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
+| Backend pytest | 106 passed; mocked inference/in-memory SDK HTTP transport, no paid calls. |
 | TypeScript and production build | Passed. |
 | Desktop/mobile Playwright | 40 passed, installed Edge; inference mocked, real local health/configuration checked. |
 | Real browser review | Current Flash model label visible; desktop reader and mobile memory page have no JavaScript errors; mobile page has no horizontal overflow. |
@@ -106,3 +106,9 @@ The earlier user error was OUTPUT_TRUNCATED from Groq, not evidence of daily quo
 An isolated real-inference diagnostic used controlled Gemini quota and Groq output-truncation exceptions, then real topic-reference retrieval, FreeLLM generation and evaluation. Its initial 2,048-token evaluation budget caused one local-model truncation after a completed first-draft evaluation; no partial result was approved. The budget is now configurable (FREELLM_MAX_OUTPUT_TOKENS), default 8,192, to accommodate reasoning plus final JSON. The repeated Performance testing diagnostic (27cfdce81f5b41bab70e7fbcd5a72c35, ignored temporary database) finished APPROVED on draft one with all fourteen checks. Router-reported models were gemini-3-flash-preview and openai/gpt-oss-120b. These identifiers are the router's report, not independently verified upstream identities. This proves the local route and full validation path on one example; it does not prove general accuracy, natural quota timing, unlimited capacity or learning activation. Actual app history was not rewritten.
 
 104 backend tests pass, including local HTTP transport, cooldown routing, strict release, three-key redaction, final-router errors and URL validation. Forty browser tests pass, including FreeLLM readiness and provider attribution. One earlier browser health check coincided with backend restart and got connection refused; the full rerun passed after startup. The production build passed. Real desktop/mobile inspection showed configured FreeLLM, no JavaScript errors and no horizontal overflow. The backend was restarted only while idle; its current configuration uses the 8,192-token router budget. Secrets and diagnostic databases/artifacts remain ignored.
+
+## Groq JSON-validation fallback fix — 15 November 2026
+
+Run 5aafa205a4524c14b2ff56c2717793f6 stopped on draft three when Groq returned HTTP 400 with provider_error_code=json_validate_failed for the final four-check group. This was a missing fallback category, not a quota failure. That specific provider error now selects configured FreeLLM and uses the existing cooldown. Unrelated invalid requests and authentication errors still fail explicitly. Local schema, evidence, strict verdict and fourteen-check release validation are unchanged.
+
+The backend suite now has 106 passing tests, including full mocked workflow recovery for this exact metadata and rejection of unrelated invalid requests. A real FreeLLM diagnostic evaluated the failed group's actual third-draft input and returned four locally validated check results (reported model openai/gpt-oss-120b). Earlier-provider errors were controlled in this diagnostic to reproduce the saved failure; the real router handled evaluation. No overall approval or modification of the original run is claimed. Frontend code was unchanged; the prior forty browser tests and production build remain applicable.

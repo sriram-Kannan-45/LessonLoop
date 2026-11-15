@@ -130,7 +130,8 @@ class LessonAI:
         try:
             value, usage = await self._call_groq(model, instructions, data, schema, on_retry, retry_limit, json_mode, on_provider_event)
         except WorkflowError as exc:
-            if not self.freellm_configured or exc.code not in {"RATE_LIMIT_OR_QUOTA", "OUTPUT_TRUNCATED", *TRANSIENT_FAILURES}:
+            groq_json_failure = exc.code == "INVALID_REQUEST" and (exc.diagnostics or {}).get("provider_error_code") == "json_validate_failed"
+            if not self.freellm_configured or not (groq_json_failure or exc.code in {"RATE_LIMIT_OR_QUOTA", "OUTPUT_TRUNCATED", *TRANSIENT_FAILURES}):
                 raise
             self._groq_unavailable[model] = {"until": time.time() + 300, "reason": exc.code}
             return await self._call_freellm(primary_model, instructions, data, schema, exc.code, "groq", on_retry, retry_limit, on_provider_event)
